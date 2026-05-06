@@ -67,7 +67,7 @@ html{overflow-x:hidden;}
 .hero-glow{position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:600px;height:400px;background:radial-gradient(ellipse,rgba(255,180,60,0.15) 0%,transparent 60%);pointer-events:none;}
 .hero-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(255,124,42,0.1);border:1px solid rgba(255,124,42,0.25);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;color:var(–sun);margin-bottom:16px;letter-spacing:0.3px;}
 .hero h1{font-size:clamp(28px,7vw,42px);font-weight:800;color:var(–text);line-height:1.15;letter-spacing:-1px;margin-bottom:10px;}
-.hero h1 span{background:linear-gradient(135deg,var(–sun),var(–amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero h1 span{background:linear-gradient(135deg,var(–sun),var(–amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:inline-block;padding-bottom:2px;}
 .hero-sub{font-size:14px;color:var(–text2);line-height:1.7;max-width:320px;margin:0 auto 24px;font-weight:500;}
 
 /* Search card */
@@ -98,7 +98,7 @@ html{overflow-x:hidden;}
 .day-chip.on .day-chip-n{color:var(–sun);}
 .day-chip.on .day-chip-l{color:rgba(255,124,42,0.7);}
 
-.find-btn{width:100%;background:linear-gradient(135deg,var(–sun),var(–amber));color:var(–white);border:none;border-radius:var(–r);padding:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:var(–sans);transition:all 0.2s;letter-spacing:0.2px;box-shadow:0 4px 16px rgba(255,124,42,0.3);}
+.find-btn{width:100%;background:linear-gradient(135deg,var(–sun),var(–amber));color:var(–text);border:none;border-radius:var(–r);padding:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:var(–sans);transition:all 0.2s;letter-spacing:0.2px;box-shadow:0 4px 16px rgba(255,124,42,0.3);}
 .find-btn:hover{opacity:0.9;transform:translateY(-1px);}
 .find-btn:disabled{background:#e8d5c0;color:var(–text3);cursor:not-allowed;transform:none;opacity:1;box-shadow:none;}
 
@@ -197,7 +197,7 @@ html{overflow-x:hidden;}
 .sum-item{background:rgba(255,255,255,0.9);padding:12px 8px;text-align:center;}
 .sum-n{font-size:19px;font-weight:800;color:var(–text);display:block;}
 .sum-l{font-size:10px;color:var(–text3);font-weight:600;margin-top:2px;}
-.share-btn{width:100%;background:linear-gradient(135deg,var(–sun),var(–amber));color:var(–white);border:none;border-radius:var(–r);padding:13px;font-size:14px;font-weight:800;cursor:pointer;font-family:var(–sans);transition:all 0.2s;margin-bottom:8px;box-shadow:0 4px 16px rgba(255,124,42,0.25);}
+.share-btn{width:100%;background:linear-gradient(135deg,var(–sun),var(–amber));color:var(–text);border:none;border-radius:var(–r);padding:13px;font-size:14px;font-weight:800;cursor:pointer;font-family:var(–sans);transition:all 0.2s;margin-bottom:8px;box-shadow:0 4px 16px rgba(255,124,42,0.25);}
 .share-btn:hover{opacity:0.9;}
 .back-btn{width:100%;background:var(–bg2);border:1.5px solid var(–border2);color:var(–text2);border-radius:var(–r);padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(–sans);transition:all 0.2s;}
 .back-btn:hover{border-color:var(–sun);color:var(–sun);}
@@ -289,11 +289,11 @@ html{overflow-x:hidden;}
   <!-- Days - hidden until route entered, then auto-populates -->
   <div id="days-section" style="display:none;margin-bottom:14px;width:100%;box-sizing:border-box;overflow:hidden;">
     <div class="days-label" style="margin-bottom:6px;">Recommended days for your route</div>
-    <div id="days-recommendation" style="background:rgba(0,212,170,0.06);border:1.5px solid rgba(0,212,170,0.25);border-radius:14px;padding:12px 14px;margin-bottom:10px;box-sizing:border-box;overflow:hidden;">
+    <div id="days-recommendation" style="background:linear-gradient(135deg,rgba(255,124,42,0.07),rgba(245,158,11,0.05));border:1.5px solid rgba(255,124,42,0.2);border-radius:14px;padding:12px 14px;margin-bottom:10px;box-sizing:border-box;overflow:hidden;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-        <span style="font-size:28px;font-weight:800;color:var(--teal);flex-shrink:0;" id="rec-days">2</span>
-        <span style="font-size:13px;font-weight:700;color:var(--white);flex:1;min-width:0;" id="rec-label">days recommended</span>
-        <span style="background:rgba(0,212,170,0.15);border:1px solid rgba(0,212,170,0.3);border-radius:20px;padding:3px 8px;font-size:10px;font-weight:800;color:var(--teal);flex-shrink:0;">✨ AI</span>
+        <span style="font-size:28px;font-weight:800;color:var(--sun);flex-shrink:0;" id="rec-days">2</span>
+        <span style="font-size:13px;font-weight:700;color:var(--text);flex:1;min-width:0;" id="rec-label">days recommended</span>
+        <span style="background:rgba(255,124,42,0.12);border:1px solid rgba(255,124,42,0.25);border-radius:20px;padding:3px 8px;font-size:10px;font-weight:800;color:var(--sun);flex-shrink:0;">✨ AI</span>
       </div>
       <div style="font-size:12px;color:var(--text2);line-height:1.5;" id="rec-reason">Based on your route distance</div>
     </div>
@@ -616,7 +616,7 @@ function showToast(msg){
   if(existing) existing.remove();
   var toast = document.createElement('div');
   toast.id = 'route-toast';
-  toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,212,170,0.95);color:#000;font-size:12px;font-weight:700;padding:8px 16px;border-radius:20px;z-index:999;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+  toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--sun);color:#fff;font-size:12px;font-weight:700;padding:8px 16px;border-radius:20px;z-index:999;white-space:nowrap;box-shadow:0 4px 20px rgba(255,124,42,0.3);';
   toast.textContent = msg;
   document.body.appendChild(toast);
   setTimeout(function(){if(toast.parentNode)toast.remove();}, 2500);
@@ -632,7 +632,7 @@ function showToast(msg){
       '<div class="pop-meta">'+r.dist+' · ~'+r.hrs+'</div>' +
       '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">'+
         '<div class="pop-arrow">Explore stopovers →</div>'+
-        '<div style="font-size:10px;font-weight:700;color:rgba(0,212,170,0.6);background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.15);padding:2px 7px;border-radius:10px;">'+r.idealDays+'d ideal</div>'+
+        '<div style="font-size:10px;font-weight:700;color:rgba(0,212,170,0.6);background:rgba(255,124,42,0.07);border:1px solid rgba(255,124,42,0.12);padding:2px 7px;border-radius:10px;">'+r.idealDays+'d ideal</div>'+
       '</div>' +
     '</div>';
   }).join('');
@@ -820,7 +820,7 @@ function go(){
     '"activities":[{"name":"Name","emoji":"🎭","cost":15,"duration":"1-2 hrs","description":"Brief compelling description"}],'+
     '"insiderTip":"Genuinely useful local tip","bestFood":"Must try food or restaurant","bestStartTime":"e.g. Depart by 7AM","overnightStop":true,"suggestedStay":{"type":"Hotel","name":"Example Inn","pricePerNight":120,"bookingTip":"Book early, stay near the town center"}}]}\n\n'+
     'Include '+S.from+' as start, '+S.to+' as end, '+numStops+' stops as stopover type.\n'+
-    (S.days>1?'For multi-day trips, mark overnight stops with overnightStop:true and include suggestedStay with type (Hotel/Motel/Airbnb/Hostel/Campground), a real well-known property name, pricePerNight in USD, and bookingTip. Distribute nights logically across days.\n':'')+
+    (S.days>1?'For multi-day trips, mark overnight stops with overnightStop:true and include suggestedStay. NEVER mark the start or end city as overnightStop — only mark intermediate stopovers. Include type (Hotel/Motel/Airbnb/Hostel/Campground), a real well-known property name, pricePerNight in USD, and bookingTip. Distribute nights logically across days.\n':'')+
     '3-4 activities per stop. Realistic costs. Genuinely useful insider tips.\n'+
     'Return ONLY the JSON object.';
 
@@ -858,7 +858,7 @@ function showResults(data){
       '<div class="rb-route">'+S.from+' → '+S.to+'</div>'+
       '<div style="display:flex;gap:6px;align-items:center;">'+
         '<div class="rb-days">'+S.days+' day'+(S.days>1?'s':'')+'</div>'+
-        (S.vibes.length>0?'<div style="font-size:10px;font-weight:700;color:#a5b4fc;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25);padding:3px 9px;border-radius:20px;">'+S.vibes.map(function(v){return v.charAt(0).toUpperCase()+v.slice(1);}).join(' · ')+'</div>':'')+
+        (S.vibes.length>0?'<div style="font-size:10px;font-weight:700;color:var(--sun);background:rgba(255,124,42,0.1);border:1px solid rgba(255,124,42,0.25);padding:3px 9px;border-radius:20px;">'+S.vibes.map(function(v){return v.charAt(0).toUpperCase()+v.slice(1);}).join(' · ')+'</div>':'')+
       '</div>'+
     '</div>'+
     '<div class="rb-stats">'+
@@ -957,7 +957,7 @@ function showResults(data){
     }
     if(stop.bestStartTime){
       html+='<div class="tip-row">'+
-        '<div class="tip-box" style="width:100%;background:rgba(99,102,241,0.07);border-color:rgba(99,102,241,0.2);">'+
+        '<div class="tip-box" style="width:100%;background:rgba(0,153,204,0.06);border-color:rgba(0,153,204,0.18);">'+
           '<div class="tip-label">🕐 Best start time</div>'+
           '<div class="tip-text">'+stop.bestStartTime+'</div>'+
         '</div>'+
@@ -965,7 +965,7 @@ function showResults(data){
     }
 
     // Overnight stay suggestion
-    if(S.days>1 && stop.overnightStop && stop.suggestedStay){
+    if(S.days>1 && stop.overnightStop && stop.suggestedStay && stop.type!=='start' && stop.type!=='end'){
       var st=stop.suggestedStay;
       var stIco={'Hotel':'🏨','Motel':'🛖','Airbnb':'🏠','Hostel':'🛏️','Campground':'⛺'}[st.type]||'🏨';
       html+='<div class="stay-card">'+
@@ -1025,7 +1025,7 @@ function showErr(){
   el.style.display='block';
   el.innerHTML='<div style="background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;">'+
     '<div style="font-size:52px;margin-bottom:20px;">😕</div>'+
-    '<div style="font-size:20px;font-weight:800;color:var(--white);margin-bottom:10px;">Could not generate route</div>'+
+    '<div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:10px;">Could not generate route</div>'+
     '<div style="font-size:14px;color:var(--text2);line-height:1.75;margin-bottom:24px;max-width:300px;">Something went wrong. Please try again.</div>'+
     '<button class="back-btn" style="max-width:300px;width:100%;" onclick="reset()">← Try another route</button>'+
   '</div>';
