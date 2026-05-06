@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<title>Stopover — Discover What's Between</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0a0a0f;
+  --bg2:#13131a;
+  --bg3:#1a1a24;
+  --bg4:#222230;
+  --surface:#1e1e28;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.12);
+  --white:#ffffff;
+  --text:rgba(255,255,255,0.9);
+  --text2:rgba(255,255,255,0.55);
+  --text3:rgba(255,255,255,0.3);
+  --teal:#00d4aa;
+  --teal2:#00b891;
+  --teal-glow:rgba(0,212,170,0.2);
+  --amber:#f59e0b;
+  --amber2:#f97316;
+  --amber-glow:rgba(245,158,11,0.15);
+  --blue:#6366f1;
+  --green:#10b981;
+  --red:#f43f5e;
+  --sans:'Sora',system-ui,sans-serif;
+  --r-sm:12px;
+  --r:16px;
+  --r-lg:20px;
+  --r-xl:24px;
+  --shadow:0 4px 20px rgba(0,0,0,0.4);
+  --shadow-lg:0 8px 40px rgba(0,0,0,0.6);
+}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--bg) !important;color:var(--text);min-height:100vh;-webkit-tap-highlight-color:transparent;overflow-x:hidden;}
+html{overflow-x:hidden;}
+*{max-width:100%;box-sizing:border-box;}
+.search-card *{min-width:0;}
+
+/* ── HEADER ── */
+.hdr{background:rgba(10,10,15,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.hdr-brand{display:flex;align-items:center;gap:8px;}
+.hdr-logo{width:30px;height:30px;background:linear-gradient(135deg,var(--teal),var(--blue));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+.hdr-name{font-size:17px;font-weight:800;color:var(--white);letter-spacing:-0.3px;}
+.hdr-name span{color:var(--teal);}
+.hdr-tag{font-size:10px;font-weight:700;color:var(--teal);background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.2);padding:3px 9px;border-radius:20px;}
+
+/* ── HOME SCREEN ── */
+.home{min-height:100vh;display:flex;flex-direction:column;background:var(--bg);}
+
+/* Hero */
+.hero{padding:16px 12px 12px;text-align:center;position:relative;overflow:hidden;background:var(--bg);}
+.hero-glow{position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:600px;height:400px;background:radial-gradient(ellipse,rgba(0,212,170,0.03) 0%,transparent 60%);pointer-events:none;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.2);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;color:var(--teal);margin-bottom:16px;letter-spacing:0.3px;}
+.hero h1{font-size:clamp(28px,7vw,42px);font-weight:800;color:var(--white);line-height:1.15;letter-spacing:-1px;margin-bottom:10px;}
+.hero h1 span{background:linear-gradient(135deg,var(--teal),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-size:14px;color:var(--text2);line-height:1.7;max-width:320px;margin:0 auto 24px;font-weight:400;}
+
+/* Search card */
+.search-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-xl);padding:14px;margin:0 0 16px;width:100%;}
+.search-row{display:flex;align-items:center;gap:6px;margin-bottom:8px;width:100%;overflow:hidden;}
+.search-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.search-dot.from{background:var(--teal);}
+.search-dot.to{background:var(--amber);}
+.search-vline{width:1.5px;height:16px;background:var(--border2);margin:2px 4px;}
+.search-input-wrap{flex:1;position:relative;}
+.search-input{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:11px 12px;font-family:var(--sans);font-size:14px;font-weight:600;color:var(--white);outline:none;transition:all 0.2s;min-width:0;}
+.search-input:focus{border-color:var(--teal);background:var(--bg4);box-shadow:0 0 0 3px var(--teal-glow);}
+.search-input::placeholder{color:var(--text3);font-weight:500;}
+.swap-btn{background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--text2);flex-shrink:0;transition:all 0.2s;}
+.swap-btn:hover{border-color:var(--teal);color:var(--teal);}
+
+/* Days selector */
+.days-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;}
+.days-scroll{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.days-scroll::-webkit-scrollbar{display:none;}
+.day-chip{background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 6px;text-align:center;cursor:pointer;transition:all 0.2s;}
+.day-chip.on{background:rgba(0,212,170,0.08);border-color:var(--teal);}
+.day-chip-n{font-size:16px;font-weight:800;color:var(--white);display:block;line-height:1;pointer-events:none;}
+.day-chip-l{font-size:10px;font-weight:600;color:var(--text3);display:block;margin-top:3px;pointer-events:none;}
+.day-chip-s{font-size:9px;color:var(--text3);display:block;margin-top:1px;pointer-events:none;}
+.day-chip.on .day-chip-s{color:rgba(0,212,170,0.5);}
+.day-chip.on .day-chip-n{color:var(--teal);}
+.day-chip.on .day-chip-l{color:rgba(0,212,170,0.6);}
+
+.find-btn{width:100%;background:linear-gradient(135deg,var(--teal),var(--blue));color:var(--white);border:none;border-radius:var(--r);padding:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:var(--sans);transition:all 0.2s;letter-spacing:0.2px;}
+.find-btn:hover{opacity:0.9;transform:translateY(-1px);}
+.find-btn:disabled{background:var(--bg4);color:var(--text3);cursor:not-allowed;transform:none;opacity:1;}
+
+/* Suggestions */
+.suggestions{position:absolute;top:calc(100% + 2px);left:0;right:0;background:var(--bg3);border:1.5px solid var(--teal);border-radius:var(--r-sm);z-index:100;overflow:hidden;box-shadow:var(--shadow-lg);}
+.sug-item{padding:10px 14px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 0.15s;}
+.sug-item:hover{background:rgba(0,212,170,0.08);color:var(--teal);}
+
+/* Popular routes */
+.section-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px;padding:8px 16px 0;background:var(--bg);}
+.popular-scroll{display:flex;gap:10px;overflow-x:auto;padding:0 16px 4px;scrollbar-width:none;background:var(--bg);}
+.popular-scroll::-webkit-scrollbar{display:none;}
+.pop-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;flex-shrink:0;min-width:180px;cursor:pointer;transition:all 0.2s;}
+.pop-card:hover{border-color:var(--teal);transform:translateY(-2px);}
+.pop-flag{font-size:22px;display:block;margin-bottom:8px;}
+.pop-route{font-size:13px;font-weight:700;color:var(--white);margin-bottom:4px;}
+.pop-meta{font-size:11px;color:var(--text3);font-weight:500;}
+.pop-arrow{display:inline-block;margin-top:8px;font-size:11px;font-weight:700;color:var(--teal);}
+
+/* ── LOADING ── */
+.loading{display:none;padding:60px 24px;text-align:center;max-width:400px;margin:0 auto;background:var(--bg);min-height:100vh;}
+.loading-car{font-size:44px;display:block;animation:vroom 1.2s ease-in-out infinite;}
+@keyframes vroom{0%,100%{transform:translateX(-6px);}50%{transform:translateX(6px);}}
+.loading-title{font-size:20px;font-weight:800;color:var(--white);margin:16px 0 6px;}
+.loading-sub{font-size:13px;color:var(--text2);margin-bottom:24px;}
+.l-steps{display:flex;flex-direction:column;gap:6px;}
+.l-step{display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:var(--r-sm);font-size:13px;font-weight:600;color:var(--text3);transition:all 0.3s;}
+.l-step.active{background:var(--bg2);color:var(--white);}
+.l-step.done{color:var(--teal);}
+.l-dot{width:7px;height:7px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:all 0.3s;}
+.l-step.active .l-dot{background:var(--teal);box-shadow:0 0 0 3px var(--teal-glow);}
+.l-step.done .l-dot{background:var(--teal);}
+
+/* ── RESULTS ── */
+.results{display:none;padding:16px 16px 80px;background:var(--bg);min-height:100vh;}
+
+/* Route banner */
+.route-banner{background:linear-gradient(135deg,rgba(0,212,170,0.12),rgba(99,102,241,0.08));border:1px solid rgba(0,212,170,0.2);border-radius:var(--r-xl);padding:18px 20px;margin-bottom:16px;}
+.rb-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.rb-route{font-size:18px;font-weight:800;color:var(--white);letter-spacing:-0.3px;}
+.rb-days{background:var(--teal);color:#000;font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;}
+.rb-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,0.06);border-radius:var(--r-sm);overflow:hidden;}
+.rb-stat{background:rgba(0,0,0,0.2);padding:10px 8px;text-align:center;}
+.rb-stat-n{font-size:15px;font-weight:800;color:var(--white);display:block;}
+.rb-stat-l{font-size:10px;color:var(--text3);font-weight:600;display:block;margin-top:2px;}
+
+/* Drive connector */
+.drive-connector{display:flex;align-items:center;gap:0;padding:6px 20px;}
+.dc-line{flex:1;height:1px;background:repeating-linear-gradient(90deg,var(--border2) 0,var(--border2) 6px,transparent 6px,transparent 12px);}
+.dc-pill{background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--text2);white-space:nowrap;margin:0 8px;display:flex;align-items:center;gap:5px;}
+
+/* Stop card */
+.stop-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-xl);padding:16px;margin-bottom:4px;overflow:hidden;}
+.stop-card.is-start{border-color:rgba(0,212,170,0.3);}
+.stop-card.is-end{border-color:rgba(245,158,11,0.3);}
+.stop-card.is-stop{border-color:rgba(99,102,241,0.2);}
+
+.sc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+.sc-left{display:flex;align-items:center;gap:12px;}
+.sc-emoji{width:42px;height:42px;border-radius:12px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.sc-name{font-size:17px;font-weight:800;color:var(--white);margin-bottom:2px;}
+.sc-country{font-size:11px;color:var(--text3);font-weight:500;}
+.sc-badge{font-size:10px;font-weight:800;padding:4px 10px;border-radius:20px;white-space:nowrap;}
+.sc-badge.start{background:rgba(0,212,170,0.12);color:var(--teal);border:1px solid rgba(0,212,170,0.25);}
+.sc-badge.stop{background:rgba(99,102,241,0.12);color:#818cf8;border:1px solid rgba(99,102,241,0.25);}
+.sc-badge.end{background:rgba(245,158,11,0.12);color:var(--amber);border:1px solid rgba(245,158,11,0.25);}
+
+/* Activities */
+.acts{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+.act{display:flex;gap:10px;align-items:flex-start;background:var(--bg3);border-radius:12px;padding:10px 12px;}
+.act-ico{font-size:16px;flex-shrink:0;margin-top:1px;}
+.act-body{flex:1;}
+.act-name{font-size:13px;font-weight:700;color:var(--white);margin-bottom:2px;}
+.act-desc{font-size:11px;color:var(--text2);line-height:1.55;}
+.act-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
+.act-cost{font-size:12px;font-weight:800;color:var(--amber);}
+.act-time{font-size:10px;font-weight:700;color:var(--teal);background:rgba(0,212,170,0.08);padding:2px 6px;border-radius:6px;white-space:nowrap;}
+
+/* Tips */
+.tip-row{display:flex;gap:6px;margin-bottom:6px;}
+.tip-box{flex:1;background:rgba(0,212,170,0.05);border:1px solid rgba(0,212,170,0.12);border-radius:10px;padding:10px 12px;}
+.tip-box.food{background:rgba(245,158,11,0.05);border-color:rgba(245,158,11,0.12);}
+.tip-label{font-size:10px;font-weight:800;color:var(--teal);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;display:flex;align-items:center;gap:4px;}
+.tip-box.food .tip-label{color:var(--amber);}
+.tip-text{font-size:11px;color:var(--text2);line-height:1.55;}
+
+/* Stop footer */
+.sc-footer{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border);}
+.sc-stay{font-size:11px;font-weight:700;color:var(--text3);display:flex;align-items:center;gap:5px;}
+.sc-cost{font-size:14px;font-weight:800;color:var(--white);}
+
+/* Summary */
+.summary{background:linear-gradient(135deg,var(--bg3),var(--bg2));border:1px solid var(--border2);border-radius:var(--r-xl);padding:18px;margin-top:12px;}
+.sum-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px;}
+.sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:var(--r-sm);overflow:hidden;margin-bottom:14px;}
+.sum-item{background:var(--bg3);padding:12px 8px;text-align:center;}
+.sum-n{font-size:19px;font-weight:800;color:var(--white);display:block;}
+.sum-l{font-size:10px;color:var(--text3);font-weight:600;margin-top:2px;}
+.share-btn{width:100%;background:linear-gradient(135deg,var(--teal),var(--blue));color:var(--white);border:none;border-radius:var(--r);padding:13px;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--sans);transition:all 0.2s;margin-bottom:8px;}
+.share-btn:hover{opacity:0.9;}
+.back-btn{width:100%;background:transparent;border:1.5px solid var(--border2);color:var(--text2);border-radius:var(--r);padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--sans);transition:all 0.2s;}
+.back-btn:hover{border-color:var(--teal);color:var(--teal);}
+
+/* Error */
+.error-box{text-align:center;padding:48px 24px;background:var(--bg);min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.err-icon{font-size:48px;display:block;margin-bottom:16px;}
+.err-title{font-size:20px;font-weight:800;color:var(--white);margin-bottom:8px;text-shadow:none;}
+.err-sub{font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:20px;}
+
+@media(max-width:380px){.days-grid{gap:4px;}.day-chip-n{font-size:16px;}}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="hdr">
+  <div class="hdr-brand">
+    <div class="hdr-logo">🛣️</div>
+    <div class="hdr-name">Stop<span>over</span></div>
+  </div>
+  <div class="hdr-tag">✦ AI Road Trip Planner</div>
+</header>
+
+<!-- HOME -->
+<div class="home" id="home">
+  <div class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-eyebrow">🗺️ Discover what's between</div>
+    <h1>The best trips have<br>the best <span>stopovers</span></h1>
+    <p class="hero-sub">Enter any two cities. Get the most unmissable stops along the way — with insider tips, time needed and costs.</p>
+
+    <div class="search-card">
+      <!-- From -->
+      <div class="search-row">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div class="search-dot from"></div>
+          <div class="search-vline"></div>
+        </div>
+        <div class="search-input-wrap">
+          <input type="text" class="search-input" id="from-inp" placeholder="From — e.g. Atlanta" oninput="onFrom()" onblur="S.from=this.value.trim();checkForm();" autocomplete="off"/>
+          <div class="suggestions" id="from-sug" style="display:none;"></div>
+        </div>
+        <button class="swap-btn" onclick="swapCities()">⇅</button>
+      </div>
+
+      <!-- To -->
+      <div class="search-row" style="margin-bottom:16px;">
+        <div class="search-dot to"></div>
+        <div class="search-input-wrap">
+          <input type="text" class="search-input" id="to-inp" placeholder="To — e.g. Miami" oninput="onTo()" onblur="S.to=this.value.trim();checkForm();" autocomplete="off"/>
+          <div class="suggestions" id="to-sug" style="display:none;"></div>
+        </div>
+        <div style="width:36px;"></div>
+      </div>
+
+      <!-- Days -->
+      <!-- Days - hidden until route entered, then auto-populates -->
+      <div id="days-section" style="display:none;margin-bottom:14px;width:100%;box-sizing:border-box;overflow:hidden;">
+        <div class="days-label" style="margin-bottom:6px;">Recommended days for your route</div>
+        <div id="days-recommendation" style="background:rgba(0,212,170,0.06);border:1.5px solid rgba(0,212,170,0.25);border-radius:14px;padding:12px 14px;margin-bottom:10px;box-sizing:border-box;overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <span style="font-size:28px;font-weight:800;color:var(--teal);flex-shrink:0;" id="rec-days">2</span>
+            <span style="font-size:13px;font-weight:700;color:var(--white);flex:1;min-width:0;" id="rec-label">days recommended</span>
+            <span style="background:rgba(0,212,170,0.15);border:1px solid rgba(0,212,170,0.3);border-radius:20px;padding:3px 8px;font-size:10px;font-weight:800;color:var(--teal);flex-shrink:0;">✨ AI</span>
+          </div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.5;" id="rec-reason">Based on your route distance</div>
+        </div>
+        <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:5px;">Or choose manually:</div>
+        <div class="days-scroll">
+          <div class="day-chip" data-days="1" onclick="pickDay(this)"><span class="day-chip-n">1</span><span class="day-chip-l">Quick</span></div>
+          <div class="day-chip" data-days="2" onclick="pickDay(this)"><span class="day-chip-n">2</span><span class="day-chip-l">Weekend</span></div>
+          <div class="day-chip" data-days="3" onclick="pickDay(this)"><span class="day-chip-n">3</span><span class="day-chip-l">Short</span></div>
+          <div class="day-chip" data-days="5" onclick="pickDay(this)"><span class="day-chip-n">5</span><span class="day-chip-l">Extended</span></div>
+          <div class="day-chip" data-days="7" onclick="pickDay(this)"><span class="day-chip-n">7</span><span class="day-chip-l">Week</span></div>
+          <div class="day-chip" data-days="10" onclick="pickDay(this)"><span class="day-chip-n">10</span><span class="day-chip-l">Coast</span></div>
+          <div class="day-chip" data-days="14" onclick="pickDay(this)"><span class="day-chip-n">14</span><span class="day-chip-l">Epic</span></div>
+        </div>
+      </div>
+
+      <button class="find-btn" id="find-btn" onclick="setTimeout(go,10)" disabled>🛣️ Find My Stopovers</button>
+    </div>
+  </div>
+
+  <!-- Popular routes -->
+  <div class="section-label">🔥 Popular routes</div>
+  <div class="popular-scroll" id="popular-scroll"></div>
+  <div style="height:32px;"></div>
+</div>
+
+<!-- LOADING -->
+<div class="loading" id="loading">
+  <span class="loading-car">🚗</span>
+  <div class="loading-title">Scouting your route…</div>
+  <div class="loading-sub" id="l-sub">Finding the best stops between your cities</div>
+  <div class="l-steps">
+    <div class="l-step active" id="ls1"><div class="l-dot"></div>Mapping the route</div>
+    <div class="l-step" id="ls2"><div class="l-dot"></div>Finding best stopovers</div>
+    <div class="l-step" id="ls3"><div class="l-dot"></div>Researching activities & costs</div>
+    <div class="l-step" id="ls4"><div class="l-dot"></div>Adding insider tips</div>
+    <div class="l-step" id="ls5"><div class="l-dot"></div>Building your plan</div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="results" id="results"></div>
+
+<script>
+// API calls go through secure Vercel backend
+
+var S = {from:'', to:'', days:2};
+
+var CITIES = ['Atlanta','Miami','Los Angeles','San Francisco','New York','Boston','Chicago','Nashville','Dallas','Houston','Seattle','Denver','Phoenix','Las Vegas','Orlando','Washington DC','Philadelphia','Portland','Austin','Minneapolis','San Diego','San Antonio','Sacramento','Kansas City','New Orleans','Tampa','Pittsburgh','Cincinnati','Salt Lake City','Boise','Richmond','Savannah','Charleston','Raleigh','Charlotte','Memphis','Detroit','Baltimore','Louisville','Milwaukee','Albuquerque','Tucson','Honolulu','St Louis','Anchorage','Toronto','Vancouver','Montreal','Calgary','Ottawa','Quebec City','London','Edinburgh','Manchester','Birmingham','Glasgow','Liverpool','Dublin','Cardiff','Paris','Amsterdam','Berlin','Rome','Barcelona','Madrid','Lisbon','Prague','Vienna','Budapest','Warsaw','Stockholm','Copenhagen','Oslo','Helsinki','Athens','Zurich','Geneva','Brussels','Milan','Florence','Venice','Naples','Munich','Hamburg','Frankfurt','Cologne','Dubrovnik','Split','Krakow','Bratislava','Bucharest','Sofia','Belgrade','Zagreb','Dubai','Abu Dhabi','Riyadh','Doha','Kuwait City','Muscat','Amman','Beirut','Tel Aviv','Jerusalem','Tokyo','Osaka','Kyoto','Seoul','Busan','Beijing','Shanghai','Hong Kong','Macau','Singapore','Kuala Lumpur','Bangkok','Chiang Mai','Phuket','Bali','Jakarta','Hanoi','Ho Chi Minh City','Siem Reap','Phnom Penh','Yangon','Colombo','Kathmandu','Mumbai','Delhi','Bangalore','Chennai','Kolkata','Hyderabad','Jaipur','Goa','Agra','Karachi','Lahore','Islamabad','Dhaka','Cape Town','Johannesburg','Durban','Nairobi','Cairo','Casablanca','Marrakech','Tunis','Accra','Lagos','Addis Ababa','Dar es Salaam','Sydney','Melbourne','Brisbane','Perth','Adelaide','Canberra','Gold Coast','Auckland','Wellington','Christchurch','Queenstown','Mexico City','Cancun','Guadalajara','Monterrey','Buenos Aires','Bogota','Lima','Santiago','Sao Paulo','Rio de Janeiro','Brasilia','Montevideo','Havana','Panama City','San Jose','Guatemala City','Nassau','Kingston','Santo Domingo','San Juan','Moscow','St Petersburg','Istanbul','Ankara','Almaty','Tbilisi','Baku','Yerevan'];
+
+var POPULAR = [
+  {from:'Atlanta',to:'Miami',flag:'🇺🇸',dist:'663 mi',hrs:'9.5h',idealDays:2},
+  {from:'Los Angeles',to:'San Francisco',flag:'🇺🇸',dist:'380 mi',hrs:'5.5h',idealDays:2},
+  {from:'New York',to:'Boston',flag:'🇺🇸',dist:'215 mi',hrs:'4h',idealDays:1},
+  {from:'Chicago',to:'Nashville',flag:'🇺🇸',dist:'476 mi',hrs:'7h',idealDays:2},
+  {from:'London',to:'Edinburgh',flag:'🇬🇧',dist:'414 mi',hrs:'7h',idealDays:2},
+  {from:'Paris',to:'Amsterdam',flag:'🇪🇺',dist:'320 mi',hrs:'3.5h',idealDays:1},
+  {from:'Sydney',to:'Melbourne',flag:'🇦🇺',dist:'878 km',hrs:'9h',idealDays:3},
+  {from:'Mumbai',to:'Goa',flag:'🇮🇳',dist:'594 km',hrs:'8h',idealDays:2},
+  {from:'Dallas',to:'Houston',flag:'🇺🇸',dist:'239 mi',hrs:'3.5h',idealDays:1},
+  {from:'Barcelona',to:'Madrid',flag:'🇪🇸',dist:'621 km',hrs:'6h',idealDays:2},
+  {from:'Dubai',to:'Abu Dhabi',flag:'🇦🇪',dist:'140 km',hrs:'1.5h',idealDays:1},
+  {from:'Bangkok',to:'Chiang Mai',flag:'🇹🇭',dist:'700 km',hrs:'8h',idealDays:3},
+  {from:'New York',to:'San Francisco',flag:'🇺🇸',dist:'2,900 mi',hrs:'42h',idealDays:10},
+  {from:'New York',to:'Los Angeles',flag:'🇺🇸',dist:'2,800 mi',hrs:'40h',idealDays:10},
+  {from:'Miami',to:'Seattle',flag:'🇺🇸',dist:'3,300 mi',hrs:'47h',idealDays:14},
+  {from:'Chicago',to:'Los Angeles',flag:'🇺🇸',dist:'2,020 mi',hrs:'29h',idealDays:7},
+  {from:'London',to:'Paris',flag:'🇪🇺',dist:'290 mi',hrs:'3.5h',idealDays:1},
+  {from:'Tokyo',to:'Osaka',flag:'🇯🇵',dist:'330 mi',hrs:'5h',idealDays:2},
+];
+
+// Smart days suggestion based on distance
+// Distance lookup for major city pairs (miles)
+var DISTANCES = {
+  // USA East-West
+  'newyork-sanfrancisco':2900,'newyork-losangeles':2800,'newyork-seattle':2900,
+  'newyork-miami':1280,'newyork-chicago':790,'newyork-boston':215,
+  'newyork-lasvegas':2240,'newyork-denver':1770,'newyork-dallas':1550,
+  'newyork-houston':1630,'newyork-atlanta':880,'newyork-nashville':990,
+  // USA West
+  'losangeles-sanfrancisco':380,'losangeles-seattle':1140,'losangeles-lasvegas':270,
+  'losangeles-denver':1020,'losangeles-phoenix':370,'losangeles-portland':1090,
+  'sanfrancisco-seattle':810,'sanfrancisco-lasvegas':570,'sanfrancisco-portland':640,
+  'lasvegas-denver':750,'lasvegas-phoenix':290,'lasvegas-seattle':1130,
+  // USA Central
+  'chicago-losangeles':2020,'chicago-miami':1380,'chicago-seattle':2060,
+  'chicago-lasvegas':1750,'chicago-dallas':920,'chicago-denver':1000,
+  'chicago-nashville':476,'chicago-atlanta':720,'chicago-houston':1090,
+  'dallas-losangeles':1430,'dallas-lasvegas':1230,'dallas-denver':780,
+  'dallas-houston':239,'dallas-miami':1310,'dallas-atlanta':780,
+  // USA South
+  'atlanta-miami':663,'atlanta-lasvegas':1750,'atlanta-losangeles':2180,
+  'atlanta-chicago':720,'atlanta-dallas':780,'atlanta-houston':790,
+  'atlanta-nashville':250,'atlanta-charlotte':245,'atlanta-newyork':880,
+  'miami-losangeles':2740,'miami-chicago':1380,'miami-lasvegas':2570,
+  'miami-houston':1190,'miami-dallas':1310,'miami-atlanta':663,
+  'houston-lasvegas':1490,'houston-losangeles':1550,'houston-denver':1020,
+  // USA Northwest
+  'seattle-portland':174,'seattle-denver':1320,'seattle-chicago':2060,
+  'portland-sanfrancisco':640,'portland-lasvegas':1040,
+  // Europe
+  'london-edinburgh':414,'london-paris':290,'london-amsterdam':360,
+  'london-berlin':580,'london-rome':1160,'london-barcelona':1140,
+  'paris-amsterdam':320,'paris-berlin':660,'paris-rome':890,'paris-barcelona':830,
+  'barcelona-madrid':390,'madrid-lisbon':390,'rome-florence':170,'rome-milan':360,
+  'berlin-munich':360,'berlin-amsterdam':360,'berlin-prague':220,
+  'vienna-prague':190,'vienna-budapest':160,'vienna-zurich':490,
+  'amsterdam-brussels':120,'brussels-paris':190,
+  // Asia
+  'tokyo-osaka':250,'tokyo-kyoto':310,'osaka-kyoto':45,
+  'bangkok-chiangmai':700,'bangkok-phuket':530,'singapore-kualalumpur':215,
+  'mumbai-goa':370,'mumbai-delhi':900,'delhi-jaipur':170,'delhi-agra':130,
+  // Australia
+  'sydney-melbourne':540,'sydney-brisbane':570,'sydney-adelaide':870,
+  'melbourne-adelaide':450,'brisbane-goldcoast':65,
+  // Others
+  'dubai-abudhabi':95,'istanbul-ankara':280,'moscow-stpetersburg':440,
+  'toronto-montreal':335,'toronto-ottawa':280,'vancouver-seattle':140,
+  'capetown-johannesburg':870,'nairobi-cairo':2500,
+};
+
+function cleanCity(city){
+  return city.toLowerCase()
+    .replace(/\s+/g,'')
+    .replace('sanfrancisco','sanfrancisco')
+    .replace('losangeles','losangeles')
+    .replace('lasvegas','lasvegas')
+    .replace('newyork','newyork')
+    .replace('washingtondc','washington')
+    .replace('stlouis','stlouis')
+    .replace('stpetersburg','stpetersburg')
+    .replace('hochiminh','hochiminh')
+    .replace(/[^a-z]/g,'');
+}
+
+function getCityKey(city){
+  return cleanCity(city);
+}
+
+function estimateDays(fromCity, toCity){
+  var k1=getCityKey(fromCity)+'-'+getCityKey(toCity);
+  var k2=getCityKey(toCity)+'-'+getCityKey(fromCity);
+  var dist = DISTANCES[k1]||DISTANCES[k2]||null;
+  if(!dist){
+    // Smart estimation based on continent/region
+    var from = fromCity.toLowerCase();
+    var to = toCity.toLowerCase();
+    // Same country likely shorter
+    return 3; // safe default for unknown routes
+  }
+  if(dist < 150) return 1;
+  if(dist < 400) return 1;
+  if(dist < 700) return 2;
+  if(dist < 1100) return 3;
+  if(dist < 1600) return 5;
+  if(dist < 2300) return 7;
+  if(dist < 3000) return 10;
+  return 14;
+}
+
+function suggestDays(fromCity, toCity){
+  var match = POPULAR.find(function(r){
+    return (r.from.toLowerCase()===fromCity.toLowerCase()&&r.to.toLowerCase()===toCity.toLowerCase())||
+           (r.from.toLowerCase()===toCity.toLowerCase()&&r.to.toLowerCase()===fromCity.toLowerCase());
+  });
+  if(match) return match.idealDays;
+  return estimateDays(fromCity, toCity);
+}
+
+function updateDays(idealDays){
+  S.days = idealDays;
+
+  // Show days section
+  var sec = document.getElementById('days-section');
+  if(sec) sec.style.display='block';
+
+  // Update recommendation card
+  var recDays = document.getElementById('rec-days');
+  var recLabel = document.getElementById('rec-label');
+  var recReason = document.getElementById('rec-reason');
+
+  if(recDays) recDays.textContent = idealDays;
+
+  var tripType = idealDays===1?'day drive':idealDays<=3?'day trip':idealDays<=7?'day road trip':idealDays<=10?'day coast to coast':'day epic adventure';
+  if(recLabel) recLabel.textContent = tripType+' recommended';
+
+  var reason = '';
+  if(idealDays===1) reason = 'Short distance — easy single day drive with 1-2 great stops';
+  else if(idealDays===2) reason = 'Perfect weekend getaway — 2-3 stops to explore along the way';
+  else if(idealDays===3) reason = 'Comfortable pace — 3-5 stops with time to really explore each';
+  else if(idealDays===5) reason = 'Extended trip — enough time to discover hidden gems on the route';
+  else if(idealDays===7) reason = 'Full week road trip — see everything this route has to offer';
+  else if(idealDays===10) reason = 'Classic coast to coast — the quintessential American road trip';
+  else reason = 'Epic adventure — take your time and experience every stop deeply';
+  if(recReason) recReason.textContent = reason;
+
+  // Highlight matching chip
+  var chips = document.querySelectorAll('.day-chip');
+  var closest = null;
+  var minDiff = 999;
+  chips.forEach(function(d){
+    d.classList.remove('on');
+    var val = parseInt(d.getAttribute('data-days'));
+    var diff = Math.abs(val - idealDays);
+    if(diff < minDiff){minDiff=diff;closest=d;}
+  });
+  if(closest){
+    closest.classList.add('on');
+    S.days = parseInt(closest.getAttribute('data-days'));
+  }
+}
+
+function showToast(msg){
+  var existing = document.getElementById('route-toast');
+  if(existing) existing.remove();
+  var toast = document.createElement('div');
+  toast.id = 'route-toast';
+  toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,212,170,0.95);color:#000;font-size:12px;font-weight:700;padding:8px 16px;border-radius:20px;z-index:999;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(function(){if(toast.parentNode)toast.remove();}, 2500);
+}
+
+// Build popular
+(function(){
+  var el = document.getElementById('popular-scroll');
+  el.innerHTML = POPULAR.map(function(r){
+    return '<div class="pop-card" onclick="useRoute(\''+r.from+'\',\''+r.to+'\','+r.idealDays+')">' +
+      '<span class="pop-flag">'+r.flag+'</span>' +
+      '<div class="pop-route">'+r.from+' → '+r.to+'</div>' +
+      '<div class="pop-meta">'+r.dist+' · ~'+r.hrs+'</div>' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">'+
+        '<div class="pop-arrow">Explore stopovers →</div>'+
+        '<div style="font-size:10px;font-weight:700;color:rgba(0,212,170,0.6);background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.15);padding:2px 7px;border-radius:10px;">'+r.idealDays+'d ideal</div>'+
+      '</div>' +
+    '</div>';
+  }).join('');
+})();
+
+function useRoute(f,t,d){
+  document.getElementById('from-inp').value=f;
+  document.getElementById('to-inp').value=t;
+  S.from=f;S.to=t;
+  if(d) updateDays(d);
+  checkForm();
+  window.scrollTo(0,0);
+  setTimeout(go,200);
+}
+
+function showSug(inputId,sugId,val){
+  var box=document.getElementById(sugId);
+  if(val.length<2){box.style.display='none';return;}
+  var v=val.toLowerCase();
+  var starts=CITIES.filter(function(c){return c.toLowerCase().startsWith(v);});
+  var contains=CITIES.filter(function(c){return !c.toLowerCase().startsWith(v)&&c.toLowerCase().indexOf(v)!==-1;});
+  var m=starts.concat(contains).slice(0,8);
+  if(!m.length){box.style.display='none';return;}
+  box.innerHTML=m.map(function(c){
+    return '<div class="sug-item" onclick="setSug(\''+inputId+'\',\''+sugId+'\',\''+c+'\')">📍 '+c+'</div>';
+  }).join('');
+  box.style.display='block';
+}
+
+function setSug(iid,sid,city){
+  document.getElementById(iid).value=city;
+  document.getElementById(sid).style.display='none';
+  if(iid==='from-inp')S.from=city; else S.to=city;
+  checkForm();
+}
+
+function onFrom(){
+  S.from=document.getElementById('from-inp').value.trim();
+  showSug('from-inp','from-sug',S.from);
+  checkForm();
+}
+function onTo(){
+  S.to=document.getElementById('to-inp').value.trim();
+  showSug('to-inp','to-sug',S.to);
+  checkForm();
+}
+
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.search-input-wrap')){
+    document.getElementById('from-sug').style.display='none';
+    document.getElementById('to-sug').style.display='none';
+  }
+});
+
+function swapCities(){
+  var tmp=document.getElementById('from-inp').value;
+  document.getElementById('from-inp').value=document.getElementById('to-inp').value;
+  document.getElementById('to-inp').value=tmp;
+  S.from=document.getElementById('from-inp').value;
+  S.to=document.getElementById('to-inp').value;
+  checkForm();
+}
+
+function pickDay(el){
+  var chip=el.closest?el.closest('.day-chip'):el;
+  if(!chip||!chip.getAttribute('data-days')) chip=el;
+  var newDays = parseInt(chip.getAttribute('data-days'))||S.days;
+  updateDays(newDays);
+}
+
+function checkForm(){
+  var f=document.getElementById('from-inp').value.trim();
+  var t=document.getElementById('to-inp').value.trim();
+  S.from=f;S.to=t;
+  var btn=document.getElementById('find-btn');
+  if(f.length>1&&t.length>1){
+    btn.disabled=false;
+    btn.style.background='linear-gradient(135deg,var(--teal),var(--blue))';
+    btn.style.color='var(--white)';
+    btn.style.cursor='pointer';
+    // Auto-suggest ideal days based on route
+    var ideal=suggestDays(f,t);
+    updateDays(ideal);
+  } else {
+    btn.disabled=true;
+    btn.style.background='var(--bg4)';
+    btn.style.color='var(--text3)';
+  }
+}
+
+function go(){
+  // Always read latest values from inputs
+  S.from=document.getElementById('from-inp').value.trim();
+  S.to=document.getElementById('to-inp').value.trim();
+  if(!S.from||!S.to) return;
+  // API key check handled in result
+
+  document.getElementById('home').style.display='none';
+  document.getElementById('from-sug').style.display='none';
+  document.getElementById('to-sug').style.display='none';
+  document.getElementById('loading').style.display='block';
+  document.getElementById('results').style.display='none';
+  document.getElementById('l-sub').textContent='Finding the best stops between '+S.from+' and '+S.to;
+  window.scrollTo(0,0);
+
+  var steps=['ls1','ls2','ls3','ls4','ls5'];
+  var si=0;
+  var iv=setInterval(function(){
+    if(si>0){document.getElementById(steps[si-1]).classList.remove('active');document.getElementById(steps[si-1]).classList.add('done');}
+    if(si<steps.length){document.getElementById(steps[si]).classList.add('active');si++;}
+    else clearInterval(iv);
+  },1100);
+
+  var numStops;
+  if(S.days<=1) numStops='1-2';
+  else if(S.days<=2) numStops='2-3';
+  else if(S.days<=3) numStops='3-5';
+  else if(S.days<=5) numStops='5-7';
+  else if(S.days<=7) numStops='7-9';
+  else if(S.days<=10) numStops='10-12';
+  else numStops='12-15';
+  var prompt='You are an expert road trip planner with deep knowledge of routes worldwide.\n\n'+
+    'Route: '+S.from+' → '+S.to+'\nDays: '+S.days+'\n\n'+
+    'Generate a detailed stopover plan. Return ONLY valid JSON:\n'+
+    '{"totalDistance":"663 miles","totalDriveTime":"9.5 hours","bestSeason":"Oct-Apr","stops":['+
+    '{"name":"City","type":"start|stopover|end","emoji":"🏙️","country":"USA",'+
+    '"distanceFromPrev":"0 miles","driveTimeFromPrev":"0 hrs","recommendedStay":"3-4 hours",'+
+    '"totalCostPerPerson":45,'+
+    '"activities":[{"name":"Name","emoji":"🎭","cost":15,"duration":"1-2 hrs","description":"Brief compelling description"}],'+
+    '"insiderTip":"Genuinely useful local tip","bestFood":"Must try food or restaurant"}]}\n\n'+
+    'Include '+S.from+' as start, '+S.to+' as end, '+numStops+' stops as stopover type.\n'+
+    '3-4 activities per stop. Realistic costs. Genuinely useful insider tips.\n'+
+    'Return ONLY the JSON object.';
+
+  fetch('/api/route',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({prompt:prompt,max_tokens:Math.min(4000,1500+S.days*200)})
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    clearInterval(iv);
+    var txt=d.text||'';
+    var clean=txt.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
+    var s=clean.indexOf('{');var e=clean.lastIndexOf('}');
+    if(s!==-1&&e!==-1){showResults(JSON.parse(clean.substring(s,e+1)));}
+    else showErr();
+  })
+  .catch(function(){clearInterval(iv);showErr();});
+}
+
+function showResults(data){
+  document.getElementById('loading').style.display='none';
+  var el=document.getElementById('results');
+  el.style.display='block';
+  window.scrollTo(0,0);
+
+  var stops=data.stops||[];
+  var totalCost=stops.reduce(function(a,b){return a+(b.totalCostPerPerson||0);},0);
+
+  var html='';
+
+  // Route banner
+  html+='<div class="route-banner">'+
+    '<div class="rb-top">'+
+      '<div class="rb-route">'+S.from+' → '+S.to+'</div>'+
+      '<div class="rb-days">'+S.days+' day'+(S.days>1?'s':'')+'</div>'+
+    '</div>'+
+    '<div class="rb-stats">'+
+      '<div class="rb-stat"><span class="rb-stat-n">'+(data.totalDistance||'—')+'</span><span class="rb-stat-l">Distance</span></div>'+
+      '<div class="rb-stat"><span class="rb-stat-n">'+(data.totalDriveTime||'—')+'</span><span class="rb-stat-l">Drive time</span></div>'+
+      '<div class="rb-stat"><span class="rb-stat-n">'+stops.length+'</span><span class="rb-stat-l">Total stops</span></div>'+
+    '</div>'+
+  '</div>';
+
+  stops.forEach(function(stop,idx){
+    // Drive connector
+    if(idx>0&&stop.driveTimeFromPrev){
+      html+='<div class="drive-connector">'+
+        '<div class="dc-line"></div>'+
+        '<div class="dc-pill">🚗 '+stop.driveTimeFromPrev+(stop.distanceFromPrev?' · '+stop.distanceFromPrev:'')+'</div>'+
+        '<div class="dc-line"></div>'+
+      '</div>';
+    }
+
+    var cardClass=stop.type==='start'?'is-start':stop.type==='end'?'is-end':'is-stop';
+    var badgeClass=stop.type==='start'?'start':stop.type==='end'?'end':'stop';
+    var badgeTxt=stop.type==='start'?'📍 Start':stop.type==='end'?'🏁 Destination':'⛽ Stopover';
+
+    html+='<div class="stop-card '+cardClass+'">'+
+      '<div class="sc-header">'+
+        '<div class="sc-left">'+
+          '<div class="sc-emoji">'+(stop.emoji||'🏙️')+'</div>'+
+          '<div>'+
+            '<div class="sc-name">'+stop.name+'</div>'+
+            '<div class="sc-country">'+(stop.country||'')+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="sc-badge '+badgeClass+'">'+badgeTxt+'</div>'+
+      '</div>';
+
+    // Activities
+    if(stop.activities&&stop.activities.length){
+      html+='<div class="acts">';
+      stop.activities.forEach(function(a){
+        html+='<div class="act">'+
+          '<div class="act-ico">'+(a.emoji||'🎯')+'</div>'+
+          '<div class="act-body">'+
+            '<div class="act-name">'+a.name+'</div>'+
+            '<div class="act-desc">'+(a.description||'')+'</div>'+
+          '</div>'+
+          '<div class="act-right">'+
+            '<div class="act-cost">'+(a.cost>0?'$'+a.cost:'Free')+'</div>'+
+            '<div class="act-time">'+(a.duration||'1-2h')+'</div>'+
+          '</div>'+
+        '</div>';
+      });
+      html+='</div>';
+    }
+
+    // Tips
+    if(stop.insiderTip||stop.bestFood){
+      html+='<div class="tip-row">';
+      if(stop.insiderTip){
+        html+='<div class="tip-box">'+
+          '<div class="tip-label">💡 Insider</div>'+
+          '<div class="tip-text">'+stop.insiderTip+'</div>'+
+        '</div>';
+      }
+      if(stop.bestFood){
+        html+='<div class="tip-box food">'+
+          '<div class="tip-label">🍽️ Must eat</div>'+
+          '<div class="tip-text">'+stop.bestFood+'</div>'+
+        '</div>';
+      }
+      html+='</div>';
+    }
+
+    // Footer
+    html+='<div class="sc-footer">'+
+      '<div class="sc-stay">⏱ '+(stop.recommendedStay||'2-3 hours')+'</div>'+
+      '<div class="sc-cost">'+(stop.totalCostPerPerson>0?'~$'+stop.totalCostPerPerson+'/person':'Free stop')+'</div>'+
+    '</div>';
+
+    html+='</div>';
+  });
+
+  // Summary
+  html+='<div class="summary">'+
+    '<div class="sum-title">Trip Summary</div>'+
+    '<div class="sum-grid">'+
+      '<div class="sum-item"><span class="sum-n">'+stops.length+'</span><span class="sum-l">Stops</span></div>'+
+      '<div class="sum-item"><span class="sum-n">~$'+totalCost+'</span><span class="sum-l">Per person</span></div>'+
+      '<div class="sum-item"><span class="sum-n">'+(data.bestSeason||'Year round')+'</span><span class="sum-l">Best time</span></div>'+
+    '</div>'+
+    '<button class="share-btn" onclick="share()">📤 Share this route</button>'+
+    '<button class="back-btn" onclick="reset()">← Plan another route</button>'+
+  '</div>';
+
+  el.innerHTML=html;
+}
+
+function showErr(){
+  document.getElementById('loading').style.display='none';
+  var el=document.getElementById('results');
+  el.style.display='block';
+  el.innerHTML='<div style="background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;">'+
+    '<div style="font-size:52px;margin-bottom:20px;">😕</div>'+
+    '<div style="font-size:20px;font-weight:800;color:var(--white);margin-bottom:10px;">Could not generate route</div>'+
+    '<div style="font-size:14px;color:var(--text2);line-height:1.75;margin-bottom:24px;max-width:300px;">Something went wrong. Please try again.</div>'+
+    '<button class="back-btn" style="max-width:300px;width:100%;" onclick="reset()">← Try another route</button>'+
+  '</div>';
+}
+
+function reset(){
+  document.getElementById('results').style.display='none';
+  document.getElementById('loading').style.display='none';
+  document.getElementById('home').style.display='flex';
+  document.getElementById('from-sug').style.display='none';
+  document.getElementById('to-sug').style.display='none';
+  document.getElementById('from-inp').value='';
+  document.getElementById('to-inp').value='';
+  S.from='';S.to='';
+  document.getElementById('find-btn').disabled=true;
+  ['ls1','ls2','ls3','ls4','ls5'].forEach(function(id){
+    var el=document.getElementById(id);
+    el.classList.remove('active','done');
+  });
+  document.getElementById('ls1').classList.add('active');
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "stopover",
+  "version": "1.0.0",
+  "description": "AI Road Trip Planner — Discover the best stopovers between any two cities",
+  "engines": { "node": "20.x" }
+}
