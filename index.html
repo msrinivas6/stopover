@@ -401,17 +401,19 @@ function toggleSkip(idx){
   var msg=document.getElementById('skipped-msg-'+idx);
   var btn=document.getElementById('skip-btn-'+idx);
   if(!body||!msg||!btn) return;
-  
-  var isSkipped=_skipped[idx];
-  if(isSkipped){
-    // Unskip
+
+  // Read actual DOM state — don't rely on _skipped array
+  var currentlySkipped=(body.style.display==='none');
+
+  if(currentlySkipped){
+    // Unskip: show body, hide message
     _skipped[idx]=false;
     body.style.display='block';
     msg.style.display='none';
     btn.innerHTML='⏭ Skip';
     btn.classList.remove('skipped');
   } else {
-    // Skip
+    // Skip: hide body, show message
     _skipped[idx]=true;
     body.style.display='none';
     msg.style.display='block';
@@ -501,17 +503,49 @@ var CURRENCY_MAP = {
   'Switzerland':'CHF ','Iceland':'kr',
   'Sri Lanka':'Rs','Nepal':'₨','Pakistan':'Rs','Bangladesh':'৳',
   'Georgia':'₾','Armenia':'֏','Azerbaijan':'₼',
+  'Sri Lanka':'Rs','Nepal':'₨','Pakistan':'Rs','Bangladesh':'৳',
+  'Myanmar':'K','Cambodia':'$','Laos':'₭',
+  'Maldives':'Rf','Bhutan':'Nu',
+  'Oman':'OMR ','Bahrain':'BHD ','Jordan':'JOD ','Lebanon':'LBP ',
+  'Iraq':'IQD ','Iran':'IRR ',
+  'Kazakhstan':'₸','Uzbekistan':'UZS','Kyrgyzstan':'KGS',
+  'Tajikistan':'TJS','Turkmenistan':'TMT',
+  'Ukraine':'₴','Belarus':'Br','Moldova':'MDL',
+  'Albania':'ALL','North Macedonia':'MKD','Bosnia':'BAM',
+  'Montenegro':'€','Kosovo':'€','Slovenia':'€','Slovakia':'€','Estonia':'€',
+  'Latvia':'€','Lithuania':'€','Malta':'€','Cyprus':'€','Luxembourg':'€',
+  'Andorra':'€','Monaco':'€','San Marino':'€','Vatican':'€',
+  'Iceland':'kr','Liechtenstein':'CHF ',
+  'Tunisia':'TND ','Algeria':'DZD ','Libya':'LYD ',
+  'Sudan':'SDG ','Ghana':'GHS ','Senegal':'XOF ','Ivory Coast':'XOF ',
+  'Tanzania':'TZS ','Uganda':'UGX ','Rwanda':'RWF ','Ethiopia':'Br',
+  'Mozambique':'MZN ','Zimbabwe':'ZWL ','Zambia':'ZMW ','Botswana':'BWP ',
+  'Angola':'AOA ','Cameroon':'XAF ','DR Congo':'CDF ',
+  'Jamaica':'JMD ','Trinidad':'TTD ','Barbados':'BBD ',
+  'Dominican Republic':'DOP ','Haiti':'HTG ',
+  'Ecuador':'$','Bolivia':'BOB ','Paraguay':'PYG ','Venezuela':'VES ',
+  'Honduras':'HNL ','Nicaragua':'NIO ','El Salvador':'$',
+  'Belize':'BZD ','Suriname':'SRD ',
+  'Papua New Guinea':'PGK ','Fiji':'FJD ','Samoa':'WST ',
   'Cuba':'CUP$','Panama':'B/.','Costa Rica':'₡','Guatemala':'Q',
 };
 
 var IMPERIAL_COUNTRIES=['USA','United States','UK','United Kingdom','Great Britain','Myanmar','Liberia'];
 
 function getCurrency(stops){
-  // Try each stop's country starting from destination
+  // Use country field from AI response (most reliable)
+  // Try end city first, then any stopover
   var ordered=stops.slice().reverse();
   for(var i=0;i<ordered.length;i++){
     var c=(ordered[i].country||'').trim();
     if(c&&CURRENCY_MAP[c]) return CURRENCY_MAP[c];
+  }
+  // Fallback: use destination city name lookup
+  var destCurr=CITY_CURRENCY[S.to];
+  if(destCurr){
+    // Extract symbol from "USD ($)" -> "$"
+    var m=destCurr.match(/\(([^)]+)\)/);
+    return m?m[1]:destCurr;
   }
   return '$';
 }
@@ -521,7 +555,8 @@ function isMetric(stops){
     var c=(stops[i].country||'').trim();
     if(c) return IMPERIAL_COUNTRIES.indexOf(c)===-1;
   }
-  return true;
+  // Fallback: check destination city
+  return !S.to.match(/Atlanta|Miami|New York|Los Angeles|Chicago|San Francisco|Boston|Seattle|Dallas|Houston|Denver|Las Vegas|Orlando|Washington|Nashville|Austin|Portland|Minneapolis|Phoenix|San Diego|Philadelphia|New Orleans|Tampa|Detroit|Sacramento|Kansas City|Pittsburgh|Honolulu|Anchorage|St Louis|Salt Lake City|Boise|Richmond|Savannah|Charleston|Raleigh|Charlotte|Memphis|Baltimore|Louisville|Milwaukee|Albuquerque|Tucson|Cincinnati|San Antonio|London|Edinburgh|Manchester|Birmingham|Glasgow|Liverpool|Cardiff/);
 }
 
 function fmtCost(amount, symbol){
@@ -1183,14 +1218,17 @@ function showResults(data){
     html+='</div>';
   });
 
+  // Detect currency & metric FIRST before rendering
+  _currencySymbol=getCurrency(stops);
+  _isMetric=isMetric(stops);
+  _exchangeRate=USD_RATES[_currencySymbol.trim()]||USD_RATES[_currencySymbol]||1;
+  console.log('Currency:',_currencySymbol,'Rate:',_exchangeRate,'Metric:',_isMetric);
+
   // Store stops globally for recalc
   _stopsData=stops;
   _skipped=new Array(stops.length).fill(false);
   _skipped[0]=true; // Auto-skip start city
   _bestSeason=data.bestSeason||'Year round';
-  _currencySymbol=getCurrency(stops);
-  _isMetric=isMetric(stops);
-  _exchangeRate=USD_RATES[_currencySymbol]||1;
 
   // Summary
   html+='<div class="summary" id="trip-summary">'+
