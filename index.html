@@ -4,6 +4,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<meta name="color-scheme" content="dark"/>
 <title>Stopover — Discover What's Between</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
@@ -37,7 +38,7 @@
   --shadow:0 4px 20px rgba(0,0,0,0.4);
   --shadow-lg:0 8px 40px rgba(0,0,0,0.6);
 }
-html{scroll-behavior:smooth;}
+html{scroll-behavior:smooth;color-scheme:dark;}
 body{font-family:var(--sans);background:var(--bg) !important;color:var(--text);min-height:100vh;-webkit-tap-highlight-color:transparent;overflow-x:hidden;}
 html{overflow-x:hidden;}
 *{max-width:100%;box-sizing:border-box;}
@@ -70,9 +71,10 @@ html{overflow-x:hidden;}
 .search-dot.to{background:var(–amber);}
 .search-vline{width:1.5px;height:16px;background:var(–border2);margin:2px 4px;}
 .search-input-wrap{flex:1;position:relative;}
-.search-input{width:100%;background:var(–bg3);border:1.5px solid var(–border);border-radius:var(–r-sm);padding:11px 12px;font-family:var(–sans);font-size:14px;font-weight:600;color:var(–white);outline:none;transition:all 0.2s;min-width:0;}
+.search-input{width:100%;background:var(–bg3);border:1.5px solid var(–border);border-radius:var(–r-sm);padding:11px 12px;font-family:var(–sans);font-size:14px;font-weight:600;color:var(–white);outline:none;transition:all 0.2s;min-width:0;-webkit-appearance:none;-webkit-text-fill-color:var(–white);color-scheme:dark;}
 .search-input:focus{border-color:var(–teal);background:var(–bg4);box-shadow:0 0 0 3px var(–teal-glow);}
-.search-input::placeholder{color:var(–text3);font-weight:500;}
+.search-input::placeholder{color:var(–text3);font-weight:500;opacity:1;}
+.search-input::-webkit-input-placeholder{color:var(–text3);font-weight:500;}
 .swap-btn{background:var(–bg3);border:1px solid var(–border);border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(–text2);flex-shrink:0;transition:all 0.2s;}
 .swap-btn:hover{border-color:var(–teal);color:var(–teal);}
 
@@ -243,7 +245,7 @@ html{overflow-x:hidden;}
       <div class="search-vline"></div>
     </div>
     <div class="search-input-wrap">
-      <input type="text" class="search-input" id="from-inp" placeholder="From — e.g. Atlanta" oninput="onFrom()" onfocus="onFromFocus()" onblur="setTimeout(function(){S.from=document.getElementById('from-inp').value.trim();checkForm();document.getElementById('from-sug').style.display='none';},200);" autocomplete="off"/>
+      <input type="text" class="search-input" id="from-inp" placeholder="From — e.g. Atlanta" oninput="onFrom()" onfocus="onFromFocus()" onblur="S.from=document.getElementById('from-inp').value.trim();checkForm();" autocomplete="off"/>
       <div class="suggestions" id="from-sug" style="display:none;"></div>
     </div>
     <button class="swap-btn" onclick="swapCities()">⇅</button>
@@ -253,7 +255,7 @@ html{overflow-x:hidden;}
   <div class="search-row" style="margin-bottom:16px;">
     <div class="search-dot to"></div>
     <div class="search-input-wrap">
-      <input type="text" class="search-input" id="to-inp" placeholder="To — e.g. Miami" oninput="onTo()" onfocus="onToFocus()" onblur="setTimeout(function(){S.to=document.getElementById('to-inp').value.trim();checkForm();document.getElementById('to-sug').style.display='none';},200);" autocomplete="off"/>
+      <input type="text" class="search-input" id="to-inp" placeholder="To — e.g. Miami" oninput="onTo()" onfocus="onToFocus()" onblur="S.to=document.getElementById('to-inp').value.trim();checkForm();" autocomplete="off"/>
       <div class="suggestions" id="to-sug" style="display:none;"></div>
     </div>
     <div style="width:36px;"></div>
@@ -547,6 +549,8 @@ function useRoute(f,t,d){
   setTimeout(go,200);
 }
 
+var _sugLock=false;
+
 function showSug(inputId,sugId,val){
   var box=document.getElementById(sugId);
   if(!val||val.length<2){box.style.display='none';return;}
@@ -555,9 +559,30 @@ function showSug(inputId,sugId,val){
   var contains=CITIES.filter(function(c){return !c.toLowerCase().startsWith(v)&&c.toLowerCase().indexOf(v)!==-1;});
   var m=starts.concat(contains).slice(0,8);
   if(!m.length){box.style.display='none';return;}
-  box.innerHTML=m.map(function(c){
-    return '<div class="sug-item" onmousedown="event.preventDefault();setSug(\''+inputId+'\',\''+sugId+'\',\''+c+'\')" ontouchstart="event.preventDefault();setSug(\''+inputId+'\',\''+sugId+'\',\''+c+'\')">📍 '+c+'</div>';
-  }).join('');
+  box.innerHTML='';
+  m.forEach(function(c){
+    var div=document.createElement('div');
+    div.className='sug-item';
+    div.textContent='📍 '+c;
+    div.addEventListener('touchend',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      _sugLock=true;
+      document.getElementById(inputId).value=c;
+      box.style.display='none';
+      if(inputId==='from-inp') S.from=c; else S.to=c;
+      checkForm();
+      setTimeout(function(){_sugLock=false;},300);
+    });
+    div.addEventListener('mousedown',function(e){
+      e.preventDefault();
+      document.getElementById(inputId).value=c;
+      box.style.display='none';
+      if(inputId==='from-inp') S.from=c; else S.to=c;
+      checkForm();
+    });
+    box.appendChild(div);
+  });
   box.style.display='block';
   box.style.zIndex='9999';
 }
@@ -588,6 +613,13 @@ function onToFocus(){
   if(S.to.length>=2) showSug('to-inp','to-sug',S.to);
 }
 
+document.addEventListener('touchstart',function(e){
+  if(_sugLock) return;
+  if(!e.target.closest('.suggestions')&&!e.target.closest('.search-input-wrap')){
+    document.getElementById('from-sug').style.display='none';
+    document.getElementById('to-sug').style.display='none';
+  }
+},{passive:true});
 document.addEventListener('click',function(e){
   if(!e.target.closest('.search-input-wrap')){
     document.getElementById('from-sug').style.display='none';
