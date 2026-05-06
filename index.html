@@ -365,6 +365,7 @@ var S = {from:'', to:'', days:2, vibes:[]};
 var _stopsData=[];
 var _skipped=[];
 var _bestSeason='Year round';
+var _currencySymbol='$';
 
 function toggleSkip(idx){
   var body=document.getElementById('stop-body-'+idx);
@@ -401,7 +402,7 @@ function recalcSummary(){
   var sumStops=document.getElementById('sum-stops');
   var sumCost=document.getElementById('sum-cost');
   if(sumStops) sumStops.textContent=activeStops;
-  if(sumCost) sumCost.textContent='~$'+totalCost;
+  if(sumCost) sumCost.textContent='~'+_currencySymbol+totalCost;
 }
 
 function recalcDriveConnectors(){
@@ -445,6 +446,44 @@ function toggleVibe(el){
   } else {
     S.vibes = S.vibes.filter(function(v){return v!==vibe;});
   }
+}
+
+// Currency by country
+var CURRENCY_MAP = {
+  'USA':'$','Canada':'CA$','Mexico':'MX$',
+  'UK':'£','Ireland':'€','Australia':'A$','New Zealand':'NZ$',
+  'Japan':'¥','China':'¥','South Korea':'₩','India':'₹',
+  'Thailand':'฿','Indonesia':'Rp','Vietnam':'₫','Philippines':'₱',
+  'Singapore':'S$','Malaysia':'RM','Hong Kong':'HK$','Macau':'MOP$',
+  'UAE':'AED ','Saudi Arabia':'SAR ','Qatar':'QAR ','Kuwait':'KWD ',
+  'Israel':'₪','Turkey':'₺','Russia':'₽',
+  'Brazil':'R$','Argentina':'AR$','Chile':'CLP$','Colombia':'COP$',
+  'Peru':'S/.','Uruguay':'$U',
+  'South Africa':'R','Kenya':'KSh','Nigeria':'₦','Egypt':'EGP ',
+  'Morocco':'MAD ','Ethiopia':'Br',
+  'France':'€','Germany':'€','Italy':'€','Spain':'€','Portugal':'€',
+  'Netherlands':'€','Belgium':'€','Austria':'€','Greece':'€',
+  'Czech Republic':'Kč','Poland':'zł','Hungary':'Ft','Romania':'lei',
+  'Croatia':'€','Serbia':'din','Bulgaria':'лв',
+  'Sweden':'kr','Norway':'kr','Denmark':'kr','Finland':'€',
+  'Switzerland':'CHF ','Iceland':'kr',
+  'Sri Lanka':'Rs','Nepal':'₨','Pakistan':'Rs','Bangladesh':'৳',
+  'Georgia':'₾','Armenia':'֏','Azerbaijan':'₼',
+  'Cuba':'CUP$','Panama':'B/.','Costa Rica':'₡','Guatemala':'Q',
+};
+
+function getCurrency(stops){
+  // Use the first stopover or end city country to determine currency
+  for(var i=0;i<stops.length;i++){
+    var c=stops[i].country||'';
+    if(CURRENCY_MAP[c]) return CURRENCY_MAP[c];
+  }
+  return '$';
+}
+
+function fmtCost(amount, symbol){
+  if(!amount || amount<=0) return 'Free';
+  return symbol+amount;
 }
 
 var CITIES = ['Atlanta','Miami','Los Angeles','San Francisco','New York','Boston','Chicago','Nashville','Dallas','Houston','Seattle','Denver','Phoenix','Las Vegas','Orlando','Washington DC','Philadelphia','Portland','Austin','Minneapolis','San Diego','San Antonio','Sacramento','Kansas City','New Orleans','Tampa','Pittsburgh','Cincinnati','Salt Lake City','Boise','Richmond','Savannah','Charleston','Raleigh','Charlotte','Memphis','Detroit','Baltimore','Louisville','Milwaukee','Albuquerque','Tucson','Honolulu','St Louis','Anchorage','Toronto','Vancouver','Montreal','Calgary','Ottawa','Quebec City','London','Edinburgh','Manchester','Birmingham','Glasgow','Liverpool','Dublin','Cardiff','Paris','Amsterdam','Berlin','Rome','Barcelona','Madrid','Lisbon','Prague','Vienna','Budapest','Warsaw','Stockholm','Copenhagen','Oslo','Helsinki','Athens','Zurich','Geneva','Brussels','Milan','Florence','Venice','Naples','Munich','Hamburg','Frankfurt','Cologne','Dubrovnik','Split','Krakow','Bratislava','Bucharest','Sofia','Belgrade','Zagreb','Dubai','Abu Dhabi','Riyadh','Doha','Kuwait City','Muscat','Amman','Beirut','Tel Aviv','Jerusalem','Tokyo','Osaka','Kyoto','Seoul','Busan','Beijing','Shanghai','Hong Kong','Macau','Singapore','Kuala Lumpur','Bangkok','Chiang Mai','Phuket','Bali','Jakarta','Hanoi','Ho Chi Minh City','Siem Reap','Phnom Penh','Yangon','Colombo','Kathmandu','Mumbai','Delhi','Bangalore','Chennai','Kolkata','Hyderabad','Jaipur','Goa','Agra','Karachi','Lahore','Islamabad','Dhaka','Cape Town','Johannesburg','Durban','Nairobi','Cairo','Casablanca','Marrakech','Tunis','Accra','Lagos','Addis Ababa','Dar es Salaam','Sydney','Melbourne','Brisbane','Perth','Adelaide','Canberra','Gold Coast','Auckland','Wellington','Christchurch','Queenstown','Mexico City','Cancun','Guadalajara','Monterrey','Buenos Aires','Bogota','Lima','Santiago','Sao Paulo','Rio de Janeiro','Brasilia','Montevideo','Havana','Panama City','San Jose','Guatemala City','Nassau','Kingston','Santo Domingo','San Juan','Moscow','St Petersburg','Istanbul','Ankara','Almaty','Tbilisi','Baku','Yerevan'];
@@ -816,12 +855,12 @@ function go(){
     '{"totalDistance":"663 miles","totalDriveTime":"9.5 hours","bestSeason":"Oct-Apr","stops":['+
     '{"name":"City","type":"start|stopover|end","emoji":"🏙️","country":"USA",'+
     '"distanceFromPrev":"0 miles","driveTimeFromPrev":"0 hrs","recommendedStay":"3-4 hours",'+
-    '"totalCostPerPerson":45,'+
+    '"totalCostPerPerson":45,"currency":"USD",'+
     '"activities":[{"name":"Name","emoji":"🎭","cost":15,"duration":"1-2 hrs","description":"Brief compelling description"}],'+
     '"insiderTip":"Genuinely useful local tip","bestFood":"Must try food or restaurant","bestStartTime":"e.g. Depart by 7AM","overnightStop":true,"suggestedStay":{"type":"Hotel","name":"Example Inn","pricePerNight":120,"bookingTip":"Book early, stay near the town center"}}]}\n\n'+
     'Include '+S.from+' as start, '+S.to+' as end, '+numStops+' stops as stopover type.\n'+
     (S.days>1?'For multi-day trips, mark overnight stops with overnightStop:true and include suggestedStay. NEVER mark the start or end city as overnightStop — only mark intermediate stopovers. Include type (Hotel/Motel/Airbnb/Hostel/Campground), a real well-known property name, pricePerNight in USD, and bookingTip. Distribute nights logically across days.\n':'')+
-    '3-4 activities per stop. Realistic costs. Genuinely useful insider tips.\n'+
+    '3-4 activities per stop. Use realistic LOCAL currency costs (e.g. AUD for Australia, EUR for Europe, JPY for Japan). Genuinely useful insider tips.\n'+
     'Return ONLY the JSON object.';
 
   fetch('/api/route',{
@@ -918,6 +957,9 @@ function showResults(data){
       '</div>';
 
     html+='<div id="'+stopId+'" style="'+(isStart?'display:none':'')+'">';
+    if(isStart){
+      html+='<div style="background:rgba(255,124,42,0.06);border:1px dashed rgba(255,124,42,0.2);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:12px;color:var(--text2);line-height:1.6;">'+'🚀 <strong>Your journey starts here.</strong> Tap Skip above if you live here, or explore what to see before you leave.'+'</div>';
+    }
 
     // Activities
     if(stop.activities&&stop.activities.length){
@@ -930,7 +972,7 @@ function showResults(data){
             '<div class="act-desc">'+(a.description||'')+'</div>'+
           '</div>'+
           '<div class="act-right">'+
-            '<div class="act-cost">'+(a.cost>0?'$'+a.cost:'Free')+'</div>'+
+            '<div class="act-cost">'+(a.cost>0?_currencySymbol+a.cost:'Free')+'</div>'+
             '<div class="act-time">'+(a.duration||'1-2h')+'</div>'+
           '</div>'+
         '</div>';
@@ -955,10 +997,10 @@ function showResults(data){
       }
       html+='</div>';
     }
-    if(stop.bestStartTime){
+    if(stop.bestStartTime && stop.type!=='end'){
       html+='<div class="tip-row">'+
         '<div class="tip-box" style="width:100%;background:rgba(0,153,204,0.06);border-color:rgba(0,153,204,0.18);">'+
-          '<div class="tip-label">🕐 Best start time</div>'+
+          '<div class="tip-label">'+(stop.type==='start'?'🕐 Departure time':'🕐 Best start time')+'</div>'+
           '<div class="tip-text">'+stop.bestStartTime+'</div>'+
         '</div>'+
       '</div>';
@@ -974,7 +1016,7 @@ function showResults(data){
           '<div class="stay-label">🌙 Stay the night</div>'+
           '<div class="stay-name">'+(st.name||'Local accommodation')+'</div>'+
           '<div class="stay-type">'+(st.type||'Hotel')+'</div>'+
-          (st.pricePerNight?'<div class="stay-price">~$'+st.pricePerNight+' / night</div>':'')+
+          (st.pricePerNight?'<div class="stay-price">~'+_currencySymbol+st.pricePerNight+' / night</div>':'')+
           (st.bookingTip?'<div class="stay-tip">💡 '+st.bookingTip+'</div>':'')+
         '</div>'+
       '</div>';
@@ -990,11 +1032,13 @@ function showResults(data){
       '</div>'+
     '</div>';
 
-    // Footer
-    html+='<div class="sc-footer">'+
-      '<div class="sc-stay">⏱ '+(stop.recommendedStay||'2-3 hours')+'</div>'+
-      '<div class="sc-cost">'+(stop.totalCostPerPerson>0?'~$'+stop.totalCostPerPerson+'/person':'Free stop')+'</div>'+
-    '</div>';
+    // Footer - only show for non-start stops
+    if(stop.type!=='start'){
+      html+='<div class="sc-footer">'+
+        '<div class="sc-stay">⏱ '+(stop.recommendedStay||'2-3 hours')+'</div>'+
+        '<div class="sc-cost">'+(stop.totalCostPerPerson>0?'~'+_currencySymbol+stop.totalCostPerPerson+'/person':'Free stop')+'</div>'+
+      '</div>';
+    }
 
     html+='</div>';
   });
@@ -1003,6 +1047,11 @@ function showResults(data){
   _stopsData=stops;
   _skipped=_stopsData.map(function(s){return s.type==='start';});
   _bestSeason=data.bestSeason||'Year round';
+  _currencySymbol=data.currency?(CURRENCY_MAP[stops.find(function(s){return s.type!=='start';})||'']||getCurrency(stops)):getCurrency(stops);
+  // Use currency from first stop that has it
+  var currStop=stops.find(function(s){return s.currency;});
+  if(currStop&&CURRENCY_MAP[currStop.country]) _currencySymbol=CURRENCY_MAP[currStop.country];
+  else _currencySymbol=getCurrency(stops);
 
   // Summary
   html+='<div class="summary" id="trip-summary">'+
