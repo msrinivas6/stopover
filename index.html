@@ -1033,7 +1033,7 @@ function go(){
     '"totalCostPerPerson":500,'+
     '"activities":[{"name":"Name","emoji":"🎭","cost":150,"duration":"1-2 hrs","description":"Brief compelling description"}],'+
     '"insiderTip":"Genuinely useful local tip","bestFood":"Must try food or restaurant","bestStartTime":"e.g. Depart by 7AM","overnightStop":true,"suggestedStay":{"type":"Hotel","name":"Example Inn","pricePerNight":3000,"bookingTip":"Book early, stay near the town center"}}]}\n\n'+
-    'Include '+S.from+' as start, '+S.to+' as end, '+numStops+' stops as stopover type.\n'+
+    'Include '+S.from+' as start (with 3-4 activities — travellers may want to explore before leaving), '+S.to+' as end, '+numStops+' stops as stopover type.\n'+
     (S.days>1?'For multi-day trips, mark overnight stops with overnightStop:true and include suggestedStay with realistic LOCAL prices in '+destCurrency+'. NEVER mark start or end city as overnightStop.\n':'')+
     '3-4 activities per stop with realistic local prices in '+destCurrency+'. Genuinely useful insider tips.\n'+
     'Return ONLY the JSON object.';
@@ -1125,13 +1125,12 @@ function showResults(data){
         '</div>'+
         '<div style="display:flex;align-items:center;gap:6px;">'+
           '<div class="sc-badge '+badgeClass+'">'+badgeTxt+'</div>'+
-          '<button class="skip-btn'+(isStart?' skipped':'')+'" id="'+skipId+'" onclick="toggleSkip('+idx+')">'+
-            (isStart?'⏭ Skipped':'⏭ Skip')+
+          '<button class="skip-btn" id="'+skipId+'" onclick="toggleSkip('+idx+')">⏭ Skip'+
           '</button>'+
         '</div>'+
       '</div>';
 
-    html+='<div id="'+stopId+'" style="display:'+(isStart?'none':'block')+'">';
+    html+='<div id="'+stopId+'" style="display:block">';  // Always show body initially
     if(isStart){
       html+='<div style="background:rgba(255,124,42,0.06);border:1px dashed rgba(255,124,42,0.2);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:12px;color:var(--text2);line-height:1.6;">'+'🚀 <strong>Your journey starts here.</strong> Tap Skip above if you live here, or explore what to see before you leave.'+'</div>';
     }
@@ -1200,7 +1199,7 @@ function showResults(data){
     html+='</div>'; // end stop-body
 
     // Skipped placeholder (shown when skipped)
-    html+='<div id="skipped-msg-'+idx+'" style="display:'+(isStart?'block':'none')+'">'+
+    html+='<div id="skipped-msg-'+idx+'" style="display:none">'+
       '<div class="skipped-body">'+
         '<span style="font-size:20px;">⏭️</span>'+
         '<span class="skipped-txt">Just passing through — no activities planned here</span>'+
@@ -1226,8 +1225,7 @@ function showResults(data){
 
   // Store stops globally for recalc
   _stopsData=stops;
-  _skipped=new Array(stops.length).fill(false);
-  _skipped[0]=true; // Auto-skip start city
+  _skipped=new Array(stops.length).fill(false); // All stops unskipped by default
   _bestSeason=data.bestSeason||'Year round';
 
   // Summary
