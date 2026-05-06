@@ -372,19 +372,22 @@ function toggleSkip(idx){
   var body=document.getElementById('stop-body-'+idx);
   var msg=document.getElementById('skipped-msg-'+idx);
   var btn=document.getElementById('skip-btn-'+idx);
+  if(!body||!msg||!btn) return;
+  
   var isSkipped=_skipped[idx];
-
   if(isSkipped){
+    // Unskip
     _skipped[idx]=false;
-    body.style.display='';
+    body.style.display='block';
     msg.style.display='none';
-    btn.textContent='⏭ Skip';
+    btn.innerHTML='⏭ Skip';
     btn.classList.remove('skipped');
   } else {
+    // Skip
     _skipped[idx]=true;
     body.style.display='none';
-    msg.style.display='';
-    btn.textContent='⏭ Skipped';
+    msg.style.display='block';
+    btn.innerHTML='⏭ Skipped';
     btn.classList.add('skipped');
   }
   recalcSummary();
@@ -473,27 +476,24 @@ var CURRENCY_MAP = {
   'Cuba':'CUP$','Panama':'B/.','Costa Rica':'₡','Guatemala':'Q',
 };
 
-// Metric countries (everyone except USA, UK, Myanmar, Liberia)
-var IMPERIAL_COUNTRIES=['USA','United States','Liberia','Myanmar'];
+var IMPERIAL_COUNTRIES=['USA','United States','UK','United Kingdom','Great Britain','Myanmar','Liberia'];
 
 function getCurrency(stops){
-  // Use the destination (end) city country
-  var endStop=stops.slice().reverse().find(function(s){return s.type==='end';});
-  if(endStop&&CURRENCY_MAP[endStop.country]) return CURRENCY_MAP[endStop.country];
-  // Fallback: first non-start stop
-  for(var i=0;i<stops.length;i++){
-    if(stops[i].type!=='start'){
-      var c=stops[i].country||'';
-      if(CURRENCY_MAP[c]) return CURRENCY_MAP[c];
-    }
+  // Try each stop's country starting from destination
+  var ordered=stops.slice().reverse();
+  for(var i=0;i<ordered.length;i++){
+    var c=(ordered[i].country||'').trim();
+    if(c&&CURRENCY_MAP[c]) return CURRENCY_MAP[c];
   }
   return '$';
 }
 
 function isMetric(stops){
-  var endStop=stops.slice().reverse().find(function(s){return s.type==='end';});
-  var country=(endStop&&endStop.country)||'';
-  return IMPERIAL_COUNTRIES.indexOf(country)===-1;
+  for(var i=0;i<stops.length;i++){
+    var c=(stops[i].country||'').trim();
+    if(c) return IMPERIAL_COUNTRIES.indexOf(c)===-1;
+  }
+  return true;
 }
 
 function fmtCost(amount, symbol){
@@ -971,7 +971,7 @@ function showResults(data){
         '</div>'+
       '</div>';
 
-    html+='<div id="'+stopId+'" style="'+(isStart?'display:none':'')+'">';
+    html+='<div id="'+stopId+'" style="display:'+(isStart?'none':'block')+'">';
     if(isStart){
       html+='<div style="background:rgba(255,124,42,0.06);border:1px dashed rgba(255,124,42,0.2);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:12px;color:var(--text2);line-height:1.6;">'+'🚀 <strong>Your journey starts here.</strong> Tap Skip above if you live here, or explore what to see before you leave.'+'</div>';
     }
@@ -1040,7 +1040,7 @@ function showResults(data){
     html+='</div>'; // end stop-body
 
     // Skipped placeholder (shown when skipped)
-    html+='<div id="skipped-msg-'+idx+'" style="'+(isStart?'':'display:none')+'">'+
+    html+='<div id="skipped-msg-'+idx+'" style="display:'+(isStart?'block':'none')+'">'+
       '<div class="skipped-body">'+
         '<span style="font-size:20px;">⏭️</span>'+
         '<span class="skipped-txt">Just passing through — no activities planned here</span>'+
@@ -1063,11 +1063,7 @@ function showResults(data){
   _skipped=new Array(stops.length).fill(false);
   _skipped[0]=true; // Auto-skip start city
   _bestSeason=data.bestSeason||'Year round';
-  _currencySymbol=data.currency?(CURRENCY_MAP[stops.find(function(s){return s.type!=='start';})||'']||getCurrency(stops)):getCurrency(stops);
-  // Use currency from first stop that has it
-  var currStop=stops.find(function(s){return s.currency;});
-  if(currStop&&CURRENCY_MAP[currStop.country]) _currencySymbol=CURRENCY_MAP[currStop.country];
-  else _currencySymbol=getCurrency(stops);
+  _currencySymbol=getCurrency(stops);
   _isMetric=isMetric(stops);
 
   // Summary
