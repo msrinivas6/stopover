@@ -864,18 +864,115 @@ function go(){
     vibeInstructions = '\n\nROUTE VIBE (CRITICAL - must follow):\n'+vibeDescs.map(function(d,i){return (i+1)+'. '+d;}).join('\n')+'\n\nDo NOT pick the fastest route. Pick the route and stops that best match these vibes. Specifically detour through iconic locations that match the vibe even if slightly longer.';
   }
 
+  // City -> currency name & symbol lookup for prompt injection
+  var CITY_CURRENCY = {
+    // USA
+    'Atlanta':'USD ($)','Miami':'USD ($)','New York':'USD ($)','Los Angeles':'USD ($)',
+    'Chicago':'USD ($)','San Francisco':'USD ($)','Boston':'USD ($)','Seattle':'USD ($)',
+    'Dallas':'USD ($)','Houston':'USD ($)','Denver':'USD ($)','Las Vegas':'USD ($)',
+    'Orlando':'USD ($)','Washington DC':'USD ($)','Nashville':'USD ($)','Austin':'USD ($)',
+    'Portland':'USD ($)','Minneapolis':'USD ($)','Phoenix':'USD ($)','San Diego':'USD ($)',
+    'Philadelphia':'USD ($)','New Orleans':'USD ($)','Tampa':'USD ($)','Detroit':'USD ($)',
+    'Sacramento':'USD ($)','Kansas City':'USD ($)','Pittsburgh':'USD ($)','Honolulu':'USD ($)',
+    'Anchorage':'USD ($)','St Louis':'USD ($)','Salt Lake City':'USD ($)','Boise':'USD ($)',
+    'Richmond':'USD ($)','Savannah':'USD ($)','Charleston':'USD ($)','Raleigh':'USD ($)',
+    'Charlotte':'USD ($)','Memphis':'USD ($)','Baltimore':'USD ($)','Louisville':'USD ($)',
+    'Milwaukee':'USD ($)','Albuquerque':'USD ($)','Tucson':'USD ($)','Cincinnati':'USD ($)',
+    'San Antonio':'USD ($)',
+    // Canada
+    'Toronto':'CAD (CA$)','Vancouver':'CAD (CA$)','Montreal':'CAD (CA$)',
+    'Calgary':'CAD (CA$)','Ottawa':'CAD (CA$)','Quebec City':'CAD (CA$)',
+    // UK
+    'London':'GBP (£)','Edinburgh':'GBP (£)','Manchester':'GBP (£)',
+    'Birmingham':'GBP (£)','Glasgow':'GBP (£)','Liverpool':'GBP (£)','Cardiff':'GBP (£)',
+    // Ireland
+    'Dublin':'EUR (€)',
+    // Europe
+    'Paris':'EUR (€)','Amsterdam':'EUR (€)','Berlin':'EUR (€)','Rome':'EUR (€)',
+    'Barcelona':'EUR (€)','Madrid':'EUR (€)','Lisbon':'EUR (€)','Vienna':'EUR (€)',
+    'Brussels':'EUR (€)','Milan':'EUR (€)','Florence':'EUR (€)','Venice':'EUR (€)',
+    'Naples':'EUR (€)','Munich':'EUR (€)','Hamburg':'EUR (€)','Frankfurt':'EUR (€)',
+    'Cologne':'EUR (€)','Athens':'EUR (€)','Helsinki':'EUR (€)','Dublin':'EUR (€)',
+    'Dubrovnik':'EUR (€)','Split':'EUR (€)','Zagreb':'EUR (€)',
+    // Non-euro Europe
+    'Prague':'CZK (Kč)','Warsaw':'PLN (zł)','Budapest':'HUF (Ft)',
+    'Bucharest':'RON (lei)','Sofia':'BGN (лв)','Belgrade':'RSD (din)',
+    'Krakow':'PLN (zł)','Bratislava':'EUR (€)',
+    'Stockholm':'SEK (kr)','Copenhagen':'DKK (kr)','Oslo':'NOK (kr)',
+    'Zurich':'CHF','Geneva':'CHF','Reykjavik':'ISK (kr)',
+    // Australia
+    'Sydney':'AUD (A$)','Melbourne':'AUD (A$)','Brisbane':'AUD (A$)',
+    'Perth':'AUD (A$)','Adelaide':'AUD (A$)','Canberra':'AUD (A$)',
+    'Gold Coast':'AUD (A$)',
+    // New Zealand
+    'Auckland':'NZD (NZ$)','Wellington':'NZD (NZ$)','Christchurch':'NZD (NZ$)',
+    'Queenstown':'NZD (NZ$)',
+    // Japan
+    'Tokyo':'JPY (¥)','Osaka':'JPY (¥)','Kyoto':'JPY (¥)',
+    // South Korea
+    'Seoul':'KRW (₩)','Busan':'KRW (₩)',
+    // China
+    'Beijing':'CNY (¥)','Shanghai':'CNY (¥)',
+    // Hong Kong / Macau
+    'Hong Kong':'HKD (HK$)','Macau':'MOP (MOP$)',
+    // India
+    'Mumbai':'INR (₹)','Delhi':'INR (₹)','Bangalore':'INR (₹)',
+    'Chennai':'INR (₹)','Kolkata':'INR (₹)','Hyderabad':'INR (₹)',
+    'Jaipur':'INR (₹)','Goa':'INR (₹)','Agra':'INR (₹)',
+    // Southeast Asia
+    'Singapore':'SGD (S$)',
+    'Bangkok':'THB (฿)','Chiang Mai':'THB (฿)','Phuket':'THB (฿)',
+    'Kuala Lumpur':'MYR (RM)',
+    'Bali':'IDR (Rp)','Jakarta':'IDR (Rp)',
+    'Hanoi':'VND (₫)','Ho Chi Minh City':'VND (₫)',
+    'Siem Reap':'USD ($)','Phnom Penh':'USD ($)',
+    'Yangon':'MMK (K)',
+    // South Asia
+    'Colombo':'LKR (Rs)','Kathmandu':'NPR (₨)',
+    'Karachi':'PKR (Rs)','Lahore':'PKR (Rs)','Islamabad':'PKR (Rs)',
+    'Dhaka':'BDT (৳)',
+    // Middle East
+    'Dubai':'AED (AED)','Abu Dhabi':'AED (AED)',
+    'Riyadh':'SAR (SAR)','Doha':'QAR (QAR)',
+    'Kuwait City':'KWD (KWD)','Muscat':'OMR (OMR)',
+    'Amman':'JOD (JOD)','Beirut':'LBP (LBP)',
+    'Tel Aviv':'ILS (₪)','Jerusalem':'ILS (₪)',
+    'Istanbul':'TRY (₺)','Ankara':'TRY (₺)',
+    // Africa
+    'Cape Town':'ZAR (R)','Johannesburg':'ZAR (R)','Durban':'ZAR (R)',
+    'Nairobi':'KES (KSh)','Cairo':'EGP (EGP)',
+    'Casablanca':'MAD (MAD)','Marrakech':'MAD (MAD)',
+    'Lagos':'NGN (₦)','Accra':'GHS (GHS)',
+    // Latin America
+    'Mexico City':'MXN (MX$)','Cancun':'MXN (MX$)',
+    'Buenos Aires':'ARS (AR$)','Bogota':'COP (COP$)',
+    'Lima':'PEN (S/.)','Santiago':'CLP (CLP$)',
+    'Sao Paulo':'BRL (R$)','Rio de Janeiro':'BRL (R$)',
+    'Havana':'CUP (CUP$)',
+    // Russia / CIS
+    'Moscow':'RUB (₽)','St Petersburg':'RUB (₽)',
+    'Almaty':'KZT (₸)','Tbilisi':'GEL (₾)',
+    'Baku':'AZN (₼)','Yerevan':'AMD (֏)',
+  };
+
+  var destCurrency = CITY_CURRENCY[S.to] || 'the local currency of '+S.to;
+  var fromCurrency = CITY_CURRENCY[S.from] || destCurrency;
+  var distUnit = (S.to.match(/Atlanta|Miami|New York|Los Angeles|Chicago|San Francisco|Boston|Seattle|Dallas|Houston|Denver|Las Vegas|Orlando|Washington DC|Nashville|Austin|Portland|Minneapolis|Phoenix|San Diego|Philadelphia|New Orleans|Tampa|Detroit|Sacramento|Kansas City|Pittsburgh|Honolulu|Anchorage|St Louis|Salt Lake City|Boise|Richmond|Savannah|Charleston|Raleigh|Charlotte|Memphis|Baltimore|Louisville|Milwaukee|Albuquerque|Tucson|Cincinnati|San Antonio|London|Edinburgh|Manchester|Birmingham|Glasgow|Liverpool|Cardiff/)) ? 'miles' : 'km';
+
   var prompt='You are an expert road trip planner with deep knowledge of routes worldwide.\n\n'+
     'Route: '+S.from+' → '+S.to+'\nDays: '+S.days+vibeInstructions+'\n\n'+
+    'CURRENCY RULE (CRITICAL — no exceptions): ALL costs must be in '+destCurrency+'. Never use USD. Use realistic local prices.\n'+
+    'DISTANCE RULE: Use '+distUnit+' for all distances.\n\n'+
     'Generate a detailed stopover plan. Return ONLY valid JSON:\n'+
-    '{"totalDistance":"663 miles","totalDriveTime":"9.5 hours","bestSeason":"Oct-Apr","stops":['+
-    '{"name":"City","type":"start|stopover|end","emoji":"🏙️","country":"USA",'+
-    '"distanceFromPrev":"0 miles","driveTimeFromPrev":"0 hrs","recommendedStay":"3-4 hours",'+
-    '"totalCostPerPerson":45,"currency":"USD",'+
-    '"activities":[{"name":"Name","emoji":"🎭","cost":15,"duration":"1-2 hrs","description":"Brief compelling description"}],'+
-    '"insiderTip":"Genuinely useful local tip","bestFood":"Must try food or restaurant","bestStartTime":"e.g. Depart by 7AM","overnightStop":true,"suggestedStay":{"type":"Hotel","name":"Example Inn","pricePerNight":120,"bookingTip":"Book early, stay near the town center"}}]}\n\n'+
+    '{"totalDistance":"663 '+distUnit+'","totalDriveTime":"9.5 hours","bestSeason":"Oct-Apr","stops":['+
+    '{"name":"City","type":"start|stopover|end","emoji":"🏙️","country":"India",'+
+    '"distanceFromPrev":"0 '+distUnit+'","driveTimeFromPrev":"0 hrs","recommendedStay":"3-4 hours",'+
+    '"totalCostPerPerson":500,'+
+    '"activities":[{"name":"Name","emoji":"🎭","cost":150,"duration":"1-2 hrs","description":"Brief compelling description"}],'+
+    '"insiderTip":"Genuinely useful local tip","bestFood":"Must try food or restaurant","bestStartTime":"e.g. Depart by 7AM","overnightStop":true,"suggestedStay":{"type":"Hotel","name":"Example Inn","pricePerNight":3000,"bookingTip":"Book early, stay near the town center"}}]}\n\n'+
     'Include '+S.from+' as start, '+S.to+' as end, '+numStops+' stops as stopover type.\n'+
-    (S.days>1?'For multi-day trips, mark overnight stops with overnightStop:true and include suggestedStay. NEVER mark the start or end city as overnightStop — only mark intermediate stopovers. Include type (Hotel/Motel/Airbnb/Hostel/Campground), a real well-known property name, pricePerNight in USD, and bookingTip. Distribute nights logically across days.\n':'')+
-    '3-4 activities per stop. Use realistic LOCAL currency costs (e.g. AUD for Australia, EUR for Europe, JPY for Japan, INR for India). Use km for distances in metric countries, miles only for USA/UK/Myanmar. Genuinely useful insider tips.\n'+
+    (S.days>1?'For multi-day trips, mark overnight stops with overnightStop:true and include suggestedStay with realistic LOCAL prices in '+destCurrency+'. NEVER mark start or end city as overnightStop.\n':'')+
+    '3-4 activities per stop with realistic local prices in '+destCurrency+'. Genuinely useful insider tips.\n'+
     'Return ONLY the JSON object.';
 
   fetch('/api/route',{
@@ -1047,8 +1144,8 @@ function showResults(data){
       '</div>'+
     '</div>';
 
-    // Footer - only show for non-start stops
-    if(stop.type!=='start'){
+    // Footer - only show for stopovers, not start/end
+    if(stop.type==='stopover'){
       html+='<div class="sc-footer">'+
         '<div class="sc-stay">⏱ '+(stop.recommendedStay||'2-3 hours')+'</div>'+
         '<div class="sc-cost">'+(stop.totalCostPerPerson>0?'~'+_currencySymbol+stop.totalCostPerPerson+'/person':'Free stop')+'</div>'+
