@@ -366,6 +366,7 @@ var _stopsData=[];
 var _skipped=[];
 var _bestSeason='Year round';
 var _currencySymbol='$';
+var _isMetric=false;
 
 function toggleSkip(idx){
   var body=document.getElementById('stop-body-'+idx);
@@ -472,13 +473,27 @@ var CURRENCY_MAP = {
   'Cuba':'CUP$','Panama':'B/.','Costa Rica':'₡','Guatemala':'Q',
 };
 
+// Metric countries (everyone except USA, UK, Myanmar, Liberia)
+var IMPERIAL_COUNTRIES=['USA','United States','Liberia','Myanmar'];
+
 function getCurrency(stops){
-  // Use the first stopover or end city country to determine currency
+  // Use the destination (end) city country
+  var endStop=stops.slice().reverse().find(function(s){return s.type==='end';});
+  if(endStop&&CURRENCY_MAP[endStop.country]) return CURRENCY_MAP[endStop.country];
+  // Fallback: first non-start stop
   for(var i=0;i<stops.length;i++){
-    var c=stops[i].country||'';
-    if(CURRENCY_MAP[c]) return CURRENCY_MAP[c];
+    if(stops[i].type!=='start'){
+      var c=stops[i].country||'';
+      if(CURRENCY_MAP[c]) return CURRENCY_MAP[c];
+    }
   }
   return '$';
+}
+
+function isMetric(stops){
+  var endStop=stops.slice().reverse().find(function(s){return s.type==='end';});
+  var country=(endStop&&endStop.country)||'';
+  return IMPERIAL_COUNTRIES.indexOf(country)===-1;
 }
 
 function fmtCost(amount, symbol){
@@ -860,7 +875,7 @@ function go(){
     '"insiderTip":"Genuinely useful local tip","bestFood":"Must try food or restaurant","bestStartTime":"e.g. Depart by 7AM","overnightStop":true,"suggestedStay":{"type":"Hotel","name":"Example Inn","pricePerNight":120,"bookingTip":"Book early, stay near the town center"}}]}\n\n'+
     'Include '+S.from+' as start, '+S.to+' as end, '+numStops+' stops as stopover type.\n'+
     (S.days>1?'For multi-day trips, mark overnight stops with overnightStop:true and include suggestedStay. NEVER mark the start or end city as overnightStop — only mark intermediate stopovers. Include type (Hotel/Motel/Airbnb/Hostel/Campground), a real well-known property name, pricePerNight in USD, and bookingTip. Distribute nights logically across days.\n':'')+
-    '3-4 activities per stop. Use realistic LOCAL currency costs (e.g. AUD for Australia, EUR for Europe, JPY for Japan). Genuinely useful insider tips.\n'+
+    '3-4 activities per stop. Use realistic LOCAL currency costs (e.g. AUD for Australia, EUR for Europe, JPY for Japan, INR for India). Use km for distances in metric countries, miles only for USA/UK/Myanmar. Genuinely useful insider tips.\n'+
     'Return ONLY the JSON object.';
 
   fetch('/api/route',{
@@ -1045,20 +1060,22 @@ function showResults(data){
 
   // Store stops globally for recalc
   _stopsData=stops;
-  _skipped=_stopsData.map(function(s){return s.type==='start';});
+  _skipped=new Array(stops.length).fill(false);
+  _skipped[0]=true; // Auto-skip start city
   _bestSeason=data.bestSeason||'Year round';
   _currencySymbol=data.currency?(CURRENCY_MAP[stops.find(function(s){return s.type!=='start';})||'']||getCurrency(stops)):getCurrency(stops);
   // Use currency from first stop that has it
   var currStop=stops.find(function(s){return s.currency;});
   if(currStop&&CURRENCY_MAP[currStop.country]) _currencySymbol=CURRENCY_MAP[currStop.country];
   else _currencySymbol=getCurrency(stops);
+  _isMetric=isMetric(stops);
 
   // Summary
   html+='<div class="summary" id="trip-summary">'+
     '<div class="sum-title">Trip Summary</div>'+
     '<div class="sum-grid" id="sum-grid">'+
       '<div class="sum-item"><span class="sum-n" id="sum-stops">'+stops.length+'</span><span class="sum-l">Stops</span></div>'+
-      '<div class="sum-item"><span class="sum-n" id="sum-cost">~$'+totalCost+'</span><span class="sum-l">Per person</span></div>'+
+      '<div class="sum-item"><span class="sum-n" id="sum-cost">~'+_currencySymbol+totalCost+'</span><span class="sum-l">Per person</span></div>'+
       '<div class="sum-item"><span class="sum-n">'+(data.bestSeason||'Year round')+'</span><span class="sum-l">Best time</span></div>'+
     '</div>'+
     '<button class="share-btn" onclick="share()">📤 Share this route</button>'+
