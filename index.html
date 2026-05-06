@@ -367,6 +367,34 @@ var _skipped=[];
 var _bestSeason='Year round';
 var _currencySymbol='$';
 var _isMetric=false;
+var _exchangeRate=1; // USD to local currency rate
+
+// Approximate USD exchange rates (updated periodically)
+var USD_RATES={
+  '$':1,'CA$':1.36,'MX$':17.5,
+  '£':0.79,'€':0.92,'A$':1.53,'NZ$':1.66,
+  '¥':149,'₩':1330,'₹':83.5,'฿':35.5,
+  'S$':1.34,'RM':4.7,'Rp':15600,'₫':24500,'₱':56,
+  'HK$':7.82,'MOP$':8.06,
+  'AED ':3.67,'SAR ':3.75,'QAR ':3.64,'KWD ':0.31,
+  '₪':3.7,'₺':32,'₽':91,
+  'R$':5,'AR$':870,'CLP$':960,'COP$':3900,
+  'S/.':3.7,'$U':38.5,
+  'R':18.6,'KSh':130,'₦':1500,'EGP ':30.9,
+  'MAD ':10,'Br':56,
+  'Kč':23,'zł':4,'Ft':360,'lei':4.6,
+  'din':108,'лв':1.8,
+  'kr':10.5,'CHF ':0.9,
+  'Rs':300,'₨':132,'৳':110,
+  '₾':2.66,'֏':390,'₼':1.7,
+  'CUP$':24,'B/.':1,'₡':510,'Q':7.8,
+  'GHS':13,'KES (KSh)':130
+};
+
+function convertCost(usdAmount){
+  if(!usdAmount||usdAmount<=0) return 0;
+  return Math.round(usdAmount*_exchangeRate);
+}
 
 function toggleSkip(idx){
   var body=document.getElementById('stop-body-'+idx);
@@ -406,7 +434,7 @@ function recalcSummary(){
   var sumStops=document.getElementById('sum-stops');
   var sumCost=document.getElementById('sum-cost');
   if(sumStops) sumStops.textContent=activeStops;
-  if(sumCost) sumCost.textContent='~'+_currencySymbol+totalCost;
+  if(sumCost) sumCost.textContent='~'+_currencySymbol+convertCost(totalCost);
 }
 
 function recalcDriveConnectors(){
@@ -1084,7 +1112,7 @@ function showResults(data){
             '<div class="act-desc">'+(a.description||'')+'</div>'+
           '</div>'+
           '<div class="act-right">'+
-            '<div class="act-cost">'+(a.cost>0?_currencySymbol+a.cost:'Free')+'</div>'+
+            '<div class="act-cost">'+(a.cost>0?_currencySymbol+convertCost(a.cost):'Free')+'</div>'+
             '<div class="act-time">'+(a.duration||'1-2h')+'</div>'+
           '</div>'+
         '</div>';
@@ -1128,7 +1156,7 @@ function showResults(data){
           '<div class="stay-label">🌙 Stay the night</div>'+
           '<div class="stay-name">'+(st.name||'Local accommodation')+'</div>'+
           '<div class="stay-type">'+(st.type||'Hotel')+'</div>'+
-          (st.pricePerNight?'<div class="stay-price">~'+_currencySymbol+st.pricePerNight+' / night</div>':'')+
+          (st.pricePerNight?'<div class="stay-price">~'+_currencySymbol+convertCost(st.pricePerNight)+' / night</div>':'')+
           (st.bookingTip?'<div class="stay-tip">💡 '+st.bookingTip+'</div>':'')+
         '</div>'+
       '</div>';
@@ -1148,7 +1176,7 @@ function showResults(data){
     if(stop.type==='stopover'){
       html+='<div class="sc-footer">'+
         '<div class="sc-stay">⏱ '+(stop.recommendedStay||'2-3 hours')+'</div>'+
-        '<div class="sc-cost">'+(stop.totalCostPerPerson>0?'~'+_currencySymbol+stop.totalCostPerPerson+'/person':'Free stop')+'</div>'+
+        '<div class="sc-cost">'+(stop.totalCostPerPerson>0?'~'+_currencySymbol+convertCost(stop.totalCostPerPerson)+'/person':'Free stop')+'</div>'+
       '</div>';
     }
 
@@ -1162,13 +1190,14 @@ function showResults(data){
   _bestSeason=data.bestSeason||'Year round';
   _currencySymbol=getCurrency(stops);
   _isMetric=isMetric(stops);
+  _exchangeRate=USD_RATES[_currencySymbol]||1;
 
   // Summary
   html+='<div class="summary" id="trip-summary">'+
     '<div class="sum-title">Trip Summary</div>'+
     '<div class="sum-grid" id="sum-grid">'+
       '<div class="sum-item"><span class="sum-n" id="sum-stops">'+stops.length+'</span><span class="sum-l">Stops</span></div>'+
-      '<div class="sum-item"><span class="sum-n" id="sum-cost">~'+_currencySymbol+totalCost+'</span><span class="sum-l">Per person</span></div>'+
+      '<div class="sum-item"><span class="sum-n" id="sum-cost">~'+_currencySymbol+convertCost(totalCost)+'</span><span class="sum-l">Per person</span></div>'+
       '<div class="sum-item"><span class="sum-n">'+(data.bestSeason||'Year round')+'</span><span class="sum-l">Best time</span></div>'+
     '</div>'+
     '<button class="share-btn" onclick="share()">📤 Share this route</button>'+
