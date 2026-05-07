@@ -1023,17 +1023,17 @@ function go(){
   var vibeInstructions = '';
   if(S.vibes.length>0){
     var vibeMap = {
-      scenic: 'prioritize scenic routes with dramatic landscapes — e.g. LA to SF must go via Big Sur/Highway 1, not I-5',
-      coastal: 'hug the coastline, include beach towns, ocean viewpoints, harbor spots, and seaside dining',
-      historic: 'focus on historical sites, old towns, museums, battlefields, and culturally significant landmarks',
-      offbeat: 'include quirky roadside attractions, unusual hidden gems, weird museums, and off-the-beaten-path discoveries',
-      foodie: 'prioritize food destinations, local specialties, famous restaurants, food markets, and culinary experiences',
-      nature: 'emphasize national parks, hiking trails, waterfalls, forests, wildlife and outdoor experiences',
-      adventure: 'include outdoor activities like hiking, kayaking, zip-lining, rock climbing, and adrenaline experiences',
-      relaxed: 'choose a leisurely pace with charming small towns, cafes, spa towns, and low-key experiences'
+      scenic:'scenic routes, dramatic landscapes, viewpoints',
+      coastal:'coastal roads, beach towns, ocean views',
+      historic:'historical sites, old towns, museums',
+      offbeat:'quirky hidden gems, roadside attractions',
+      foodie:'food destinations, local cuisine, markets',
+      nature:'national parks, hiking, waterfalls, wildlife',
+      adventure:'outdoor activities, hiking, kayaking, thrills',
+      relaxed:'leisurely pace, small towns, cafes'
     };
-    var vibeDescs = S.vibes.map(function(v){return vibeMap[v]||v;});
-    vibeInstructions = '\n\nROUTE VIBE (CRITICAL - must follow):\n'+vibeDescs.map(function(d,i){return (i+1)+'. '+d;}).join('\n')+'\n\nDo NOT pick the fastest route. Pick the route and stops that best match these vibes. Specifically detour through iconic locations that match the vibe even if slightly longer.';
+    var vibeDescs=S.vibes.map(function(v){return vibeMap[v]||v;});
+    vibeInstructions=' Vibes: '+vibeDescs.join(', ')+'. Use non-fastest scenic route.';
   }
 
   // City -> currency name & symbol lookup for prompt injection
@@ -1131,23 +1131,26 @@ function go(){
   var fromCurrency = CITY_CURRENCY[S.from] || destCurrency;
   var distUnit = (S.to.match(/Atlanta|Miami|New York|Los Angeles|Chicago|San Francisco|Boston|Seattle|Dallas|Houston|Denver|Las Vegas|Orlando|Washington DC|Nashville|Austin|Portland|Minneapolis|Phoenix|San Diego|Philadelphia|New Orleans|Tampa|Detroit|Sacramento|Kansas City|Pittsburgh|Honolulu|Anchorage|St Louis|Salt Lake City|Boise|Richmond|Savannah|Charleston|Raleigh|Charlotte|Memphis|Baltimore|Louisville|Milwaukee|Albuquerque|Tucson|Cincinnati|San Antonio|London|Edinburgh|Manchester|Birmingham|Glasgow|Liverpool|Cardiff/)) ? 'miles' : 'km';
 
-  var prompt='You are an expert road trip planner with deep knowledge of routes worldwide.\n\n'+
-    'Route: '+S.from+' → '+S.to+'\nDays: '+S.days+vibeInstructions+'\n\n'+
-    'CURRENCY RULE (CRITICAL — no exceptions): ALL cost values must be realistic LOCAL amounts in '+destCurrency+'. Examples for India: Gateway of India=0 (free), auto-rickshaw ride=50, restaurant meal=300, museum entry=500. Examples for Japan: temple entry=500, meal=1200, transport=300. Examples for USA: museum=$15, meal=$20, parking=$10. Return the ACTUAL local price as the number, not a USD equivalent.\n'+
-    'DISTANCE RULE: Use '+distUnit+' for all distances.\n\n'+
-    'Generate a detailed stopover plan. Return ONLY valid JSON:\n'+
-    '{"totalDistance":"663 '+distUnit+'","totalDriveTime":"9.5 hours","bestSeason":"Oct-Apr","stops":['+
-    '{"name":"City","type":"start|stopover|end","emoji":"🏙️","country":"India",'+
-    '"distanceFromPrev":"0 '+distUnit+'","driveTimeFromPrev":"0 hrs","recommendedStay":"3-4 hours",'+
-    '"totalCostPerPerson":500,'+
-    '"activities":[{"name":"Name","emoji":"🎭","cost":150,"duration":"1-2 hrs","description":"Brief compelling description","hiddenGem":false,"parkingTip":"Free street parking on Main St"}],'+
-    '"insiderTip":"Genuinely useful local tip","bestFood":"Must try food or restaurant","bestStartTime":"e.g. Depart by 7AM","overnightStop":true,"suggestedStay":{"type":"Hotel","name":"Example Inn","pricePerNight":3000,"bookingTip":"Book early, stay near the town center"}}]}\n\n'+
-    'Include '+S.from+' as start (with 3-4 activities — travellers may want to explore before leaving), '+S.to+' as end, '+numStops+' stops as stopover type.\n'+
-    (S.days>1?'For multi-day trips, mark overnight stops with overnightStop:true and include suggestedStay with realistic LOCAL prices in '+destCurrency+'. NEVER mark start or end city as overnightStop.\n':'')+
-    '3-4 activities per stop. Cost must be the actual '+destCurrency+' amount (e.g. for India use ₹0-₹2000 range, for Europe use €0-€50 range, for Japan use ¥0-¥3000 range, for USA use $0-$50 range). Set cost:0 for free attractions. Genuinely useful insider tips.\n'+
-    (S.gems?'HIDDEN GEMS MODE: Avoid the typical tourist traps. Instead suggest lesser-known local favorites, secret viewpoints, under-the-radar restaurants, and off-the-beaten-path spots that locals love. Add hiddenGem:true to each activity that is a hidden gem.\n':'')+
-    (S.parking?'PARKING: For each activity, add a parkingTip field with the best nearby parking option (free street parking, cheapest garage, park-and-walk tip, or public transit alternative if parking is difficult).\n':'')+
-    'Return ONLY the JSON object.';
+  var extraOpts='';
+  if(S.gems) extraOpts+='Prefer hidden local gems over tourist traps. Mark hidden gems with hiddenGem:true.\n';
+  if(S.parking) extraOpts+='Add parkingTip to each activity with best nearby parking or transit tip.\n';
+  if(S.days>1) extraOpts+='Mark overnight stopovers with overnightStop:true, add suggestedStay with type/name/pricePerNight/bookingTip in '+destCurrency+'. Never mark start/end as overnight.\n';
+
+  var prompt='Expert road trip planner. Route: '+S.from+' → '+S.to+'. Days: '+S.days+'.'+
+    (vibeInstructions?'\nVibe:'+vibeInstructions.replace(/\n/g,' '):'')+
+    '\nCurrency: '+destCurrency+' (use real local prices, not USD). Distance unit: '+distUnit+'.'+
+    (extraOpts?'\n'+extraOpts:'')+
+    '\nReturn ONLY this JSON structure:\n'+
+    '{"totalDistance":"X '+distUnit+'","totalDriveTime":"X hrs","bestSeason":"X","stops":['+
+    '{"name":"City","type":"start|stopover|end","emoji":"🏙️","country":"X",'+
+    '"distanceFromPrev":"0 '+distUnit+'","driveTimeFromPrev":"0 hrs","recommendedStay":"X hrs",'+
+    '"totalCostPerPerson":0,'+
+    '"activities":[{"name":"X","emoji":"🎭","cost":0,"duration":"X hrs","description":"X"'+(S.gems?',"hiddenGem":false':'')+
+    (S.parking?',"parkingTip":"X"':'')+'}],'+
+    '"insiderTip":"X","bestFood":"X","bestStartTime":"X"'+(S.days>1?',"overnightStop":false,"suggestedStay":{"type":"Hotel","name":"X","pricePerNight":0,"bookingTip":"X"}':'')+
+    '}]}\n'+
+    'Include '+S.from+' as start with activities, '+S.to+' as end, '+numStops+' middle stopovers.\n'+
+    'All costs in '+destCurrency+' (set 0 for free). Return ONLY JSON.';
 
   var _fetchOptions={
     method:'POST',
