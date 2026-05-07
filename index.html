@@ -883,7 +883,16 @@ function showToast(msg){
     S.from=sharedFrom;
     S.to=sharedTo;
     var sharedDays=parseInt(params.get('days'));
-    if(sharedDays) updateDays(sharedDays);
+    if(sharedDays){
+    S.days=sharedDays;
+    // Show days section and select the right chip
+    var daysSection=document.getElementById('days-section');
+    if(daysSection) daysSection.style.display='block';
+    document.querySelectorAll('.day-chip').forEach(function(c){
+      c.classList.remove('on');
+      if(parseInt(c.getAttribute('data-days'))===sharedDays) c.classList.add('on');
+    });
+  }
     var sharedVibes=params.get('vibes');
     if(sharedVibes){
       sharedVibes.split(',').forEach(function(v){
@@ -902,11 +911,20 @@ function showToast(msg){
       if(parkEl) parkEl.classList.add('on');
     }
     checkForm();
-    // Auto-run the trip after a short delay
+    // Override days AFTER checkForm (which auto-suggests days)
+    S.days=sharedDays;
+    var daysSection=document.getElementById('days-section');
+    if(daysSection) daysSection.style.display='block';
+    document.querySelectorAll('.day-chip').forEach(function(c){
+      c.classList.remove('on');
+      if(parseInt(c.getAttribute('data-days'))===sharedDays) c.classList.add('on');
+    });
+    // Auto-run after DOM settles
     setTimeout(function(){
       var btn=document.getElementById('find-btn');
-      if(btn&&!btn.disabled) go();
-    },300);
+      btn.disabled=false;
+      go();
+    },800);
   }
 })();
 
