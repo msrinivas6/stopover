@@ -493,22 +493,27 @@ function recalcDriveConnectors(){
 function share(){
   var title='Stopover: '+S.from+' → '+S.to;
   var text='Check out this road trip from '+S.from+' to '+S.to+' — '+_stopsData.length+' stops, best time: '+_bestSeason+'. Planned with Stopover AI Road Trip Planner!';
-  var url='https://stopoverapp.vercel.app';
+  // Build URL with route params so recipient sees the same route
+  var params=new URLSearchParams();
+  params.set('from',S.from);
+  params.set('to',S.to);
+  params.set('days',S.days);
+  if(S.vibes.length>0) params.set('vibes',S.vibes.join(','));
+  if(S.gems) params.set('gems','1');
+  if(S.parking) params.set('parking','1');
+  var url='https://stopoverapp.vercel.app?'+params.toString();
   if(navigator.share){
     navigator.share({title:title,text:text,url:url})
       .catch(function(e){console.log('Share cancelled',e);});
   } else {
-    // Fallback: copy to clipboard
-    var full=title+'\n'+text+'\n'+url;
     if(navigator.clipboard){
-      navigator.clipboard.writeText(full).then(function(){
+      navigator.clipboard.writeText(url).then(function(){
         var btn=document.querySelector('.share-btn');
         var orig=btn.innerHTML;
-        btn.innerHTML='✅ Copied to clipboard!';
+        btn.innerHTML='✅ Link copied!';
         setTimeout(function(){btn.innerHTML=orig;},2000);
       });
     } else {
-      // Final fallback: prompt
       window.prompt('Copy this link:',url);
     }
   }
@@ -865,6 +870,44 @@ function showToast(msg){
       '</div>' +
     '</div>';
   }).join('');
+})();
+
+// Auto-load shared route from URL params
+(function(){
+  var params=new URLSearchParams(window.location.search);
+  var sharedFrom=params.get('from');
+  var sharedTo=params.get('to');
+  if(sharedFrom&&sharedTo){
+    document.getElementById('from-inp').value=sharedFrom;
+    document.getElementById('to-inp').value=sharedTo;
+    S.from=sharedFrom;
+    S.to=sharedTo;
+    var sharedDays=parseInt(params.get('days'));
+    if(sharedDays) updateDays(sharedDays);
+    var sharedVibes=params.get('vibes');
+    if(sharedVibes){
+      sharedVibes.split(',').forEach(function(v){
+        var chip=document.querySelector('.vibe-chip[data-vibe="'+v+'"]');
+        if(chip){chip.classList.add('on');S.vibes.push(v);}
+      });
+    }
+    if(params.get('gems')==='1'){
+      S.gems=true;
+      var gemsEl=document.getElementById('gems-toggle');
+      if(gemsEl) gemsEl.classList.add('on');
+    }
+    if(params.get('parking')==='1'){
+      S.parking=true;
+      var parkEl=document.getElementById('parking-toggle');
+      if(parkEl) parkEl.classList.add('on');
+    }
+    checkForm();
+    // Auto-run the trip after a short delay
+    setTimeout(function(){
+      var btn=document.getElementById('find-btn');
+      if(btn&&!btn.disabled) go();
+    },300);
+  }
 })();
 
 function useRoute(f,t,d){
