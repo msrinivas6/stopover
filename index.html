@@ -149,6 +149,9 @@ html{overflow-x:hidden;}
 .drive-connector{display:flex;align-items:center;gap:0;padding:6px 20px;}
 .dc-line{flex:1;height:1px;background:repeating-linear-gradient(90deg,rgba(220,140,60,0.3) 0,rgba(220,140,60,0.3) 6px,transparent 6px,transparent 12px);}
 .dc-pill{background:var(–bg2);border:1.5px solid var(–border2);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:var(–sun);white-space:nowrap;margin:0 8px;display:flex;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(180,100,20,0.08);}
+.dc-traffic{font-size:10px;color:#dc2626;font-weight:700;background:rgba(220,38,38,0.07);border:1px solid rgba(220,38,38,0.15);border-radius:20px;padding:3px 8px;margin:0 4px;white-space:nowrap;}
+.dc-maps{font-size:10px;color:var(–sky);font-weight:700;background:rgba(0,153,204,0.08);border:1px solid rgba(0,153,204,0.2);border-radius:20px;padding:3px 8px;text-decoration:none;white-space:nowrap;}
+.dc-info{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px;margin-top:4px;}
 
 /* Stop card */
 .stop-card{background:var(–bg2);border:1.5px solid var(–border);border-radius:var(–r-xl);padding:16px;margin-bottom:4px;overflow:hidden;box-shadow:0 2px 16px rgba(180,100,20,0.07);}
@@ -1167,7 +1170,7 @@ function go(){
     '\nReturn ONLY this JSON structure:\n'+
     '{"totalDistance":"X '+distUnit+'","totalDriveTime":"X hrs","bestSeason":"X","stops":['+
     '{"name":"City","type":"start|stopover|end","emoji":"🏙️","country":"X",'+
-    '"distanceFromPrev":"0 '+distUnit+'","driveTimeFromPrev":"0 hrs","recommendedStay":"X hrs",'+
+    '"distanceFromPrev":"0 '+distUnit+'","driveTimeFromPrev":"0 hrs","recommendedStay":"X hrs","trafficWarning":"e.g. Heavy traffic leaving LA 7-9AM and 4-7PM","bestTravelDay":"e.g. Tue-Thu mornings","googleMapsQuery":"Los Angeles CA to Santa Barbara CA",'+
     '"totalCostPerPerson":0,'+
     '"activities":[{"name":"X","emoji":"🎭","cost":0,"duration":"X hrs","description":"X"'+(S.gems?',"hiddenGem":false':'')+
     (S.parking?',"parkingTip":"X"':'')+'}],'+
@@ -1176,6 +1179,7 @@ function go(){
     'Include '+S.from+' as start, '+S.to+' as end, '+numStops+' middle stopovers.\n'+
     'Activities per stop: major cities (capital cities, top tourist destinations like LA, NYC, Tokyo, Paris, Mumbai, Sydney) get 6-8 activities. Medium cities get 4-5. Small towns get 3. Be generous — travellers want options.\n'+
     'Each activity needs: name, emoji, cost (in '+destCurrency+', 0 if free), duration, description (1 sentence).\n'+
+    'For each stop (except start), add: trafficWarning (peak hours to avoid for that leg, or null if traffic is not an issue), bestTravelDay (best day and time to make this drive), googleMapsQuery (exact query string like "Los Angeles CA to Santa Barbara CA").\n'+
     'Also per stop: insiderTip, bestFood, bestStartTime, totalCostPerPerson (sum of activity costs).\n'+
     'All costs in '+destCurrency+'. Return ONLY JSON.';
 
@@ -1221,6 +1225,10 @@ function showResults(data){
   var html='';
 
   // Route banner
+  // Find overall best travel advice from stops
+  var trafficStops=stops.filter(function(s){return s.trafficWarning;});
+  var hasMajorTraffic=trafficStops.length>0;
+
   html+='<div class="route-banner">'+
     '<div class="rb-top">'+
       '<div class="rb-route">'+S.from+' → '+S.to+'</div>'+
@@ -1235,6 +1243,11 @@ function showResults(data){
       '<div class="rb-stat"><span class="rb-stat-n">'+stops.length+'</span><span class="rb-stat-l">Total stops</span></div>'+
     '</div>'+
   '</div>';
+  if(hasMajorTraffic){
+    html+='<div style="background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.15);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:#dc2626;font-weight:600;line-height:1.5;">'+
+      '⚠️ <strong>Traffic heads up:</strong> '+trafficStops.length+' leg'+(trafficStops.length>1?'s have':'has')+' known congestion. Use the 🗺 Maps links to check live conditions before you drive.'+
+    '</div>';
+  }
 
   // Detect currency & metric BEFORE rendering
   _currencySymbol=getCurrency(stops);
@@ -1259,9 +1272,17 @@ function showResults(data){
   stops.forEach(function(stop,idx){
     // Drive connector
     if(idx>0&&stop.driveTimeFromPrev){
+      var mapsUrl=stop.googleMapsQuery?'https://www.google.com/maps/dir/'+encodeURIComponent(stop.googleMapsQuery):'https://www.google.com/maps/dir/'+encodeURIComponent((stops[idx-1]?stops[idx-1].name:S.from)+' to '+stop.name);
       html+='<div class="drive-connector" id="dc-'+idx+'">'+
         '<div class="dc-line"></div>'+
-        '<div class="dc-pill" id="dc-pill-'+idx+'">🚗 '+stop.driveTimeFromPrev+(stop.distanceFromPrev?' · '+stop.distanceFromPrev:'')+'</div>'+
+        '<div style="display:flex;flex-direction:column;align-items:center;margin:0 8px;">'+
+          '<div class="dc-pill" id="dc-pill-'+idx+'">🚗 '+stop.driveTimeFromPrev+(stop.distanceFromPrev?' · '+stop.distanceFromPrev:'')+'</div>'+
+          '<div class="dc-info">'+
+            (stop.trafficWarning?'<span class="dc-traffic">⚠️ '+stop.trafficWarning+'</span>':'')+
+            (stop.bestTravelDay?'<span style="font-size:10px;color:var(--sun);font-weight:600;">🗓 '+stop.bestTravelDay+'</span>':'')+
+            '<a class="dc-maps" href="'+mapsUrl+'" target="_blank">🗺 Maps</a>'+
+          '</div>'+
+        '</div>'+
         '<div class="dc-line"></div>'+
       '</div>';
     }
