@@ -1149,8 +1149,11 @@ function go(){
     (S.parking?',"parkingTip":"X"':'')+'}],'+
     '"insiderTip":"X","bestFood":"X","bestStartTime":"X"'+(S.days>1?',"overnightStop":false,"suggestedStay":{"type":"Hotel","name":"X","pricePerNight":0,"bookingTip":"X"}':'')+
     '}]}\n'+
-    'Include '+S.from+' as start with activities, '+S.to+' as end, '+numStops+' middle stopovers.\n'+
-    'All costs in '+destCurrency+' (set 0 for free). Return ONLY JSON.';
+    'Include '+S.from+' as start, '+S.to+' as end, '+numStops+' middle stopovers.\n'+
+    'For each stop include as many activities as the city deserves — major cities get more, small towns get fewer. Minimum 3, no maximum.\n'+
+    'Each activity needs: name, emoji, cost (in '+destCurrency+', 0 if free), duration, description (1 sentence).\n'+
+    'Also per stop: insiderTip, bestFood, bestStartTime, totalCostPerPerson (sum of activity costs).\n'+
+    'All costs in '+destCurrency+'. Return ONLY JSON.';
 
   var _fetchOptions={
     method:'POST',
