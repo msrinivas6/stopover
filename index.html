@@ -487,6 +487,30 @@ function recalcDriveConnectors(){
   });
 }
 
+function share(){
+  var title='Stopover: '+S.from+' → '+S.to;
+  var text='Check out this road trip from '+S.from+' to '+S.to+' — '+_stopsData.length+' stops, best time: '+_bestSeason+'. Planned with Stopover AI Road Trip Planner!';
+  var url='https://stopoverapp.vercel.app';
+  if(navigator.share){
+    navigator.share({title:title,text:text,url:url})
+      .catch(function(e){console.log('Share cancelled',e);});
+  } else {
+    // Fallback: copy to clipboard
+    var full=title+'\n'+text+'\n'+url;
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(full).then(function(){
+        var btn=document.querySelector('.share-btn');
+        var orig=btn.innerHTML;
+        btn.innerHTML='✅ Copied to clipboard!';
+        setTimeout(function(){btn.innerHTML=orig;},2000);
+      });
+    } else {
+      // Final fallback: prompt
+      window.prompt('Copy this link:',url);
+    }
+  }
+}
+
 function toggleOption(key, el){
   S[key] = !S[key];
   if(S[key]){
