@@ -1121,7 +1121,7 @@ function go(){
 
   var prompt='You are an expert road trip planner with deep knowledge of routes worldwide.\n\n'+
     'Route: '+S.from+' → '+S.to+'\nDays: '+S.days+vibeInstructions+'\n\n'+
-    'CURRENCY RULE (CRITICAL — no exceptions): ALL costs must be in '+destCurrency+'. Never use USD. Use realistic local prices.\n'+
+    'CURRENCY RULE (CRITICAL — no exceptions): ALL cost values must be realistic LOCAL amounts in '+destCurrency+'. Examples for India: Gateway of India=0 (free), auto-rickshaw ride=50, restaurant meal=300, museum entry=500. Examples for Japan: temple entry=500, meal=1200, transport=300. Examples for USA: museum=$15, meal=$20, parking=$10. Return the ACTUAL local price as the number, not a USD equivalent.\n'+
     'DISTANCE RULE: Use '+distUnit+' for all distances.\n\n'+
     'Generate a detailed stopover plan. Return ONLY valid JSON:\n'+
     '{"totalDistance":"663 '+distUnit+'","totalDriveTime":"9.5 hours","bestSeason":"Oct-Apr","stops":['+
@@ -1132,7 +1132,7 @@ function go(){
     '"insiderTip":"Genuinely useful local tip","bestFood":"Must try food or restaurant","bestStartTime":"e.g. Depart by 7AM","overnightStop":true,"suggestedStay":{"type":"Hotel","name":"Example Inn","pricePerNight":3000,"bookingTip":"Book early, stay near the town center"}}]}\n\n'+
     'Include '+S.from+' as start (with 3-4 activities — travellers may want to explore before leaving), '+S.to+' as end, '+numStops+' stops as stopover type.\n'+
     (S.days>1?'For multi-day trips, mark overnight stops with overnightStop:true and include suggestedStay with realistic LOCAL prices in '+destCurrency+'. NEVER mark start or end city as overnightStop.\n':'')+
-    '3-4 activities per stop with realistic local prices in '+destCurrency+'. Genuinely useful insider tips.\n'+
+    '3-4 activities per stop. Cost must be the actual '+destCurrency+' amount (e.g. for India use ₹0-₹2000 range, for Europe use €0-€50 range, for Japan use ¥0-¥3000 range, for USA use $0-$50 range). Set cost:0 for free attractions. Genuinely useful insider tips.\n'+
     (S.gems?'HIDDEN GEMS MODE: Avoid the typical tourist traps. Instead suggest lesser-known local favorites, secret viewpoints, under-the-radar restaurants, and off-the-beaten-path spots that locals love. Add hiddenGem:true to each activity that is a hidden gem.\n':'')+
     (S.parking?'PARKING: For each activity, add a parkingTip field with the best nearby parking option (free street parking, cheapest garage, park-and-walk tip, or public transit alternative if parking is difficult).\n':'')+
     'Return ONLY the JSON object.';
@@ -1197,7 +1197,7 @@ function showResults(data){
   // Detect currency & metric BEFORE rendering
   _currencySymbol=getCurrency(stops);
   _isMetric=isMetric(stops);
-  _exchangeRate=USD_RATES[_currencySymbol.trim()]||USD_RATES[_currencySymbol]||1;
+  _exchangeRate=1; // AI returns local currency amounts directly - no conversion needed
   console.log('Currency:',_currencySymbol,'Rate:',_exchangeRate,'Metric:',_isMetric);
 
   // Pre-parse drive times into minutes and miles for recalc
