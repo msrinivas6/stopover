@@ -1272,7 +1272,10 @@ function showResults(data){
   stops.forEach(function(stop,idx){
     // Drive connector
     if(idx>0&&stop.driveTimeFromPrev){
-      var mapsUrl=stop.googleMapsQuery?'https://www.google.com/maps/dir/'+encodeURIComponent(stop.googleMapsQuery):'https://www.google.com/maps/dir/'+encodeURIComponent((stops[idx-1]?stops[idx-1].name:S.from)+' to '+stop.name);
+      var prevStop=stops[idx-1]?stops[idx-1].name:S.from;
+      var mapsOrigin=encodeURIComponent(prevStop);
+      var mapsDest=encodeURIComponent(stop.name);
+      var mapsUrl='https://www.google.com/maps/dir/?api=1&origin='+mapsOrigin+'&destination='+mapsDest+'&travelmode=driving';
       html+='<div class="drive-connector" id="dc-'+idx+'">'+
         '<div class="dc-line"></div>'+
         '<div style="display:flex;flex-direction:column;align-items:center;margin:0 8px;">'+
