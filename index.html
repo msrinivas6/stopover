@@ -1194,6 +1194,12 @@ function showResults(data){
     '</div>'+
   '</div>';
 
+  // Detect currency & metric BEFORE rendering
+  _currencySymbol=getCurrency(stops);
+  _isMetric=isMetric(stops);
+  _exchangeRate=USD_RATES[_currencySymbol.trim()]||USD_RATES[_currencySymbol]||1;
+  console.log('Currency:',_currencySymbol,'Rate:',_exchangeRate,'Metric:',_isMetric);
+
   // Pre-parse drive times into minutes and miles for recalc
   stops.forEach(function(stop){
     var t=stop.driveTimeFromPrev||'';
@@ -1330,15 +1336,9 @@ function showResults(data){
     html+='</div>';
   });
 
-  // Detect currency & metric FIRST before rendering
-  _currencySymbol=getCurrency(stops);
-  _isMetric=isMetric(stops);
-  _exchangeRate=USD_RATES[_currencySymbol.trim()]||USD_RATES[_currencySymbol]||1;
-  console.log('Currency:',_currencySymbol,'Rate:',_exchangeRate,'Metric:',_isMetric);
-
   // Store stops globally for recalc
   _stopsData=stops;
-  _skipped=new Array(stops.length).fill(false); // All stops unskipped by default
+  _skipped=new Array(stops.length).fill(false);
   _bestSeason=data.bestSeason||'Year round';
 
   // Summary
