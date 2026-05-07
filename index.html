@@ -861,12 +861,11 @@ function showSug(inputId,sugId,val){
   }
   if(!val||val.length<2){box.style.display='none';return;}
   var v=val.toLowerCase();
-  // Check alias first - if exact alias match, prepend the expanded city
   var aliasMatch=CITY_ALIASES[val.trim().toUpperCase()];
   var starts=CITIES.filter(function(c){return c.toLowerCase().startsWith(v);});
   var contains=CITIES.filter(function(c){return !c.toLowerCase().startsWith(v)&&c.toLowerCase().indexOf(v)!==-1;});
   var m=starts.concat(contains);
-  // Add alias match at top if not already there
+  // Show alias match at top as a tappable suggestion (but never auto-expand)
   if(aliasMatch&&m.indexOf(aliasMatch)===-1) m.unshift(aliasMatch);
   m=m.slice(0,8);
   if(!m.length){box.style.display='none';return;}
@@ -906,32 +905,15 @@ function setSug(iid,sid,city){
 }
 
 function onFrom(){
+  // Never auto-expand while typing — just search and update state
   var raw=document.getElementById('from-inp').value;
-  // Only expand if it's an exact alias match (short code like LA, NYC)
-  // Never expand while user is still typing/deleting a full city name
-  var trimmed=raw.trim();
-  var isExactAlias=CITY_ALIASES[trimmed.toUpperCase()]&&trimmed.length<=4;
-  if(isExactAlias){
-    var expanded=CITY_ALIASES[trimmed.toUpperCase()];
-    document.getElementById('from-inp').value=expanded;
-    S.from=expanded;
-  } else {
-    S.from=trimmed;
-  }
+  S.from=raw.trim();
   showSug('from-inp','from-sug',raw.trim());
   checkForm();
 }
 function onTo(){
   var raw=document.getElementById('to-inp').value;
-  var trimmed=raw.trim();
-  var isExactAlias=CITY_ALIASES[trimmed.toUpperCase()]&&trimmed.length<=4;
-  if(isExactAlias){
-    var expanded=CITY_ALIASES[trimmed.toUpperCase()];
-    document.getElementById('to-inp').value=expanded;
-    S.to=expanded;
-  } else {
-    S.to=trimmed;
-  }
+  S.to=raw.trim();
   showSug('to-inp','to-sug',raw.trim());
   checkForm();
 }
