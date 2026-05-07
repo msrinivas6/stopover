@@ -1150,7 +1150,7 @@ function go(){
     '"insiderTip":"X","bestFood":"X","bestStartTime":"X"'+(S.days>1?',"overnightStop":false,"suggestedStay":{"type":"Hotel","name":"X","pricePerNight":0,"bookingTip":"X"}':'')+
     '}]}\n'+
     'Include '+S.from+' as start, '+S.to+' as end, '+numStops+' middle stopovers.\n'+
-    'For each stop include as many activities as the city deserves — major cities get more, small towns get fewer. Minimum 3, no maximum.\n'+
+    'Activities per stop: major cities (capital cities, top tourist destinations like LA, NYC, Tokyo, Paris, Mumbai, Sydney) get 6-8 activities. Medium cities get 4-5. Small towns get 3. Be generous — travellers want options.\n'+
     'Each activity needs: name, emoji, cost (in '+destCurrency+', 0 if free), duration, description (1 sentence).\n'+
     'Also per stop: insiderTip, bestFood, bestStartTime, totalCostPerPerson (sum of activity costs).\n'+
     'All costs in '+destCurrency+'. Return ONLY JSON.';
@@ -1158,7 +1158,7 @@ function go(){
   var _fetchOptions={
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({prompt:prompt,max_tokens:Math.min(6000,2000+S.days*300+(S.parking?1500:0)+(S.gems?500:0))})
+    body:JSON.stringify({prompt:prompt,max_tokens:Math.min(8000,3000+S.days*400+(S.parking?2000:0)+(S.gems?1000:0))})
   };
 
   function doFetch(attemptsLeft){
