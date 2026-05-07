@@ -906,27 +906,33 @@ function setSug(iid,sid,city){
 }
 
 function onFrom(){
-  var raw=document.getElementById('from-inp').value.trim();
-  var expanded=expandAlias(raw);
-  if(expanded!==raw){
+  var raw=document.getElementById('from-inp').value;
+  // Only expand if it's an exact alias match (short code like LA, NYC)
+  // Never expand while user is still typing/deleting a full city name
+  var trimmed=raw.trim();
+  var isExactAlias=CITY_ALIASES[trimmed.toUpperCase()]&&trimmed.length<=4;
+  if(isExactAlias){
+    var expanded=CITY_ALIASES[trimmed.toUpperCase()];
     document.getElementById('from-inp').value=expanded;
     S.from=expanded;
   } else {
-    S.from=raw;
+    S.from=trimmed;
   }
-  showSug('from-inp','from-sug',S.from);
+  showSug('from-inp','from-sug',raw.trim());
   checkForm();
 }
 function onTo(){
-  var raw=document.getElementById('to-inp').value.trim();
-  var expanded=expandAlias(raw);
-  if(expanded!==raw){
+  var raw=document.getElementById('to-inp').value;
+  var trimmed=raw.trim();
+  var isExactAlias=CITY_ALIASES[trimmed.toUpperCase()]&&trimmed.length<=4;
+  if(isExactAlias){
+    var expanded=CITY_ALIASES[trimmed.toUpperCase()];
     document.getElementById('to-inp').value=expanded;
     S.to=expanded;
   } else {
-    S.to=raw;
+    S.to=trimmed;
   }
-  showSug('to-inp','to-sug',S.to);
+  showSug('to-inp','to-sug',raw.trim());
   checkForm();
 }
 function onFromFocus(){
