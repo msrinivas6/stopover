@@ -269,7 +269,7 @@ html{overflow-x:hidden;}
       <div class="search-vline"></div>
     </div>
     <div class="search-input-wrap">
-      <input type="text" class="search-input" id="from-inp" placeholder="From — e.g. Atlanta" oninput="onFrom()" onfocus="onFromFocus()" onblur="S.from=document.getElementById('from-inp').value.trim();checkForm();" autocomplete="off"/>
+      <input type="text" class="search-input" id="from-inp" placeholder="From — e.g. Atlanta" oninput="onFrom()" onfocus="onFromFocus()" onblur="var _v=expandAlias(document.getElementById('from-inp').value.trim());document.getElementById('from-inp').value=_v;S.from=_v;checkForm();" autocomplete="off"/>
       <div class="suggestions" id="from-sug" style="display:none;"></div>
     </div>
     <button class="swap-btn" onclick="swapCities()">⇅</button>
@@ -279,7 +279,7 @@ html{overflow-x:hidden;}
   <div class="search-row" style="margin-bottom:16px;">
     <div class="search-dot to"></div>
     <div class="search-input-wrap">
-      <input type="text" class="search-input" id="to-inp" placeholder="To — e.g. Miami" oninput="onTo()" onfocus="onToFocus()" onblur="S.to=document.getElementById('to-inp').value.trim();checkForm();" autocomplete="off"/>
+      <input type="text" class="search-input" id="to-inp" placeholder="To — e.g. Miami" oninput="onTo()" onfocus="onToFocus()" onblur="var _v=expandAlias(document.getElementById('to-inp').value.trim());document.getElementById('to-inp').value=_v;S.to=_v;checkForm();" autocomplete="off"/>
       <div class="suggestions" id="to-sug" style="display:none;"></div>
     </div>
     <div style="width:36px;"></div>
@@ -588,6 +588,67 @@ function fmtCost(amount, symbol){
   return symbol+amount;
 }
 
+// City shortcuts/aliases
+var CITY_ALIASES = {
+  // USA
+  'LA':'Los Angeles','NYC':'New York','NY':'New York','SF':'San Francisco',
+  'DC':'Washington DC','LV':'Las Vegas','NO':'New Orleans',
+  'NOLA':'New Orleans','KC':'Kansas City','SLC':'Salt Lake City',
+  'SD':'San Diego','PHL':'Philadelphia','PHX':'Phoenix','PDX':'Portland',
+  'ATL':'Atlanta','MIA':'Miami','CHI':'Chicago','BOS':'Boston',
+  'SEA':'Seattle','DEN':'Denver','DFW':'Dallas','HOU':'Houston',
+  'MSP':'Minneapolis','DTW':'Detroit','PIT':'Pittsburgh','STL':'St Louis',
+  'SAC':'Sacramento','TPA':'Tampa','CVG':'Cincinnati','MKE':'Milwaukee',
+  'RVA':'Richmond','SAV':'Savannah','CHS':'Charleston','CLT':'Charlotte',
+  'MEM':'Memphis','BWI':'Baltimore','SDF':'Louisville','ABQ':'Albuquerque',
+  'SAT':'San Antonio','AUS':'Austin','BNA':'Nashville','HNL':'Honolulu',
+  'ANC':'Anchorage','BOI':'Boise','RAL':'Raleigh',
+  // Canada
+  'YYZ':'Toronto','YVR':'Vancouver','MTL':'Montreal','YYC':'Calgary',
+  // UK
+  'LDN':'London','EDI':'Edinburgh','MAN':'Manchester','BHX':'Birmingham',
+  'GLA':'Glasgow','LIV':'Liverpool',
+  // Europe
+  'PAR':'Paris','AMS':'Amsterdam','BER':'Berlin','FCO':'Rome',
+  'BCN':'Barcelona','MAD':'Madrid','LIS':'Lisbon','VIE':'Vienna',
+  'BRU':'Brussels','MIL':'Milan','ATH':'Athens','CPH':'Copenhagen',
+  'STO':'Stockholm','OSL':'Oslo','HEL':'Helsinki','ZRH':'Zurich',
+  'GVA':'Geneva','PRG':'Prague','WAW':'Warsaw','BUD':'Budapest',
+  // Asia
+  'TYO':'Tokyo','OSA':'Osaka','KYO':'Kyoto',
+  'SEL':'Seoul','PUS':'Busan',
+  'BKK':'Bangkok','CNX':'Chiang Mai','HKT':'Phuket',
+  'SIN':'Singapore','KUL':'Kuala Lumpur',
+  'DPS':'Bali','JKT':'Jakarta',
+  'HAN':'Hanoi','SGN':'Ho Chi Minh City','HCM':'Ho Chi Minh City',
+  'BOM':'Mumbai','DEL':'Delhi','BLR':'Bangalore',
+  'MAA':'Chennai','CCU':'Kolkata','HYD':'Hyderabad',
+  'JAI':'Jaipur','GOI':'Goa',
+  'PEK':'Beijing','SHA':'Shanghai',
+  'HKG':'Hong Kong',
+  // Australia
+  'SYD':'Sydney','MEL':'Melbourne','BNE':'Brisbane',
+  'PER':'Perth','ADL':'Adelaide',
+  // Middle East
+  'DXB':'Dubai','AUH':'Abu Dhabi','RUH':'Riyadh','DOH':'Doha',
+  'IST':'Istanbul','TLV':'Tel Aviv',
+  // Africa
+  'CPT':'Cape Town','JNB':'Johannesburg','NBO':'Nairobi',
+  'CAI':'Cairo','CMN':'Casablanca',
+  // Latin America
+  'MEX':'Mexico City','CUN':'Cancun',
+  'GRU':'Sao Paulo','GIG':'Rio de Janeiro','RIO':'Rio de Janeiro',
+  'EZE':'Buenos Aires','BOG':'Bogota','LIM':'Lima','SCL':'Santiago',
+  'HAV':'Havana',
+  // Russia
+  'MOW':'Moscow','LED':'St Petersburg',
+};
+
+function expandAlias(val){
+  var upper = val.trim().toUpperCase();
+  return CITY_ALIASES[upper] || val.trim();
+}
+
 var CITIES = ['Atlanta','Miami','Los Angeles','San Francisco','New York','Boston','Chicago','Nashville','Dallas','Houston','Seattle','Denver','Phoenix','Las Vegas','Orlando','Washington DC','Philadelphia','Portland','Austin','Minneapolis','San Diego','San Antonio','Sacramento','Kansas City','New Orleans','Tampa','Pittsburgh','Cincinnati','Salt Lake City','Boise','Richmond','Savannah','Charleston','Raleigh','Charlotte','Memphis','Detroit','Baltimore','Louisville','Milwaukee','Albuquerque','Tucson','Honolulu','St Louis','Anchorage','Toronto','Vancouver','Montreal','Calgary','Ottawa','Quebec City','London','Edinburgh','Manchester','Birmingham','Glasgow','Liverpool','Dublin','Cardiff','Paris','Amsterdam','Berlin','Rome','Barcelona','Madrid','Lisbon','Prague','Vienna','Budapest','Warsaw','Stockholm','Copenhagen','Oslo','Helsinki','Athens','Zurich','Geneva','Brussels','Milan','Florence','Venice','Naples','Munich','Hamburg','Frankfurt','Cologne','Dubrovnik','Split','Krakow','Bratislava','Bucharest','Sofia','Belgrade','Zagreb','Dubai','Abu Dhabi','Riyadh','Doha','Kuwait City','Muscat','Amman','Beirut','Tel Aviv','Jerusalem','Tokyo','Osaka','Kyoto','Seoul','Busan','Beijing','Shanghai','Hong Kong','Macau','Singapore','Kuala Lumpur','Bangkok','Chiang Mai','Phuket','Bali','Jakarta','Hanoi','Ho Chi Minh City','Siem Reap','Phnom Penh','Yangon','Colombo','Kathmandu','Mumbai','Delhi','Bangalore','Chennai','Kolkata','Hyderabad','Jaipur','Goa','Agra','Karachi','Lahore','Islamabad','Dhaka','Cape Town','Johannesburg','Durban','Nairobi','Cairo','Casablanca','Marrakech','Tunis','Accra','Lagos','Addis Ababa','Dar es Salaam','Sydney','Melbourne','Brisbane','Perth','Adelaide','Canberra','Gold Coast','Auckland','Wellington','Christchurch','Queenstown','Mexico City','Cancun','Guadalajara','Monterrey','Buenos Aires','Bogota','Lima','Santiago','Sao Paulo','Rio de Janeiro','Brasilia','Montevideo','Havana','Panama City','San Jose','Guatemala City','Nassau','Kingston','Santo Domingo','San Juan','Moscow','St Petersburg','Istanbul','Ankara','Almaty','Tbilisi','Baku','Yerevan'];
 
 var POPULAR = [
@@ -793,11 +854,21 @@ var _sugLock=false;
 
 function showSug(inputId,sugId,val){
   var box=document.getElementById(sugId);
+  // Check if input matches an alias - expand immediately
+  var aliasExp=expandAlias(val);
+  if(aliasExp!==val&&val.toUpperCase()===val.trim().toUpperCase()&&CITY_ALIASES[val.trim().toUpperCase()]){
+    // It's an alias, show the expanded city as top suggestion
+  }
   if(!val||val.length<2){box.style.display='none';return;}
   var v=val.toLowerCase();
+  // Check alias first - if exact alias match, prepend the expanded city
+  var aliasMatch=CITY_ALIASES[val.trim().toUpperCase()];
   var starts=CITIES.filter(function(c){return c.toLowerCase().startsWith(v);});
   var contains=CITIES.filter(function(c){return !c.toLowerCase().startsWith(v)&&c.toLowerCase().indexOf(v)!==-1;});
-  var m=starts.concat(contains).slice(0,8);
+  var m=starts.concat(contains);
+  // Add alias match at top if not already there
+  if(aliasMatch&&m.indexOf(aliasMatch)===-1) m.unshift(aliasMatch);
+  m=m.slice(0,8);
   if(!m.length){box.style.display='none';return;}
   box.innerHTML='';
   m.forEach(function(c){
@@ -835,12 +906,26 @@ function setSug(iid,sid,city){
 }
 
 function onFrom(){
-  S.from=document.getElementById('from-inp').value.trim();
+  var raw=document.getElementById('from-inp').value.trim();
+  var expanded=expandAlias(raw);
+  if(expanded!==raw){
+    document.getElementById('from-inp').value=expanded;
+    S.from=expanded;
+  } else {
+    S.from=raw;
+  }
   showSug('from-inp','from-sug',S.from);
   checkForm();
 }
 function onTo(){
-  S.to=document.getElementById('to-inp').value.trim();
+  var raw=document.getElementById('to-inp').value.trim();
+  var expanded=expandAlias(raw);
+  if(expanded!==raw){
+    document.getElementById('to-inp').value=expanded;
+    S.to=expanded;
+  } else {
+    S.to=raw;
+  }
   showSug('to-inp','to-sug',S.to);
   checkForm();
 }
