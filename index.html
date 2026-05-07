@@ -1064,12 +1064,25 @@ function go(){
     (S.parking?'PARKING: For each activity, add a parkingTip field with the best nearby parking option (free street parking, cheapest garage, park-and-walk tip, or public transit alternative if parking is difficult).\n':'')+
     'Return ONLY the JSON object.';
 
-  fetch('/api/route',{
+  var _fetchOptions={
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({prompt:prompt,max_tokens:Math.min(4000,1500+S.days*200)})
-  })
-  .then(function(r){return r.json();})
+    body:JSON.stringify({prompt:prompt,max_tokens:Math.min(6000,2000+S.days*300+(S.parking?1500:0)+(S.gems?500:0))})
+  };
+
+  function doFetch(attemptsLeft){
+    return fetch('/api/route',_fetchOptions)
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d.error&&attemptsLeft>0){
+          console.log('API error, retrying...',d.error);
+          return new Promise(function(res){setTimeout(res,2000);}).then(function(){return doFetch(attemptsLeft-1);});
+        }
+        return d;
+      });
+  }
+
+  doFetch(2)
   .then(function(d){
     clearInterval(iv);
     var txt=d.text||'';
@@ -1078,7 +1091,7 @@ function go(){
     if(s!==-1&&e!==-1){showResults(JSON.parse(clean.substring(s,e+1)));}
     else showErr();
   })
-  .catch(function(){clearInterval(iv);showErr();});
+  .catch(function(e){console.error('Fetch error:',e);clearInterval(iv);showErr();});
 }
 
 function showResults(data){
