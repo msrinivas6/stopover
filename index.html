@@ -846,8 +846,20 @@ function useRoute(f,t,d){
   S.from=f;S.to=t;
   if(d) updateDays(d);
   checkForm();
-  window.scrollTo(0,0);
-  setTimeout(go,200);
+  // Scroll to search card so user can pick vibes/gems/parking before launching
+  var card=document.querySelector('.search-card');
+  if(card) card.scrollIntoView({behavior:'smooth',block:'start'});
+  else window.scrollTo(0,0);
+  // Highlight the find button to draw attention
+  var btn=document.getElementById('find-btn');
+  if(btn){
+    btn.style.transform='scale(1.03)';
+    btn.style.boxShadow='0 6px 24px rgba(255,124,42,0.45)';
+    setTimeout(function(){
+      btn.style.transform='';
+      btn.style.boxShadow='';
+    },1200);
+  }
 }
 
 var _sugLock=false;
