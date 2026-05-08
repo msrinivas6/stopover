@@ -1362,10 +1362,23 @@ function showResults(data){
   stops.forEach(function(stop,idx){
     // Drive connector
     if(idx>0&&stop.driveTimeFromPrev){
-      var prevStop=stops[idx-1]?stops[idx-1].name:S.from;
-      var mapsOrigin=encodeURIComponent(prevStop);
-      var mapsDest=encodeURIComponent(stop.name);
-      var mapsUrl='https://www.google.com/maps/dir/?api=1&origin='+mapsOrigin+'&destination='+mapsDest+'&travelmode=driving';
+      // Use AI-provided googleMapsQuery if available, otherwise build from city names
+      var mapsUrl;
+      if(stop.googleMapsQuery){
+        // AI provides "City A to City B" - split and use as origin/destination
+        var parts=stop.googleMapsQuery.split(' to ');
+        if(parts.length>=2){
+          mapsUrl='https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(parts[0])+'&destination='+encodeURIComponent(parts[1])+'&travelmode=driving';
+        }
+      }
+      if(!mapsUrl){
+        // Fallback: find previous non-skipped stop name
+        var prevStopName=S.from;
+        for(var pi=idx-1;pi>=0;pi--){
+          if(!_skipped[pi]){prevStopName=stops[pi].name;break;}
+        }
+        mapsUrl='https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(prevStopName)+'&destination='+encodeURIComponent(stop.name)+'&travelmode=driving';
+      }
       html+='<div class="drive-connector" id="dc-'+idx+'">'+
         '<div class="dc-line"></div>'+
         '<div style="display:flex;flex-direction:column;align-items:center;margin:0 8px;">'+
