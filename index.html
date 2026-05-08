@@ -1238,19 +1238,16 @@ function go(){
     return fetch('/api/route',_fetchOptions)
       .then(function(r){
         if(r.status===429){
-          // Rate limited - wait longer before retry
-          if(attemptsLeft>0){
-            console.log('Rate limited, waiting 5s...');
-            return new Promise(function(res){setTimeout(res,5000);}).then(function(){return doFetch(attemptsLeft-1);});
-          }
-          return {error:'rate_limit',message:'Too many requests. Please wait a moment and try again.'};
+          // Rate limited - DO NOT retry, just return error immediately
+          return {error:'rate_limit',message:'Too many requests. Please wait 30 seconds and try again.'};
         }
         return r.json();
       })
       .then(function(d){
+        // Only retry on server errors (500), never on rate limits or client errors
         if(d&&d.error&&d.error!=='rate_limit'&&attemptsLeft>0){
-          console.log('API error, retrying...',d.error);
-          return new Promise(function(res){setTimeout(res,3000);}).then(function(){return doFetch(attemptsLeft-1);});
+          console.log('Server error, retrying once...',d.error);
+          return new Promise(function(res){setTimeout(res,2000);}).then(function(){return doFetch(0);});
         }
         return d;
       });
