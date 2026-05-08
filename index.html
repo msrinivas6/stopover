@@ -872,61 +872,59 @@ function showToast(msg){
   }).join('');
 })();
 
-// Auto-load shared route from URL params
-(function(){
+// Auto-load shared route from URL params - runs after full page load
+function loadSharedRoute(){
   var params=new URLSearchParams(window.location.search);
   var sharedFrom=params.get('from');
   var sharedTo=params.get('to');
-  if(sharedFrom&&sharedTo){
-    document.getElementById('from-inp').value=sharedFrom;
-    document.getElementById('to-inp').value=sharedTo;
-    S.from=sharedFrom;
-    S.to=sharedTo;
-    var sharedDays=parseInt(params.get('days'));
-    if(sharedDays){
-    S.days=sharedDays;
-    // Show days section and select the right chip
-    var daysSection=document.getElementById('days-section');
-    if(daysSection) daysSection.style.display='block';
-    document.querySelectorAll('.day-chip').forEach(function(c){
-      c.classList.remove('on');
-      if(parseInt(c.getAttribute('data-days'))===sharedDays) c.classList.add('on');
+  if(!sharedFrom||!sharedTo) return;
+
+  document.getElementById('from-inp').value=sharedFrom;
+  document.getElementById('to-inp').value=sharedTo;
+  S.from=sharedFrom;
+  S.to=sharedTo;
+
+  var sharedDays=parseInt(params.get('days'))||2;
+
+  var sharedVibes=params.get('vibes');
+  if(sharedVibes){
+    sharedVibes.split(',').forEach(function(v){
+      var chip=document.querySelector('.vibe-chip[data-vibe="'+v+'"]');
+      if(chip){chip.classList.add('on');S.vibes.push(v);}
     });
   }
-    var sharedVibes=params.get('vibes');
-    if(sharedVibes){
-      sharedVibes.split(',').forEach(function(v){
-        var chip=document.querySelector('.vibe-chip[data-vibe="'+v+'"]');
-        if(chip){chip.classList.add('on');S.vibes.push(v);}
-      });
-    }
-    if(params.get('gems')==='1'){
-      S.gems=true;
-      var gemsEl=document.getElementById('gems-toggle');
-      if(gemsEl) gemsEl.classList.add('on');
-    }
-    if(params.get('parking')==='1'){
-      S.parking=true;
-      var parkEl=document.getElementById('parking-toggle');
-      if(parkEl) parkEl.classList.add('on');
-    }
-    checkForm();
-    // Override days AFTER checkForm (which auto-suggests days)
-    S.days=sharedDays;
-    var daysSection=document.getElementById('days-section');
-    if(daysSection) daysSection.style.display='block';
-    document.querySelectorAll('.day-chip').forEach(function(c){
-      c.classList.remove('on');
-      if(parseInt(c.getAttribute('data-days'))===sharedDays) c.classList.add('on');
-    });
-    // Auto-run after DOM settles
-    setTimeout(function(){
-      var btn=document.getElementById('find-btn');
-      btn.disabled=false;
-      go();
-    },800);
+  if(params.get('gems')==='1'){
+    S.gems=true;
+    var gemsEl=document.getElementById('gems-toggle');
+    if(gemsEl) gemsEl.classList.add('on');
   }
-})();
+  if(params.get('parking')==='1'){
+    S.parking=true;
+    var parkEl=document.getElementById('parking-toggle');
+    if(parkEl) parkEl.classList.add('on');
+  }
+
+  // checkForm first (enables button, shows days section)
+  checkForm();
+
+  // Override days after checkForm
+  S.days=sharedDays;
+  var daysSection=document.getElementById('days-section');
+  if(daysSection) daysSection.style.display='block';
+  document.querySelectorAll('.day-chip').forEach(function(c){
+    c.classList.remove('on');
+    if(parseInt(c.getAttribute('data-days'))===sharedDays) c.classList.add('on');
+  });
+
+  // Run trip
+  setTimeout(go, 500);
+}
+// Run after page fully loaded
+if(document.readyState==='complete'){
+  loadSharedRoute();
+} else {
+  window.addEventListener('load', loadSharedRoute);
+}
 
 function useRoute(f,t,d){
   document.getElementById('from-inp').value=f;
