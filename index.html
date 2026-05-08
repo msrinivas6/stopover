@@ -1464,7 +1464,7 @@ function showResults(data){
       stop.activities.forEach(function(a){
         var actId='act-'+idx+'-'+ai;
         html+='<div class="act" id="'+actId+'">'+
-          '<div class="act-check" onclick="toggleActivity(\'' +actId+ '\')"></div>'+
+          '<div class="act-check" id="chk-'+actId+'" onclick="toggleActivity(this.id.slice(4))"></div>'+
           '<div class="act-ico">'+(a.emoji||'🎯')+'</div>'+
           '<div class="act-body">'+
             '<div class="act-name">'+a.name+(a.hiddenGem?'<span style="font-size:9px;font-weight:800;color:#7c3aed;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.2);padding:2px 6px;border-radius:10px;margin-left:6px;vertical-align:middle;">💎 Hidden gem</span>':'')+' </div>'+
