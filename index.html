@@ -1231,7 +1231,7 @@ function go(){
   var _fetchOptions={
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({prompt:prompt,max_tokens:Math.min(8000,3000+S.days*400+(S.parking?2000:0)+(S.gems?1000:0))})
+    body:JSON.stringify({prompt:prompt,max_tokens:Math.min(5500,2000+S.days*200+(S.parking?800:0)+(S.gems?400:0))})
   };
 
   function doFetch(attemptsLeft){
