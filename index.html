@@ -52,7 +52,7 @@ html{overflow-x:hidden;}
 .search-card *{min-width:0;}
 
 /* ── HEADER ── */
-.hdr{background:rgba(255,248,240,0.97);backdrop-filter:blur(12px);border-bottom:1px solid var(–border2);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(180,100,20,0.08);}
+.hdr{background:rgba(255,248,240,0.97);backdrop-filter:blur(12px);border-bottom:1px solid var(–border2);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(180,100,20,0.08);font-size:14px;line-height:normal;}
 .hdr-brand{display:flex;align-items:center;gap:8px;}
 .hdr-logo{width:30px;height:30px;background:linear-gradient(135deg,var(–sun),var(–amber));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;}
 .hdr-name{font-size:17px;font-weight:800;color:var(–text);letter-spacing:-0.3px;}
@@ -60,7 +60,7 @@ html{overflow-x:hidden;}
 .hdr-tag{font-size:10px;font-weight:700;color:var(–sun);background:rgba(255,124,42,0.1);border:1px solid rgba(255,124,42,0.25);padding:3px 9px;border-radius:20px;}
 
 /* ── HOME SCREEN ── */
-.home{min-height:100vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#fff3e0 0%,#fff8f0 40%,#f0f9ff 100%);overflow-x:hidden;font-size:0;line-height:0;}
+.home{min-height:100vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#fff3e0 0%,#fff8f0 40%,#f0f9ff 100%);overflow-x:hidden;}
 
 /* Hero */
 .hero{padding:16px 12px 12px;text-align:center;position:relative;overflow:visible;background:transparent;font-size:0;}
@@ -71,7 +71,7 @@ html{overflow-x:hidden;}
 .hero-sub{font-size:14px;color:var(–text2);line-height:1.7;max-width:320px;margin:0 auto 16px;font-weight:500;}
 
 /* Search card */
-.search-card{background:var(–bg2);border:1.5px solid var(–border2);border-radius:var(–r-xl);padding:14px;margin:0 0 16px;width:100%;box-shadow:0 4px 24px rgba(180,100,20,0.08);}
+.search-card{background:var(–bg2);border:1.5px solid var(–border2);border-radius:var(–r-xl);padding:14px;margin:0 0 16px;width:100%;box-shadow:0 4px 24px rgba(180,100,20,0.08);font-size:14px;line-height:normal;}
 .search-row{display:flex;align-items:center;gap:6px;margin-bottom:8px;width:100%;overflow:hidden;}
 .search-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 .search-dot.from{background:var(–sun);}
@@ -288,7 +288,7 @@ html{overflow-x:hidden;}
 
   <!-- Days -->
   <!-- Days - hidden until route entered, then auto-populates -->
-  <div id="days-section" style="display:none;margin-bottom:14px;width:100%;box-sizing:border-box;overflow:hidden;">
+  <div id="days-section" style="display:none;margin-bottom:14px;width:100%;box-sizing:border-box;overflow:hidden;position:relative;z-index:1;">
     <div class="days-label" style="margin-bottom:6px;">Recommended days for your route</div>
     <div id="days-recommendation" style="background:linear-gradient(135deg,rgba(255,124,42,0.07),rgba(245,158,11,0.05));border:1.5px solid rgba(255,124,42,0.2);border-radius:14px;padding:12px 14px;margin-bottom:10px;box-sizing:border-box;overflow:hidden;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
@@ -1058,8 +1058,8 @@ function checkForm(){
   var btn=document.getElementById('find-btn');
   if(f.length>1&&t.length>1){
     btn.disabled=false;
-    btn.style.background='linear-gradient(135deg,var(--teal),var(--blue))';
-    btn.style.color='var(--white)';
+    btn.style.background='linear-gradient(135deg,var(--sun),var(--amber))';
+    btn.style.color='#ffffff';
     btn.style.cursor='pointer';
     // Auto-suggest ideal days based on route
     var ideal=suggestDays(f,t);
