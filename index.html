@@ -71,7 +71,7 @@ html{overflow-x:hidden;}
 .hero-sub{font-size:14px;color:var(–text2);line-height:1.7;max-width:320px;margin:0 auto 16px;font-weight:500;}
 
 /* Search card */
-.search-card{background:var(–bg2);border:1.5px solid var(–border2);border-radius:var(–r-xl);padding:14px;margin:0 0 16px;width:100%;box-shadow:0 4px 24px rgba(180,100,20,0.08);font-size:14px;line-height:normal;}
+.search-card{background:var(–bg2);border:1.5px solid var(–border2);border-radius:var(–r-xl);padding:14px;margin:0 0 16px;width:100%;box-shadow:0 4px 24px rgba(180,100,20,0.08);}
 .search-row{display:flex;align-items:center;gap:6px;margin-bottom:8px;width:100%;overflow:hidden;}
 .search-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 .search-dot.from{background:var(–sun);}
@@ -274,81 +274,70 @@ html{overflow-x:hidden;}
         </div>
         <button class="swap-btn" onclick="swapCities()">⇅</button>
       </div>
-
-```
-  <!-- To -->
-  <div class="search-row" style="margin-bottom:16px;">
-    <div class="search-dot to"></div>
-    <div class="search-input-wrap">
-      <input type="text" class="search-input" id="to-inp" placeholder="To — e.g. Miami" oninput="onTo()" onfocus="onToFocus()" onblur="var _v=expandAlias(document.getElementById('to-inp').value.trim());document.getElementById('to-inp').value=_v;S.to=_v;checkForm();" autocomplete="off"/>
-      <div class="suggestions" id="to-sug" style="display:none;"></div>
-    </div>
-    <div style="width:36px;"></div>
-  </div>
-
-  <!-- Days -->
-  <!-- Days - hidden until route entered, then auto-populates -->
-  <div id="days-section" style="display:none;margin-bottom:14px;width:100%;box-sizing:border-box;overflow:hidden;position:relative;z-index:1;">
-    <div class="days-label" style="margin-bottom:6px;">Recommended days for your route</div>
-    <div id="days-recommendation" style="background:linear-gradient(135deg,rgba(255,124,42,0.07),rgba(245,158,11,0.05));border:1.5px solid rgba(255,124,42,0.2);border-radius:14px;padding:12px 14px;margin-bottom:10px;box-sizing:border-box;overflow:hidden;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-        <span style="font-size:28px;font-weight:800;color:var(--sun);flex-shrink:0;" id="rec-days">2</span>
-        <span style="font-size:13px;font-weight:700;color:var(--text);flex:1;min-width:0;" id="rec-label">days recommended</span>
-        <span style="background:rgba(255,124,42,0.12);border:1px solid rgba(255,124,42,0.25);border-radius:20px;padding:3px 8px;font-size:10px;font-weight:800;color:var(--sun);flex-shrink:0;">✨ AI</span>
+      <!-- To -->
+      <div class="search-row" style="margin-bottom:16px;">
+        <div class="search-dot to"></div>
+        <div class="search-input-wrap">
+          <input type="text" class="search-input" id="to-inp" placeholder="To — e.g. Miami" oninput="onTo()" onfocus="onToFocus()" onblur="var _v=expandAlias(document.getElementById('to-inp').value.trim());document.getElementById('to-inp').value=_v;S.to=_v;checkForm();" autocomplete="off"/>
+          <div class="suggestions" id="to-sug" style="display:none;"></div>
+        </div>
+        <div style="width:36px;"></div>
       </div>
-      <div style="font-size:12px;color:var(--text2);line-height:1.5;" id="rec-reason">Based on your route distance</div>
-    </div>
-    <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:5px;">Or choose manually:</div>
-    <div class="days-scroll">
-      <div class="day-chip" data-days="1" onclick="pickDay(this)"><span class="day-chip-n">1</span><span class="day-chip-l">Quick</span></div>
-      <div class="day-chip" data-days="2" onclick="pickDay(this)"><span class="day-chip-n">2</span><span class="day-chip-l">Weekend</span></div>
-      <div class="day-chip" data-days="3" onclick="pickDay(this)"><span class="day-chip-n">3</span><span class="day-chip-l">Short</span></div>
-      <div class="day-chip" data-days="5" onclick="pickDay(this)"><span class="day-chip-n">5</span><span class="day-chip-l">Extended</span></div>
-      <div class="day-chip" data-days="7" onclick="pickDay(this)"><span class="day-chip-n">7</span><span class="day-chip-l">Week</span></div>
-      <div class="day-chip" data-days="10" onclick="pickDay(this)"><span class="day-chip-n">10</span><span class="day-chip-l">Coast</span></div>
-      <div class="day-chip" data-days="14" onclick="pickDay(this)"><span class="day-chip-n">14</span><span class="day-chip-l">Epic</span></div>
-    </div>
-  </div>
-
-  <!-- Route Vibe -->
-  <div style="margin-bottom:14px;">
-    <div class="vibe-label">✨ Route vibe <span style="font-size:10px;color:var(--text3);font-weight:500;text-transform:none;letter-spacing:0;">(pick any)</span></div>
-    <div class="vibe-grid">
-      <div class="vibe-chip" data-vibe="scenic" onclick="toggleVibe(this)"><span class="vibe-chip-ico">🏔️</span><span class="vibe-chip-lbl">Scenic</span></div>
-      <div class="vibe-chip" data-vibe="coastal" onclick="toggleVibe(this)"><span class="vibe-chip-ico">🌊</span><span class="vibe-chip-lbl">Coastal</span></div>
-      <div class="vibe-chip" data-vibe="historic" onclick="toggleVibe(this)"><span class="vibe-chip-ico">🏛️</span><span class="vibe-chip-lbl">Historic</span></div>
-      <div class="vibe-chip" data-vibe="offbeat" onclick="toggleVibe(this)"><span class="vibe-chip-ico">🔮</span><span class="vibe-chip-lbl">Offbeat</span></div>
-      <div class="vibe-chip" data-vibe="foodie" onclick="toggleVibe(this)"><span class="vibe-chip-ico">🍜</span><span class="vibe-chip-lbl">Foodie</span></div>
-      <div class="vibe-chip" data-vibe="nature" onclick="toggleVibe(this)"><span class="vibe-chip-ico">🌲</span><span class="vibe-chip-lbl">Nature</span></div>
-      <div class="vibe-chip" data-vibe="adventure" onclick="toggleVibe(this)"><span class="vibe-chip-ico">🧗</span><span class="vibe-chip-lbl">Adventure</span></div>
-      <div class="vibe-chip" data-vibe="relaxed" onclick="toggleVibe(this)"><span class="vibe-chip-ico">😌</span><span class="vibe-chip-lbl">Relaxed</span></div>
-    </div>
-  </div>
-
-  <!-- Extra Options -->
-  <div style="margin-bottom:14px;">
-    <div class="vibe-label">⚙️ Extra options</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <div class="vibe-chip" id="gems-toggle" onclick="toggleOption('gems',this)">
-        <span class="vibe-chip-ico">💎</span>
-        <span class="vibe-chip-lbl">Hidden Gems</span>
+      <!-- Days -->
+      <!-- Days - hidden until route entered, then auto-populates -->
+      <div id="days-section" style="display:none;margin-bottom:14px;width:100%;box-sizing:border-box;overflow:hidden;position:relative;z-index:1;">
+        <div class="days-label" style="margin-bottom:6px;">Recommended days for your route</div>
+        <div id="days-recommendation" style="background:linear-gradient(135deg,rgba(255,124,42,0.07),rgba(245,158,11,0.05));border:1.5px solid rgba(255,124,42,0.2);border-radius:14px;padding:12px 14px;margin-bottom:10px;box-sizing:border-box;overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <span style="font-size:28px;font-weight:800;color:var(--sun);flex-shrink:0;" id="rec-days">2</span>
+            <span style="font-size:13px;font-weight:700;color:var(--text);flex:1;min-width:0;" id="rec-label">days recommended</span>
+            <span style="background:rgba(255,124,42,0.12);border:1px solid rgba(255,124,42,0.25);border-radius:20px;padding:3px 8px;font-size:10px;font-weight:800;color:var(--sun);flex-shrink:0;">✨ AI</span>
+          </div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.5;" id="rec-reason">Based on your route distance</div>
+        </div>
+        <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:5px;">Or choose manually:</div>
+        <div class="days-scroll">
+          <div class="day-chip" data-days="1" onclick="pickDay(this)"><span class="day-chip-n">1</span><span class="day-chip-l">Quick</span></div>
+          <div class="day-chip" data-days="2" onclick="pickDay(this)"><span class="day-chip-n">2</span><span class="day-chip-l">Weekend</span></div>
+          <div class="day-chip" data-days="3" onclick="pickDay(this)"><span class="day-chip-n">3</span><span class="day-chip-l">Short</span></div>
+          <div class="day-chip" data-days="5" onclick="pickDay(this)"><span class="day-chip-n">5</span><span class="day-chip-l">Extended</span></div>
+          <div class="day-chip" data-days="7" onclick="pickDay(this)"><span class="day-chip-n">7</span><span class="day-chip-l">Week</span></div>
+          <div class="day-chip" data-days="10" onclick="pickDay(this)"><span class="day-chip-n">10</span><span class="day-chip-l">Coast</span></div>
+          <div class="day-chip" data-days="14" onclick="pickDay(this)"><span class="day-chip-n">14</span><span class="day-chip-l">Epic</span></div>
+        </div>
       </div>
-      <div class="vibe-chip" id="parking-toggle" onclick="toggleOption('parking',this)">
-        <span class="vibe-chip-ico">🅿️</span>
-        <span class="vibe-chip-lbl">Parking Tips</span>
+      <!-- Route Vibe -->
+      <div style="margin-bottom:14px;">
+        <div class="vibe-label">✨ Route vibe <span style="font-size:10px;color:var(--text3);font-weight:500;text-transform:none;letter-spacing:0;">(pick any)</span></div>
+        <div class="vibe-grid">
+          <div class="vibe-chip" data-vibe="scenic" onclick="toggleVibe(this)"><span class="vibe-chip-ico">🏔️</span><span class="vibe-chip-lbl">Scenic</span></div>
+          <div class="vibe-chip" data-vibe="coastal" onclick="toggleVibe(this)"><span class="vibe-chip-ico">🌊</span><span class="vibe-chip-lbl">Coastal</span></div>
+          <div class="vibe-chip" data-vibe="historic" onclick="toggleVibe(this)"><span class="vibe-chip-ico">🏛️</span><span class="vibe-chip-lbl">Historic</span></div>
+          <div class="vibe-chip" data-vibe="offbeat" onclick="toggleVibe(this)"><span class="vibe-chip-ico">🔮</span><span class="vibe-chip-lbl">Offbeat</span></div>
+          <div class="vibe-chip" data-vibe="foodie" onclick="toggleVibe(this)"><span class="vibe-chip-ico">🍜</span><span class="vibe-chip-lbl">Foodie</span></div>
+          <div class="vibe-chip" data-vibe="nature" onclick="toggleVibe(this)"><span class="vibe-chip-ico">🌲</span><span class="vibe-chip-lbl">Nature</span></div>
+          <div class="vibe-chip" data-vibe="adventure" onclick="toggleVibe(this)"><span class="vibe-chip-ico">🧗</span><span class="vibe-chip-lbl">Adventure</span></div>
+          <div class="vibe-chip" data-vibe="relaxed" onclick="toggleVibe(this)"><span class="vibe-chip-ico">😌</span><span class="vibe-chip-lbl">Relaxed</span></div>
+        </div>
       </div>
+      <!-- Extra Options -->
+      <div style="margin-bottom:14px;">
+        <div class="vibe-label">⚙️ Extra options</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div class="vibe-chip" id="gems-toggle" onclick="toggleOption('gems',this)">
+            <span class="vibe-chip-ico">💎</span>
+            <span class="vibe-chip-lbl">Hidden Gems</span>
+          </div>
+          <div class="vibe-chip" id="parking-toggle" onclick="toggleOption('parking',this)">
+            <span class="vibe-chip-ico">🅿️</span>
+            <span class="vibe-chip-lbl">Parking Tips</span>
+          </div>
+        </div>
+      </div>
+      <button class="find-btn" id="find-btn" onclick="setTimeout(go,10)" disabled>🛣️ Find My Stopovers</button>
     </div>
   </div>
-
-  <button class="find-btn" id="find-btn" onclick="setTimeout(go,10)" disabled>🛣️ Find My Stopovers</button>
-
-</div>
-```
-
-  </div>
-
   <!-- Popular routes -->
-
   <div class="section-label">🔥 Popular routes</div>
   <div class="popular-scroll" id="popular-scroll"></div><div style="height:32px;"></div>
 </div>
