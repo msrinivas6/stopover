@@ -1263,11 +1263,28 @@ function go(){
   doFetch(2)
   .then(function(d){
     clearInterval(iv);
+    if(d.error){console.error('API error:',d.error);showErr();return;}
     var txt=d.text||'';
-    var clean=txt.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
-    var s=clean.indexOf('{');var e=clean.lastIndexOf('}');
-    if(s!==-1&&e!==-1){showResults(JSON.parse(clean.substring(s,e+1)));}
-    else showErr();
+    if(!txt){console.error('Empty response');showErr();return;}
+    try{
+      var clean=txt.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
+      var s=clean.indexOf('{');var e=clean.lastIndexOf('}');
+      if(s!==-1&&e!==-1){
+        var parsed=JSON.parse(clean.substring(s,e+1));
+        if(parsed&&parsed.stops&&parsed.stops.length>0){
+          showResults(parsed);
+        } else {
+          console.error('No stops in response');
+          showErr();
+        }
+      } else {
+        console.error('No JSON found in:',txt.substring(0,200));
+        showErr();
+      }
+    } catch(ex){
+      console.error('JSON parse error:',ex,'text:',txt.substring(0,200));
+      showErr();
+    }
   })
   .catch(function(e){console.error('Fetch error:',e);clearInterval(iv);showErr();});
 }
@@ -1494,7 +1511,7 @@ function showResults(data){
   el.innerHTML=html;
 }
 
-function showErr(){
+function showErr(msg){
   document.getElementById('loading').style.display='none';
   var el=document.getElementById('results');
   el.style.display='block';
@@ -1502,6 +1519,7 @@ function showErr(){
     '<div style="font-size:52px;margin-bottom:20px;">😕</div>'+
     '<div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:10px;">Could not generate route</div>'+
     '<div style="font-size:14px;color:var(--text2);line-height:1.75;margin-bottom:24px;max-width:300px;">Something went wrong. Please try again.</div>'+
+    '<button class="find-btn" style="max-width:300px;width:100%;margin-bottom:12px;" onclick="go()">🔄 Try again</button>'+
     '<button class="back-btn" style="max-width:300px;width:100%;" onclick="reset()">← Try another route</button>'+
   '</div>';
 }
