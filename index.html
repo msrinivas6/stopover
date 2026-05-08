@@ -60,12 +60,12 @@ html{overflow-x:hidden;}
 .hdr-tag{font-size:10px;font-weight:700;color:var(–sun);background:rgba(255,124,42,0.1);border:1px solid rgba(255,124,42,0.25);padding:3px 9px;border-radius:20px;}
 
 /* ── HOME SCREEN ── */
-.home{min-height:100vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#fff3e0 0%,#fff8f0 40%,#f0f9ff 100%);overflow-x:hidden;}
+.home{min-height:100vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#fff3e0 0%,#fff8f0 40%,#f0f9ff 100%);overflow-x:hidden;font-size:0;line-height:0;}
 
 /* Hero */
-.hero{padding:16px 12px 12px;text-align:center;position:relative;overflow:visible;background:transparent;}
+.hero{padding:16px 12px 12px;text-align:center;position:relative;overflow:visible;background:transparent;font-size:0;}
 .hero-glow{display:none;}
-.hero-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(255,124,42,0.1);border:1px solid rgba(255,124,42,0.25);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;color:var(–sun);margin-bottom:16px;letter-spacing:0.3px;}
+.hero-eyebrow{font-size:11px;display:inline-flex;align-items:center;gap:6px;background:rgba(255,124,42,0.1);border:1px solid rgba(255,124,42,0.25);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;color:var(–sun);margin-bottom:16px;letter-spacing:0.3px;}
 .hero h1{font-size:clamp(28px,7vw,42px);font-weight:800;color:var(–text);line-height:1.2;letter-spacing:-1px;margin-bottom:10px;overflow:visible;}
 .hero h1 span{color:var(–sun);}
 .hero-sub{font-size:14px;color:var(–text2);line-height:1.7;max-width:320px;margin:0 auto 16px;font-weight:500;}
@@ -108,8 +108,8 @@ html{overflow-x:hidden;}
 .sug-item:hover{background:rgba(255,124,42,0.07);color:var(–sun);}
 
 /* Popular routes */
-.section-label{font-size:11px;font-weight:700;color:var(–text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px;padding:8px 16px 0;background:transparent;display:block;}
-.popular-scroll{display:flex;gap:10px;overflow-x:auto;padding:0 16px 4px;scrollbar-width:none;background:transparent;}
+.section-label{font-size:11px;font-weight:700;color:var(–text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px;padding:8px 16px 0;background:transparent;display:block;line-height:normal;}
+.popular-scroll{display:flex;gap:10px;overflow-x:auto;padding:0 16px 4px;scrollbar-width:none;background:transparent;font-size:13px;line-height:normal;}
 .popular-scroll::-webkit-scrollbar{display:none;}
 .pop-card{background:var(–bg2);border:2px solid rgba(220,140,60,0.25);border-radius:var(–r-lg);padding:14px 16px;flex-shrink:0;min-width:180px;cursor:pointer;transition:all 0.2s;box-shadow:0 3px 16px rgba(180,100,20,0.12);}
 .pop-card:hover{border-color:var(–sun);transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,124,42,0.15);}
@@ -261,23 +261,21 @@ html{overflow-x:hidden;}
     <div class="hero-glow"></div>
     <div class="hero-eyebrow">🗺️ Discover what's between</div>
     <h1>The best trips have<br>the best <span style="color:var(--sun);">stopovers</span></h1>
-    <p class="hero-sub">Enter any two cities. Get the most unmissable stops along the way — with insider tips, time needed and costs.</p>
+    <p class="hero-sub">Enter any two cities. Get the most unmissable stops along the way — with insider tips, time needed and costs.</p><div class="search-card">
+      <!-- From -->
+      <div class="search-row">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div class="search-dot from"></div>
+          <div class="search-vline"></div>
+        </div>
+        <div class="search-input-wrap">
+          <input type="text" class="search-input" id="from-inp" placeholder="From — e.g. Atlanta" oninput="onFrom()" onfocus="onFromFocus()" onblur="var _v=expandAlias(document.getElementById('from-inp').value.trim());document.getElementById('from-inp').value=_v;S.from=_v;checkForm();" autocomplete="off"/>
+          <div class="suggestions" id="from-sug" style="display:none;"></div>
+        </div>
+        <button class="swap-btn" onclick="swapCities()">⇅</button>
+      </div>
 
 ```
-<div class="search-card">
-  <!-- From -->
-  <div class="search-row">
-    <div style="display:flex;flex-direction:column;align-items:center;">
-      <div class="search-dot from"></div>
-      <div class="search-vline"></div>
-    </div>
-    <div class="search-input-wrap">
-      <input type="text" class="search-input" id="from-inp" placeholder="From — e.g. Atlanta" oninput="onFrom()" onfocus="onFromFocus()" onblur="var _v=expandAlias(document.getElementById('from-inp').value.trim());document.getElementById('from-inp').value=_v;S.from=_v;checkForm();" autocomplete="off"/>
-      <div class="suggestions" id="from-sug" style="display:none;"></div>
-    </div>
-    <button class="swap-btn" onclick="swapCities()">⇅</button>
-  </div>
-
   <!-- To -->
   <div class="search-row" style="margin-bottom:16px;">
     <div class="search-dot to"></div>
@@ -352,8 +350,7 @@ html{overflow-x:hidden;}
   <!-- Popular routes -->
 
   <div class="section-label">🔥 Popular routes</div>
-  <div class="popular-scroll" id="popular-scroll"></div>
-  <div style="height:32px;"></div>
+  <div class="popular-scroll" id="popular-scroll"></div><div style="height:32px;"></div>
 </div>
 
 <!-- LOADING -->
