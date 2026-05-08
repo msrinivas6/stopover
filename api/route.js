@@ -1,5 +1,31 @@
 export const config = { api: { bodyParser: { sizeLimit: ‘4mb’ } } };
 
+async function tryModel(model, prompt, max_tokens, apiKey) {
+const response = await fetch(‘https://api.groq.com/openai/v1/chat/completions’, {
+method: ‘POST’,
+headers: {
+‘Content-Type’: ‘application/json’,
+‘Authorization’: ’Bearer ’ + apiKey
+},
+body: JSON.stringify({
+model: model,
+max_tokens: max_tokens || 3000,
+messages: [
+{ role: ‘system’, content: ‘You are an expert road trip planner. Always respond with valid JSON only.’ },
+{ role: ‘user’, content: prompt }
+]
+})
+});
+
+if (response.status === 429) return null;
+if (!response.ok) return null;
+
+const data = await response.json();
+const choices = data.choices;
+if (!choices || !choices[0] || !choices[0].message) return null;
+return choices[0].message.content || ‘’;
+}
+
 export default async function handler(req, res) {
 res.setHeader(‘Access-Control-Allow-Origin’, ‘*’);
 res.setHeader(‘Access-Control-Allow-Methods’, ‘POST, OPTIONS’);
@@ -11,45 +37,22 @@ if (req.method !== ‘POST’) { res.status(405).json({ error: ‘Method not all
 const apiKey = process.env.GROQ_API_KEY;
 if (!apiKey) return res.status(500).json({ error: ‘API not configured’ });
 
-const { prompt, max_tokens } = req.body || {};
+const body = req.body || {};
+const prompt = body.prompt;
+const max_tokens = body.max_tokens;
 if (!prompt) return res.status(400).json({ error: ‘No prompt provided’ });
 
-// Try primary model, fall back to faster model if rate limited
 const models = [‘llama-3.3-70b-versatile’, ‘llama-3.1-8b-instant’, ‘gemma2-9b-it’];
 
 for (let i = 0; i < models.length; i++) {
 try {
-const response = await fetch(‘https://api.groq.com/openai/v1/chat/completions’, {
-method: ‘POST’,
-headers: {
-‘Content-Type’: ‘application/json’,
-‘Authorization’: `Bearer ${apiKey}`
-},
-body: JSON.stringify({
-model: models[i],
-max_tokens: max_tokens || 3000,
-messages: [
-{ role: ‘system’, content: ‘You are an expert road trip planner. Always respond with valid JSON only.’ },
-{ role: ‘user’, content: prompt }
-]
-})
-});
-
-```
-  if (response.status === 429) continue;
-
-  const data = await response.json();
-  if (!response.ok) continue;
-
-  const text = data.choices?.[0]?.message?.content || '';
-  return res.status(200).json({ text });
-
-} catch (err) {
-  console.error('Error:', err.message);
-  continue;
+const text = await tryModel(models[i], prompt, max_tokens, apiKey);
+if (text !== null) {
+return res.status(200).json({ text: text });
 }
-```
-
+} catch (err) {
+console.error(’Error with model ’ + models[i] + ’: ’ + err.message);
+}
 }
 
 return res.status(429).json({ error: ‘Rate limited. Please wait 30 seconds and try again.’ });
