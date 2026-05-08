@@ -446,9 +446,9 @@ function recalcSummary(){
   var activeStops=0;
   var totalCost=0;
   _stopsData.forEach(function(stop,i){
-    if(!_skipped[i]){
+    if(!_skipped[i]&&stop.type==='stopover'){
       activeStops++;
-      totalCost+=stop.totalCostPerPerson||0;
+      totalCost+=Math.min(stop.totalCostPerPerson||0, 50000);
     }
   });
   var sumStops=document.getElementById('sum-stops');
@@ -1281,7 +1281,20 @@ function showResults(data){
   window.scrollTo(0,0);
 
   var stops=data.stops||[];
-  var totalCost=stops.reduce(function(a,b){return a+(b.totalCostPerPerson||0);},0);
+  // Recalculate totalCost from actual activity costs (don't trust AI's totalCostPerPerson)
+  var totalCost=0;
+  stops.forEach(function(stop){
+    if(stop.type==='stopover'){
+      var stopCost=0;
+      if(stop.activities&&stop.activities.length){
+        stop.activities.forEach(function(a){ stopCost+=Math.min(a.cost||0, 50000); });
+      }
+      // Cap per stop at reasonable amount
+      stopCost=Math.min(stopCost, 50000);
+      stop.totalCostPerPerson=stopCost;
+      totalCost+=stopCost;
+    }
+  });
 
   var html='';
 
