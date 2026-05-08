@@ -1222,16 +1222,16 @@ function go(){
     '"insiderTip":"X","bestFood":"X","bestStartTime":"X"'+(S.days>1?',"overnightStop":false,"suggestedStay":{"type":"Hotel","name":"X","pricePerNight":0,"bookingTip":"X"}':'')+
     '}]}\n'+
     'Include '+S.from+' as start, '+S.to+' as end, '+numStops+' middle stopovers.\n'+
-    'Activities per stop: major cities (capital cities, top tourist destinations like LA, NYC, Tokyo, Paris, Mumbai, Sydney) get 6-8 activities. Medium cities get 4-5. Small towns get 3. Be generous — travellers want options.\n'+
-    'Each activity needs: name, emoji, cost (in '+destCurrency+', 0 if free), duration, description (1 sentence).\n'+
-    'For each stop (except start), add: trafficWarning (peak hours to avoid for that leg, or null if traffic is not an issue), bestTravelDay (best day and time to make this drive), googleMapsQuery (exact query string like "Los Angeles CA to Santa Barbara CA").\n'+
-    'Also per stop: insiderTip, bestFood, bestStartTime, totalCostPerPerson (sum of activity costs).\n'+
+    'Activities: major cities 5-6, medium cities 3-4, small towns 2-3.\n'+
+    'Each activity: name, emoji, cost ('+destCurrency+', 0=free), duration, description'+(S.gems?', hiddenGem(bool)':'')+
+    (S.parking?', parkingTip':'')+'.\n'+
+    'Per stop: insiderTip, bestFood, bestStartTime, trafficWarning, googleMapsQuery("City A to City B").\n'+
     'All costs in '+destCurrency+'. Return ONLY JSON.';
 
   var _fetchOptions={
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({prompt:prompt,max_tokens:Math.min(5500,2000+S.days*200+(S.parking?800:0)+(S.gems?400:0))})
+    body:JSON.stringify({prompt:prompt,max_tokens:3000})
   };
 
   function doFetch(attemptsLeft){
