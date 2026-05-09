@@ -1246,8 +1246,8 @@ function go(){
     (S.parking?',"parkingTip":"X"':'')+'}],'+
     '"insiderTip":"X","bestFood":"X","bestStartTime":"X"'+(S.days>1?',"overnightStop":false,"suggestedStay":{"type":"Hotel","name":"X","pricePerNight":0,"bookingTip":"X"}':'')+
     '}]}\n'+
-    'Include '+S.from+' as start, '+S.to+' as end, '+numStops+' middle stopovers.\n'+
-    'IMPORTANT: You MUST generate exactly: major cities (LA, NYC, SF, Chicago, Tokyo, London, Paris, Mumbai, Sydney etc) = 8 activities, medium cities = 5 activities, small towns = 3 activities. DO NOT generate fewer. This is critical.\n'+
+    'CRITICAL: Include ALL stops — '+S.from+' as start, '+numStops+' middle stopovers, '+S.to+' as end. Generate ALL stops before adding activities.\n'+
+    'Activities per stop: major cities=6-8, medium cities=4-5, small towns=3. Keep descriptions SHORT (max 10 words).\n'+
     'Each activity: name, emoji, cost ('+destCurrency+', 0=free), duration, description'+(S.gems?', hiddenGem(bool)':'')+
     (S.parking?', parkingTip':'')+'.\n'+
     'Per stop: insiderTip, bestFood, bestStartTime, trafficWarning, googleMapsQuery("City A to City B").\n'+
@@ -1350,7 +1350,7 @@ function showResults(data){
   '</div>';
   if(hasMajorTraffic){
     html+='<div style="background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.15);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:#dc2626;font-weight:600;line-height:1.5;">'+
-      '⚠️ <strong>Traffic heads up:</strong> '+trafficStops.length+' leg'+(trafficStops.length>1?'s have':'has')+' known congestion. Use the 🗺 Maps links to check live conditions before you drive.'+
+      '⚠️ <strong>Traffic heads up:</strong> '+trafficStops.length+' leg'+(trafficStops.length>1?'s':'')+' '+(trafficStops.length>1?'have':'has')+' known congestion. Use the 🗺 Maps links to check live conditions before you drive.'+
     '</div>';
   }
 
