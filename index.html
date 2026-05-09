@@ -1224,7 +1224,7 @@ function go(){
     '\nReturn ONLY this JSON structure:\n'+
     '{"totalDistance":"X '+distUnit+'","totalDriveTime":"X hrs","bestSeason":"X","stops":['+
     '{"name":"City","type":"start|stopover|end","emoji":"🏙️","country":"X",'+
-    '"distanceFromPrev":"0 '+distUnit+'","driveTimeFromPrev":"0 hrs","recommendedStay":"X hrs","trafficWarning":"e.g. Heavy traffic leaving LA 7-9AM and 4-7PM","bestTravelDay":"e.g. Tue-Thu mornings","googleMapsQuery":"Los Angeles CA to Santa Barbara CA",'+
+    '"distanceFromPrev":"0 '+distUnit+'","driveTimeFromPrev":"0 hrs","recommendedStay":"X hrs","trafficWarning":"e.g. Heavy traffic leaving LA 7-9AM and 4-7PM","googleMapsQuery":"Los Angeles CA to Santa Barbara CA",'+
     '"totalCostPerPerson":0,'+
     '"activities":[{"name":"X","emoji":"🎭","cost":0,"duration":"X hrs","description":"X"'+(S.gems?',"hiddenGem":false':'')+
     (S.parking?',"parkingTip":"X"':'')+'}],'+
@@ -1383,7 +1383,6 @@ function showResults(data){
           '<div class="dc-pill" id="dc-pill-'+idx+'">🚗 '+stop.driveTimeFromPrev+(stop.distanceFromPrev?' · '+stop.distanceFromPrev:'')+'</div>'+
           '<div class="dc-info">'+
             (stop.trafficWarning&&stop.trafficWarning!=='null'?'<span class="dc-traffic">⚠️ '+stop.trafficWarning+'</span>':'')+
-            (stop.bestTravelDay?'<span style="font-size:10px;color:var(--sun);font-weight:600;">🗓 '+stop.bestTravelDay+'</span>':'')+
             '<a class="dc-maps" href="'+mapsUrl+'" target="_blank">🗺 Maps</a>'+
           '</div>'+
         '</div>'+
