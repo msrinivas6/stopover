@@ -1251,8 +1251,8 @@ function go(){
     (S.parking?',"parkingTip":"X"':'')+'}],'+
     '"insiderTip":"X","bestFood":"X","bestStartTime":"X"'+(S.days>1?',"overnightStop":false,"suggestedStay":{"type":"Hotel","name":"X","pricePerNight":0,"bookingTip":"X"}':'')+
     '}]}\n'+
-    'CRITICAL: Include ALL stops — '+S.from+' as start, '+numStops+' middle stopovers, '+S.to+' as end. Generate ALL stops before adding activities.\n'+
-    'Activities per stop: major cities=6-8, medium cities=4-5, small towns=3. Keep descriptions SHORT (max 10 words).\n'+
+    'CRITICAL: ALL stops including start city MUST have activities. Start: '+S.from+' ('+numStops+' middle stops) End: '+S.to+'.\n'+
+    'Every stop needs activities: major cities=6-8, medium=4-5, small=3. Short descriptions only.\n'+
     'Each activity: name, emoji, cost ('+destCurrency+', 0=free), duration, description'+(S.gems?', hiddenGem(bool)':'')+
     (S.parking?', parkingTip':'')+'.\n'+
     'Per stop: insiderTip, bestFood, bestStartTime, trafficWarning, googleMapsQuery("City A to City B").\n'+
