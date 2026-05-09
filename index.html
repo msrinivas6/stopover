@@ -1297,6 +1297,7 @@ function go(){
       try{
         showResults(parsed);
       } catch(renderErr){
+        alert('ERR:'+renderErr.message+' L:'+renderErr.stack.split(':').pop());
         showErr('Render error: '+renderErr.message);
       }
     } catch(ex){
