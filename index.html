@@ -1231,7 +1231,7 @@ function go(){
     '"insiderTip":"X","bestFood":"X","bestStartTime":"X"'+(S.days>1?',"overnightStop":false,"suggestedStay":{"type":"Hotel","name":"X","pricePerNight":0,"bookingTip":"X"}':'')+
     '}]}\n'+
     'Include '+S.from+' as start, '+S.to+' as end, '+numStops+' middle stopovers.\n'+
-    'IMPORTANT: Always include the most iconic/famous attractions first (e.g. for LA: Hollywood Sign, Griffith Observatory, Santa Monica Pier, Venice Beach, Beverly Hills, Getty Center). Then add vibe-specific activities. Major cities 6-8 activities, medium 4-5, small 3.\n'+
+    'IMPORTANT: Include iconic landmarks first, then vibe activities. LA/SF/NYC/London/Tokyo=8 acts, medium cities=6, small=4. Keep descriptions under 7 words.\n'+
     'Each activity: name, emoji, cost ('+destCurrency+', 0=free), duration, description'+(S.gems?', hiddenGem(bool)':'')+
     (S.parking?', parkingTip':'')+'.\n'+
     'Per stop: insiderTip, bestFood, bestStartTime, trafficWarning, googleMapsQuery("City A to City B").\n'+
@@ -1285,7 +1285,6 @@ function go(){
           try{
             showResults(parsed);
           }catch(re){
-            alert('CRASH:'+re.message+'\n'+re.stack.split('\n')[1]);
             showErr('Render error: '+re.message);
           }
         } else {
