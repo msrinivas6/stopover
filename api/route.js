@@ -13,29 +13,38 @@ module.exports = async function handler(req, res) {
   const prompt = body.prompt;
   if (!prompt) return res.status(400).json({ error: "No prompt provided" });
 
-  const max_tokens = Math.min(parseInt(body.max_tokens) || 4000, 8000);
+  const max_tokens = 4000;
 
   async function tryModel(model) {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + apiKey
-      },
-      body: JSON.stringify({
-        model: model,
-        max_tokens: max_tokens,
-        messages: [
-          { role: "system", content: "You are an expert road trip planner. Always respond with valid JSON only." },
-          { role: "user", content: prompt }
-        ]
-      })
-    });
-    if (response.status === 429) return null;
-    if (!response.ok) return null;
-    const data = await response.json();
-    if (!data.choices || !data.choices[0]) return null;
-    return data.choices[0].message.content;
+    const controller = new AbortController();
+    const timeout = setTimeout(function() { controller.abort(); }, 8000);
+    try {
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + apiKey
+        },
+        body: JSON.stringify({
+          model: model,
+          max_tokens: max_tokens,
+          messages: [
+            { role: "system", content: "You are an expert road trip planner. Always respond with valid JSON only." },
+            { role: "user", content: prompt }
+          ]
+        })
+      });
+      clearTimeout(timeout);
+      if (response.status === 429) return null;
+      if (!response.ok) return null;
+      const data = await response.json();
+      if (!data.choices || !data.choices[0]) return null;
+      return data.choices[0].message.content;
+    } catch (err) {
+      clearTimeout(timeout);
+      return null;
+    }
   }
 
   const text70b = await tryModel("llama-3.3-70b-versatile");
@@ -44,7 +53,7 @@ module.exports = async function handler(req, res) {
   const text8b = await tryModel("llama-3.1-8b-instant");
   if (text8b) return res.status(200).json({ text: text8b });
 
-  return res.status(429).json({ error: "Rate limited. Please wait 30 seconds." });
+  return res.status(429).json({ error: "rate_limit" });
 }
 
 module.exports.config = { api: { bodyParser: { sizeLimit: "4mb" } } };
