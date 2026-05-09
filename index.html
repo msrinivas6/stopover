@@ -1314,7 +1314,6 @@ function showResults(data){
     if(stop.type==='stopover'){
       var stopCost=0;
       if(stop.activities&&stop.activities.length){
-        var actNum=0;
       stop.activities.forEach(function(a){ stopCost+=Math.min(a.cost||0, 50000); });
       }
       // Cap per stop at reasonable amount
@@ -1437,6 +1436,7 @@ function showResults(data){
     // Activities
     if(stop.activities&&stop.activities.length){
       html+='<div class="acts">';
+      var actNum=0;
       stop.activities.forEach(function(a){
         var actId='a'+idx+'n'+actNum; actNum++;
         html+='<div class="act" id="'+actId+'">'+
