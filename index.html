@@ -1260,7 +1260,7 @@ function go(){
   var _fetchOptions={
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({prompt:prompt,max_tokens:Math.min(5000,2500+S.days*200+(S.parking?800:0)+(S.gems?400:0))})
+    body:JSON.stringify({prompt:prompt,max_tokens:Math.min(8000,4000+S.days*300+(S.parking?800:0)+(S.gems?400:0))})
   };
 
   function doFetch(attemptsLeft){
@@ -1453,6 +1453,33 @@ function showResults(data){
       html+='<div style="background:rgba(255,124,42,0.06);border:1px dashed rgba(255,124,42,0.2);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:12px;color:var(--text2);line-height:1.6;">'+'🚀 <strong>Your journey starts here.</strong> Tap Skip above if you live here, or explore what to see before you leave.'+'</div>';
     }
 
+    // Departure time + Weather at top
+    if(stop.bestStartTime && stop.type!=='end'){
+      html+='<div class="tip-row">'+
+        '<div class="tip-box" style="width:100%;background:rgba(0,153,204,0.06);border-color:rgba(0,153,204,0.18);">'+
+          '<div class="tip-label">'+(stop.type==='start'?'&#128336; Departure time':'&#128336; Best start time')+'</div>'+
+          '<div class="tip-text">'+stop.bestStartTime+'</div>'+
+        '</div>'+
+      '</div>';
+    }
+    html+='<div class="weather-card" id="wc-'+idx+'">'+
+      '<div class="weather-top">'+
+        '<span class="weather-lbl">&#127780; Current weather</span>'+
+        '<button class="weather-xbtn" id="wxbtn-'+idx+'" onclick="toggleWX('+idx+')">7-day &#9660;</button>'+
+      '</div>'+
+      '<div class="weather-main">'+
+        '<div class="weather-icon" id="wi-'+idx+'">&#8987;</div>'+
+        '<div>'+
+          '<div class="weather-temp" id="wt-'+idx+'">Loading...</div>'+
+          '<div class="weather-desc" id="wd-'+idx+'"></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="weather-details" id="wdet-'+idx+'"></div>'+
+      '<div class="weather-extra" id="wx-'+idx+'">'+
+        '<div class="wf-row" id="wf-'+idx+'"></div>'+
+      '</div>'+
+    '</div>';
+
     // Activities
     if(stop.activities&&stop.activities.length){
       html+='<div class="acts">';
@@ -1493,14 +1520,7 @@ function showResults(data){
       }
       html+='</div>';
     }
-    if(stop.bestStartTime && stop.type!=='end'){
-      html+='<div class="tip-row">'+
-        '<div class="tip-box" style="width:100%;background:rgba(0,153,204,0.06);border-color:rgba(0,153,204,0.18);">'+
-          '<div class="tip-label">'+(stop.type==='start'?'🕐 Departure time':'🕐 Best start time')+'</div>'+
-          '<div class="tip-text">'+stop.bestStartTime+'</div>'+
-        '</div>'+
-      '</div>';
-    }
+    // departure time moved above
 
     // Overnight stay suggestion
     if(S.days>1 && stop.overnightStop && stop.suggestedStay && stop.type!=='start' && stop.type!=='end'){
@@ -1536,25 +1556,7 @@ function showResults(data){
       '</div>';
     }
 
-    // Weather card
-    html+='<div class="weather-card" id="wc-'+idx+'">'+
-      '<div class="weather-top">'+
-        '<span class="weather-lbl">&#127780; Weather at this stop</span>'+
-        '<button class="weather-xbtn" id="wxbtn-'+idx+'" onclick="toggleWX('+idx+')">7-day &#9660;</button>'+
-      '</div>'+
-      '<div class="weather-main">'+
-        '<div class="weather-icon" id="wi-'+idx+'">&#8987;</div>'+
-        '<div>'+
-          '<div class="weather-temp" id="wt-'+idx+'">Loading...</div>'+
-          '<div class="weather-desc" id="wd-'+idx+'"></div>'+
-        '</div>'+
-      '</div>'+
-      '<div class="weather-details" id="wdet-'+idx+'"></div>'+
-      '<div class="weather-extra" id="wx-'+idx+'">'+
-        '<div class="wf-row" id="wf-'+idx+'"></div>'+
-      '</div>'+
-    '</div>';
-
+    // weather card moved above
     html+='</div>';
   });
 
