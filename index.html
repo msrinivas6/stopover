@@ -1234,8 +1234,8 @@ function go(){
   var distUnit = (S.to.match(/Atlanta|Miami|New York|Los Angeles|Chicago|San Francisco|Boston|Seattle|Dallas|Houston|Denver|Las Vegas|Orlando|Washington DC|Nashville|Austin|Portland|Minneapolis|Phoenix|San Diego|Philadelphia|New Orleans|Tampa|Detroit|Sacramento|Kansas City|Pittsburgh|Honolulu|Anchorage|St Louis|Salt Lake City|Boise|Richmond|Savannah|Charleston|Raleigh|Charlotte|Memphis|Baltimore|Louisville|Milwaukee|Albuquerque|Tucson|Cincinnati|San Antonio|London|Edinburgh|Manchester|Birmingham|Glasgow|Liverpool|Cardiff/)) ? 'miles' : 'km';
 
   var extraOpts='';
-  if(S.gems) extraOpts+='Prefer hidden local gems over tourist traps. Mark hidden gems with hiddenGem:true.\n';
-  if(S.parking) extraOpts+='Add parkingTip to each activity with best nearby parking or transit tip.\n';
+  if(S.gems) extraOpts+='Mix in hidden local gems, mark with hiddenGem:true.\n';
+  if(S.parking) extraOpts+='Add brief parkingTip per activity (max 8 words).\n';
   if(S.days>1) extraOpts+='Mark overnight stopovers with overnightStop:true, add suggestedStay with type/name/pricePerNight/bookingTip in '+destCurrency+'. Never mark start/end as overnight.\n';
 
   var prompt='Expert road trip planner. Route: '+S.from+' → '+S.to+'. Days: '+S.days+'.'+
@@ -1261,7 +1261,7 @@ function go(){
   var _fetchOptions={
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({prompt:prompt,max_tokens:Math.min(6000,3000+S.days*300+(S.parking?600:0)+(S.gems?300:0))})
+    body:JSON.stringify({prompt:prompt,max_tokens:Math.min(4500,2500+S.days*200+(S.parking?400:0)+(S.gems?200:0))})
   };
 
   function doFetch(attemptsLeft){
@@ -1477,23 +1477,7 @@ function showResults(data){
       html+='</div>';
     }
 
-    // Tips
-    if(stop.insiderTip||stop.bestFood){
-      html+='<div class="tip-row">';
-      if(stop.insiderTip){
-        html+='<div class="tip-box">'+
-          '<div class="tip-label">💡 Insider</div>'+
-          '<div class="tip-text">'+stop.insiderTip+'</div>'+
-        '</div>';
-      }
-      if(stop.bestFood){
-        html+='<div class="tip-box food">'+
-          '<div class="tip-label">🍽️ Must eat</div>'+
-          '<div class="tip-text">'+stop.bestFood+'</div>'+
-        '</div>';
-      }
-      html+='</div>';
-    }
+
 
 
     // Overnight stay suggestion
