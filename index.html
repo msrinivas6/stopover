@@ -1282,37 +1282,23 @@ function go(){
   .then(function(d){
     clearInterval(iv);
     if(d.error){
-      console.error('API error:',d.error);
-      if(d.error==='rate_limit'||d.message){
-        showErr('⏱️ Too many requests — please wait 10 seconds and tap Try again.');
-      } else {
-        showErr();
-      }
+      showErr(d.error==='rate_limit'?'Rate limited. Wait 30s and retry.':'API error: '+d.error);
       return;
     }
     var txt=d.text||'';
-    if(!txt){console.error('Empty response');showErr();return;}
+    if(!txt){showErr('Empty response from API');return;}
     try{
-      var clean=txt.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
+      var clean=txt.replace(/```json/gi,'').replace(/```/g,'').trim();
       var s=clean.indexOf('{');var e=clean.lastIndexOf('}');
-      if(s!==-1&&e!==-1){
-        var parsed=JSON.parse(clean.substring(s,e+1));
-        if(parsed&&parsed.stops&&parsed.stops.length>0){
-          showResults(parsed);
-        } else {
-          console.error('No stops in response');
-          showErr();
-        }
-      } else {
-        console.error('No JSON found in:',txt.substring(0,200));
-        showErr();
-      }
+      if(s===-1||e===-1){showErr('No JSON found: '+txt.substring(0,80));return;}
+      var parsed=JSON.parse(clean.substring(s,e+1));
+      if(!parsed||!parsed.stops||!parsed.stops.length){showErr('No stops in response');return;}
+      showResults(parsed);
     } catch(ex){
-      console.error('JSON parse error:',ex,'text:',txt.substring(0,200));
-      showErr();
+      showErr('Parse error: '+ex.message);
     }
   })
-  .catch(function(e){console.error('Fetch error:',e);clearInterval(iv);showErr();});
+  .catch(function(e){clearInterval(iv);showErr('Network error: '+e.message);});
 }
 
 function showResults(data){
