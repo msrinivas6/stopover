@@ -14,9 +14,8 @@ module.exports = async function handler(req, res) {
   if (!prompt) return res.status(400).json({ error: "No prompt provided" });
 
   const max_tokens = Math.min(parseInt(body.max_tokens) || 4000, 8000);
-  const models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
 
-  for (let i = 0; i < models.length; i++) {
+  async function tryModel(model) {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -24,7 +23,7 @@ module.exports = async function handler(req, res) {
         "Authorization": "Bearer " + apiKey
       },
       body: JSON.stringify({
-        model: models[i],
+        model: model,
         max_tokens: max_tokens,
         messages: [
           { role: "system", content: "You are an expert road trip planner. Always respond with valid JSON only." },
@@ -32,24 +31,20 @@ module.exports = async function handler(req, res) {
         ]
       })
     });
-
-    if (response.status === 429) {
-      if (i < models.length - 1) { continue; }
-      return res.status(429).json({ error: "Rate limited. Please wait 30 seconds." });
-    }
-
+    if (response.status === 429) return null;
+    if (!response.ok) return null;
     const data = await response.json();
-
-    if (!response.ok) {
-      if (i < models.length - 1) { continue; }
-      return res.status(500).json({ error: data.error ? data.error.message : "API error" });
-    }
-
-    const text = data.choices[0].message.content;
-    return res.status(200).json({ text: text });
+    if (!data.choices || !data.choices[0]) return null;
+    return data.choices[0].message.content;
   }
 
-  return res.status(500).json({ error: "All models failed" });
+  const text70b = await tryModel("llama-3.3-70b-versatile");
+  if (text70b) return res.status(200).json({ text: text70b });
+
+  const text8b = await tryModel("llama-3.1-8b-instant");
+  if (text8b) return res.status(200).json({ text: text8b });
+
+  return res.status(429).json({ error: "Rate limited. Please wait 30 seconds." });
 }
 
 module.exports.config = { api: { bodyParser: { sizeLimit: "4mb" } } };
