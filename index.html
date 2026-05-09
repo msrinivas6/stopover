@@ -1281,6 +1281,7 @@ function go(){
   doFetch(2)
   .then(function(d){
     clearInterval(iv);
+    alert('Got response: error='+d.error+' textLen='+(d.text||'').length+' first50='+(d.text||'').substring(0,50));
     if(d.error){
       showErr(d.error==='rate_limit'?'Rate limited. Wait 30s and retry.':'API error: '+d.error);
       return;
