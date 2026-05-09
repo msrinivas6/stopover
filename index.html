@@ -248,11 +248,6 @@ html{overflow-x:hidden;}
 .wf-day span{display:block;font-size:9px;color:#075985;font-weight:700;}
 .wf-day i{display:block;font-size:13px;font-style:normal;}
 .wf-day b{display:block;font-size:10px;font-weight:800;color:#0c4a6e;}
-
-/* ── PDF EXPORT BUTTON ── */
-.export-btn{width:100%;background:var(–bg2);border:1.5px solid var(–border2);color:var(–text2);border-radius:var(–r);padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(–sans);transition:all 0.2s;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;}
-.export-btn:hover{border-color:var(–sky);color:var(–sky);}
-.export-btn:disabled{opacity:0.5;cursor:not-allowed;}
 </style>
 
 </head>
@@ -1279,8 +1274,9 @@ function go(){
       }
       return;
     }
+    console.log('[Stopover] Raw API response:',JSON.stringify(d).substring(0,500));
     var txt=d.text||'';
-    if(!txt){console.error('Empty response');showErr();return;}
+    if(!txt){console.error('Empty response',d);showErr('The AI returned an empty response.','Response keys: '+Object.keys(d).join(', ')+' | text value: '+JSON.stringify(d.text));return;}
     try{
       var clean=txt.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
       var s=clean.indexOf('{');var e=clean.lastIndexOf('}');
@@ -1290,21 +1286,21 @@ function go(){
           try{
             showResults(parsed);
           }catch(re){
-            showErr('Render error: '+re.message);
+            showErr('Render error: '+re.message,'Stack: '+re.stack);
           }
         } else {
-          showErr('No stops found');
+          showErr('No stops found in response.','Parsed keys: '+Object.keys(parsed).join(', ')+' | stops: '+JSON.stringify(parsed.stops));
         }
       } else {
         console.error('No JSON found in:',txt.substring(0,200));
-        showErr();
+        showErr('The AI response was not valid JSON.','First 300 chars: '+txt.substring(0,300));
       }
     } catch(ex){
       console.error('JSON parse error:',ex,'text:',txt.substring(0,200));
-      showErr();
+      showErr('JSON parse failed: '+ex.message,'Raw text (first 300): '+txt.substring(0,300));
     }
   })
-  .catch(function(e){console.error('Fetch error:',e);clearInterval(iv);showErr();});
+  .catch(function(e){console.error('Fetch error:',e);clearInterval(iv);showErr('Network error — could not reach the server.',''+e);});
 }
 
 function showResults(data){
@@ -1518,7 +1514,6 @@ function showResults(data){
       '<div class="sum-item"><span class="sum-n">'+(data.bestSeason||'Year round')+'</span><span class="sum-l">Best time</span></div>'+
     '</div>'+
     '<button class="share-btn" onclick="share()">📤 Share this route</button>'+
-    '<button class="export-btn" id="export-btn" onclick="exportPDF()">📄 Export as PDF</button>'+
     '<button class="back-btn" onclick="reset()">← Plan another route</button>'+
   '</div>';
 
@@ -1528,14 +1523,23 @@ function showResults(data){
   });
 }
 
-function showErr(msg){
+function showErr(msg,detail){
   document.getElementById('loading').style.display='none';
   var el=document.getElementById('results');
   el.style.display='block';
+  var errLabel=msg||'Something went wrong. Please try again.';
+  var detailHtml='';
+  if(detail){
+    detailHtml='<div style="background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2);border-radius:10px;padding:10px 14px;margin-bottom:16px;max-width:320px;word-break:break-word;text-align:left;">'+
+      '<div style="font-size:10px;font-weight:800;color:#dc2626;margin-bottom:4px;">DEBUG INFO</div>'+
+      '<div style="font-size:11px;color:#991b1b;font-family:monospace;line-height:1.6;">'+detail+'</div>'+
+    '</div>';
+  }
   el.innerHTML='<div style="background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;">'+
     '<div style="font-size:52px;margin-bottom:20px;">😕</div>'+
     '<div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:10px;">Could not generate route</div>'+
-    '<div style="font-size:14px;color:var(--text2);line-height:1.75;margin-bottom:24px;max-width:300px;">Something went wrong. Please try again.</div>'+
+    '<div style="font-size:14px;color:var(--text2);line-height:1.75;margin-bottom:16px;max-width:300px;">'+errLabel+'</div>'+
+    detailHtml+
     '<button class="find-btn" style="max-width:300px;width:100%;margin-bottom:12px;" onclick="go()">🔄 Try again</button>'+
     '<button class="back-btn" style="max-width:300px;width:100%;" onclick="reset()">← Try another route</button>'+
   '</div>';
@@ -1617,114 +1621,6 @@ function reset(){
   var ls1=document.getElementById('ls1');
   if(ls1) ls1.classList.add('active');
   window.scrollTo(0,0);
-}
-</script>
-
-<!-- PDF Export: jsPDF + html2canvas from CDN -->
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-<script>
-function exportPDF(){
-  var btn=document.getElementById('export-btn');
-  if(btn){btn.disabled=true;btn.innerHTML='⏳ Generating PDF…';}
-
-  // Elements to hide during capture (interactive chrome that looks bad in PDF)
-  var hideSelectors=['.skip-btn','.swap-btn','.hdr-tag','#export-btn','.share-btn','.back-btn','.weather-pill','.weather-extra'];
-  var hidden=[];
-  hideSelectors.forEach(function(sel){
-    document.querySelectorAll(sel).forEach(function(el){
-      if(el.style.display!=='none'){hidden.push({el:el,display:el.style.display});el.style.display='none';}
-    });
-  });
-
-  var target=document.getElementById('results');
-  var origBg=target.style.background;
-  target.style.background='#fff8f0';
-
-  html2canvas(target,{
-    scale:2,
-    useCORS:true,
-    backgroundColor:'#fff8f0',
-    logging:false,
-    windowWidth:target.scrollWidth,
-    height:target.scrollHeight,
-    scrollY:0
-  }).then(function(canvas){
-    // Restore hidden elements
-    hidden.forEach(function(h){h.el.style.display=h.display;});
-    target.style.background=origBg;
-
-    var imgData=canvas.toDataURL('image/jpeg',0.92);
-    var pdf=new jspdf.jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-
-    var pageW=pdf.internal.pageSize.getWidth();
-    var pageH=pdf.internal.pageSize.getHeight();
-    var margin=10;
-    var contentW=pageW-(margin*2);
-
-    // Scale canvas to page width
-    var canvasW=canvas.width;
-    var canvasH=canvas.height;
-    var ratio=contentW/(canvasW/2); // /2 because scale:2
-    var totalH=canvasH/2*ratio;
-
-    // Add header on every page
-    function addPageHeader(pageNum,totalPages){
-      pdf.setFillColor(255,124,42);
-      pdf.rect(0,0,pageW,8,'F');
-      pdf.setTextColor(255,255,255);
-      pdf.setFontSize(8);
-      pdf.setFont('helvetica','bold');
-      pdf.text('🛣 STOPOVER — '+S.from.toUpperCase()+' → '+S.to.toUpperCase(),margin,5.5);
-      pdf.text('Page '+pageNum+' of '+totalPages,pageW-margin,5.5,{align:'right'});
-      pdf.setTextColor(0,0,0);
-    }
-
-    // Slice canvas into A4 pages
-    var printableH=pageH-(margin*2)-8; // minus header band
-    var totalPages=Math.ceil(totalH/printableH);
-    var srcHPerPage=(printableH/ratio)*(canvasW/contentW);
-
-    for(var p=0;p<totalPages;p++){
-      if(p>0) pdf.addPage();
-      addPageHeader(p+1,totalPages);
-
-      // Crop slice from original canvas
-      var srcY=p*srcHPerPage;
-      var sliceH=Math.min(srcHPerPage,canvasH-srcY);
-      if(sliceH<=0) break;
-
-      var sliceCanvas=document.createElement('canvas');
-      sliceCanvas.width=canvasW;
-      sliceCanvas.height=sliceH;
-      var ctx=sliceCanvas.getContext('2d');
-      ctx.drawImage(canvas,0,-srcY);
-
-      var sliceImg=sliceCanvas.toDataURL('image/jpeg',0.92);
-      var sliceDisplayH=sliceH/2*ratio;
-      pdf.addImage(sliceImg,'JPEG',margin,8+margin,contentW,sliceDisplayH);
-    }
-
-    // Footer on last page
-    pdf.setFontSize(8);
-    pdf.setTextColor(150,100,60);
-    pdf.text('Generated by Stopover — stopoverapp.vercel.app',pageW/2,pageH-4,{align:'center'});
-
-    var filename='Stopover_'+S.from.replace(/\s/g,'_')+'_to_'+S.to.replace(/\s/g,'_')+'.pdf';
-    pdf.save(filename);
-
-    if(btn){btn.disabled=false;btn.innerHTML='✅ PDF Downloaded!';}
-    setTimeout(function(){if(btn)btn.innerHTML='📄 Export as PDF';},3000);
-  }).catch(function(err){
-    console.error('PDF error:',err);
-    hidden.forEach(function(h){h.el.style.display=h.display;});
-    target.style.background=origBg;
-    if(btn){btn.disabled=false;btn.innerHTML='❌ Try again';}
-    setTimeout(function(){if(btn)btn.innerHTML='📄 Export as PDF';},2000);
-  });
 }
 </script>
 
