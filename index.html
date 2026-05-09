@@ -396,6 +396,7 @@ html{overflow-x:hidden;}
 var S = {from:'', to:'', days:2, vibes:[], gems:false, parking:false};
 
 var _stopsData=[];
+var _lastResult=null; // cache last successful route
 var _skipped=[];
 var _bestSeason='Year round';
 var _currencySymbol='$';
@@ -1286,7 +1287,23 @@ function go(){
   .then(function(d){
     clearInterval(iv);
     if(d.error){
-      showErr(d.error==='rate_limit'?'Rate limited. Wait 30s and retry.':'API error: '+d.error);
+      if(d.error==='rate_limit'){
+      var secs=30;
+      var iv2=setInterval(function(){
+        secs--;
+        var btn=document.querySelector('.find-btn');
+        if(btn) btn.textContent='Please wait '+secs+'s...';
+        if(secs<=0){
+          clearInterval(iv2);
+          if(btn){btn.textContent='&#128507; Find My Stopovers';btn.disabled=false;}
+          document.getElementById('loading').style.display='none';
+          document.getElementById('results').style.display='none';
+          document.getElementById('home').style.display='block';
+        }
+      },1000);
+      return;
+    }
+    showErr('API error: '+d.error);
       return;
     }
     var txt=d.text||'';
@@ -1310,6 +1327,7 @@ function go(){
 }
 
 function showResults(data){
+  _lastResult=data; // cache for retry
   document.getElementById('loading').style.display='none';
   var el=document.getElementById('results');
   el.style.display='block';
