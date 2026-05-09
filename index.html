@@ -1282,10 +1282,14 @@ function go(){
       if(s!==-1&&e!==-1){
         var parsed=JSON.parse(clean.substring(s,e+1));
         if(parsed&&parsed.stops&&parsed.stops.length>0){
-          showResults(parsed);
+          try{
+            showResults(parsed);
+          }catch(re){
+            alert('CRASH:'+re.message+'\n'+re.stack.split('\n')[1]);
+            showErr('Render error: '+re.message);
+          }
         } else {
-          console.error('No stops in response');
-          showErr();
+          showErr('No stops found');
         }
       } else {
         console.error('No JSON found in:',txt.substring(0,200));
