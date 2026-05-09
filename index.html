@@ -1296,7 +1296,6 @@ function go(){
       try{
         showResults(parsed);
       } catch(renderErr){
-        alert('Render crash: '+renderErr.message+' at '+renderErr.stack.split('\n')[1]);
         showErr('Render error: '+renderErr.message);
       }
     } catch(ex){
@@ -1625,7 +1624,9 @@ function loadWeather(name,idx){
     .then(function(r){return r?r.json():null;})
     .then(function(w){
       if(!w||!w.current) return;
-      if(!document.getElementById('wc-'+idx)) return;
+      var wxPill=document.getElementById('wc-'+idx);
+      if(!wxPill) return;
+      wxPill.style.display='flex';
       var isM=_isMetric;
       var t=isM?Math.round(w.current.temperature_2m):Math.round(w.current.temperature_2m*9/5+32);
       var unit=isM?'C':'F';
