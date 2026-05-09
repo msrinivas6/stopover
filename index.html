@@ -1462,11 +1462,8 @@ function showResults(data){
     // Activities
     if(stop.activities&&stop.activities.length){
       html+='<div class="acts">';
-      var actNum=0;
       stop.activities.forEach(function(a){
-        var actId='a'+idx+'n'+actNum; actNum++;
-        html+='<div class="act" id="'+actId+'">'+
-          '<div class="act-check" id="k'+actId+'" onclick="tickAct(this.id.slice(1))"></div>'+
+        html+='<div class="act">'+
           '<div class="act-ico">'+(a.emoji||'🎯')+'</div>'+
           '<div class="act-body">'+
             '<div class="act-name">'+a.name+(a.hiddenGem?'<span style="font-size:9px;font-weight:800;color:#7c3aed;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.2);padding:2px 6px;border-radius:10px;margin-left:6px;vertical-align:middle;">💎 Hidden gem</span>':'')+' </div>'+
@@ -1544,13 +1541,6 @@ function showResults(data){
   _bestSeason=data.bestSeason||'Year round';
 
   // Summary
-  var totActs=0;
-  stops.forEach(function(s){if(s.activities)totActs+=s.activities.length;});
-  _totActs=totActs; _doneActs={};
-  html+='<div class="progress-wrap">'+
-    '<div class="progress-lbl" id="prog-lbl">0 of '+totActs+' activities completed</div>'+
-    '<div class="progress-bg"><div class="progress-fill" id="prog-fill"></div></div>'+
-  '</div>';
   html+='<div class="summary" id="trip-summary">'+
     '<div class="sum-title">Trip Summary</div>'+
     '<div class="sum-grid" id="sum-grid">'+
@@ -1583,21 +1573,7 @@ function showErr(msg){
   '</div>';
 }
 
-var _totActs=0, _doneActs={};
-function tickAct(actId){
-  var act=document.getElementById(actId);
-  var chk=document.getElementById('k'+actId);
-  if(!act||!chk) return;
-  _doneActs[actId]=!_doneActs[actId];
-  if(_doneActs[actId]){chk.classList.add('done');chk.innerHTML='&#10003;';act.classList.add('completed');}
-  else{chk.classList.remove('done');chk.textContent='';act.classList.remove('completed');}
-  var done=Object.values(_doneActs).filter(Boolean).length;
-  var pct=_totActs?Math.round(done/_totActs*100):0;
-  var fill=document.getElementById('prog-fill');
-  var lbl=document.getElementById('prog-lbl');
-  if(fill) fill.style.width=pct+'%';
-  if(lbl) lbl.textContent=done+' of '+_totActs+' activities completed';
-}
+
 var WX_DESC={0:'Clear',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',
   51:'Light drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',
   71:'Light snow',73:'Snow',80:'Showers',95:'Thunderstorm'};
