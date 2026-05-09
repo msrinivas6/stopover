@@ -13,7 +13,7 @@ module.exports = async function handler(req, res) {
   const prompt = body.prompt;
   if (!prompt) return res.status(400).json({ error: "No prompt provided" });
 
-  const max_tokens = Math.min(parseInt(body.max_tokens) || 3000, 5000);
+  const max_tokens = Math.min(parseInt(body.max_tokens) || 4000, 8000);
   const models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
 
   for (let i = 0; i < models.length; i++) {
@@ -34,18 +34,14 @@ module.exports = async function handler(req, res) {
     });
 
     if (response.status === 429) {
-      if (i < models.length - 1) {
-        continue;
-      }
+      if (i < models.length - 1) { continue; }
       return res.status(429).json({ error: "Rate limited. Please wait 30 seconds." });
     }
 
     const data = await response.json();
 
     if (!response.ok) {
-      if (i < models.length - 1) {
-        continue;
-      }
+      if (i < models.length - 1) { continue; }
       return res.status(500).json({ error: data.error ? data.error.message : "API error" });
     }
 
