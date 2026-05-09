@@ -1454,31 +1454,7 @@ function showResults(data){
       html+='</div>';
     }
 
-    // Tips
-    if(stop.insiderTip||stop.bestFood){
-      html+='<div class="tip-row">';
-      if(stop.insiderTip){
-        html+='<div class="tip-box">'+
-          '<div class="tip-label">💡 Insider</div>'+
-          '<div class="tip-text">'+stop.insiderTip+'</div>'+
-        '</div>';
-      }
-      if(stop.bestFood){
-        html+='<div class="tip-box food">'+
-          '<div class="tip-label">🍽️ Must eat</div>'+
-          '<div class="tip-text">'+stop.bestFood+'</div>'+
-        '</div>';
-      }
-      html+='</div>';
-    }
-    if(stop.bestStartTime && stop.type!=='end'){
-      html+='<div class="tip-row">'+
-        '<div class="tip-box" style="width:100%;background:rgba(0,153,204,0.06);border-color:rgba(0,153,204,0.18);">'+
-          '<div class="tip-label">'+(stop.type==='start'?'🕐 Departure time':'🕐 Best start time')+'</div>'+
-          '<div class="tip-text">'+stop.bestStartTime+'</div>'+
-        '</div>'+
-      '</div>';
-    }
+
 
     // Overnight stay suggestion
     if(S.days>1 && stop.overnightStop && stop.suggestedStay && stop.type!=='start' && stop.type!=='end'){
