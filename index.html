@@ -240,7 +240,7 @@ html{overflow-x:hidden;}
 .stay-price{font-size:12px;font-weight:800;color:var(–sun2);}
 .stay-tip{font-size:11px;color:var(–text2);line-height:1.5;margin-top:4px;padding-top:4px;border-top:1px solid rgba(0,153,204,0.15);}
 
-.act-check{width:24px;height:24px;border:2.5px solid rgba(220,140,60,0.5);border-radius:50%;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;background:#fff;font-size:13px;font-weight:900;color:transparent;margin-right:8px;box-shadow:0 1px 4px rgba(220,140,60,0.15);}
+.act-check{width:18px;height:18px;border:1.5px solid rgba(220,140,60,0.4);border-radius:50%;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;background:#fff;font-size:10px;font-weight:900;color:transparent;margin-right:6px;}
 .act-check.done{background:var(–sun);border-color:var(–sun);color:#fff;}
 .act.completed{opacity:0.55;}
 .act.completed .act-name{text-decoration:line-through;}
@@ -1247,7 +1247,7 @@ function go(){
     '"insiderTip":"X","bestFood":"X","bestStartTime":"X"'+(S.days>1?',"overnightStop":false,"suggestedStay":{"type":"Hotel","name":"X","pricePerNight":0,"bookingTip":"X"}':'')+
     '}]}\n'+
     'Include '+S.from+' as start, '+S.to+' as end, '+numStops+' middle stopovers.\n'+
-    'IMPORTANT: Generate LOTS of activities — major cities like LA, NYC, Tokyo, Paris, Mumbai, Sydney need 6-8 activities minimum. Medium cities 4-5. Small towns 3. Do not cut short.\n'+
+    'IMPORTANT: You MUST generate exactly: major cities (LA, NYC, SF, Chicago, Tokyo, London, Paris, Mumbai, Sydney etc) = 8 activities, medium cities = 5 activities, small towns = 3 activities. DO NOT generate fewer. This is critical.\n'+
     'Each activity: name, emoji, cost ('+destCurrency+', 0=free), duration, description'+(S.gems?', hiddenGem(bool)':'')+
     (S.parking?', parkingTip':'')+'.\n'+
     'Per stop: insiderTip, bestFood, bestStartTime, trafficWarning, googleMapsQuery("City A to City B").\n'+
