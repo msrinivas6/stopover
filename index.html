@@ -240,7 +240,7 @@ html{overflow-x:hidden;}
 .stay-price{font-size:12px;font-weight:800;color:var(–sun2);}
 .stay-tip{font-size:11px;color:var(–text2);line-height:1.5;margin-top:4px;padding-top:4px;border-top:1px solid rgba(0,153,204,0.15);}
 
-.act-check{width:22px;height:22px;border:2px solid rgba(220,140,60,0.3);border-radius:50%;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;background:#fff;font-size:12px;font-weight:800;color:transparent;margin-right:6px;}
+.act-check{width:24px;height:24px;border:2.5px solid rgba(220,140,60,0.5);border-radius:50%;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;background:#fff;font-size:13px;font-weight:900;color:transparent;margin-right:8px;box-shadow:0 1px 4px rgba(220,140,60,0.15);}
 .act-check.done{background:var(–sun);border-color:var(–sun);color:#fff;}
 .act.completed{opacity:0.55;}
 .act.completed .act-name{text-decoration:line-through;}
@@ -1256,7 +1256,7 @@ function go(){
   var _fetchOptions={
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({prompt:prompt,max_tokens:Math.min(5000,2500+S.days*200+(S.parking?800:0)+(S.gems?400:0))})
+    body:JSON.stringify({prompt:prompt,max_tokens:Math.min(6000,3000+S.days*300+(S.parking?600:0)+(S.gems?300:0))})
   };
 
   function doFetch(attemptsLeft){
@@ -1447,32 +1447,22 @@ function showResults(data){
       html+='<div style="background:rgba(255,124,42,0.06);border:1px dashed rgba(255,124,42,0.2);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:12px;color:var(--text2);line-height:1.6;">'+'🚀 <strong>Your journey starts here.</strong> Tap Skip above if you live here, or explore what to see before you leave.'+'</div>';
     }
 
-    // Departure time
-    if(stop.bestStartTime && stop.type!=='end'){
-      html+='<div class="tip-row">'+
-        '<div class="tip-box" style="width:100%;background:rgba(0,153,204,0.06);border-color:rgba(0,153,204,0.18);">'+
-          '<div class="tip-label">'+(stop.type==='start'?'&#128336; Departure time':'&#128336; Best start time')+'</div>'+
-          '<div class="tip-text">'+stop.bestStartTime+'</div>'+
-        '</div>'+
-      '</div>';
-    }
-    // Weather card
-    html+='<div class="weather-card" id="wc-'+idx+'">'+
-      '<div class="weather-top">'+
-        '<span class="weather-lbl">&#127780; Current weather</span>'+
-        '<button class="weather-xbtn" id="wxbtn-'+idx+'" onclick="toggleWX('+idx+')">7-day &#9660;</button>'+
+    // Compact info bar: departure time + weather inline
+    html+='<div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">'+
+      (stop.bestStartTime&&stop.type!=='end'?
+        '<div style="display:flex;align-items:center;gap:5px;background:rgba(0,153,204,0.07);border:1px solid rgba(0,153,204,0.18);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;color:#075985;">'+
+          '&#128336; '+stop.bestStartTime+
+        '</div>':'') +
+      '<div id="wc-'+idx+'" style="display:none;align-items:center;gap:5px;background:rgba(0,153,204,0.07);border:1px solid rgba(0,153,204,0.18);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;color:#075985;cursor:pointer;" onclick="toggleWX('+idx+')">'+
+        '<span id="wi-'+idx+'">&#8987;</span>'+
+        '<span id="wt-'+idx+'"></span>'+
+        '<span id="wd-'+idx+'" style="font-weight:600;opacity:0.8;"></span>'+
+        '<span style="opacity:0.6;">&#9660;</span>'+
       '</div>'+
-      '<div class="weather-main">'+
-        '<div class="weather-icon" id="wi-'+idx+'">&#8987;</div>'+
-        '<div>'+
-          '<div class="weather-temp" id="wt-'+idx+'">Loading...</div>'+
-          '<div class="weather-desc" id="wd-'+idx+'"></div>'+
-        '</div>'+
-      '</div>'+
-      '<div class="weather-details" id="wdet-'+idx+'"></div>'+
-      '<div class="weather-extra" id="wx-'+idx+'">'+
-        '<div class="wf-row" id="wf-'+idx+'"></div>'+
-      '</div>'+
+    '</div>'+
+    '<div id="wx-'+idx+'" style="display:none;background:linear-gradient(135deg,#e0f2fe,#f0f9ff);border:1.5px solid rgba(0,153,204,0.2);border-radius:12px;padding:10px 12px;margin-bottom:10px;">'+
+      '<div style="display:flex;gap:6px;margin-bottom:6px;font-size:10px;color:#075985;font-weight:600;" id="wdet-'+idx+'"></div>'+
+      '<div style="display:flex;gap:6px;overflow-x:auto;" id="wf-'+idx+'"></div>'+
     '</div>';
     // Activities
     if(stop.activities&&stop.activities.length){
@@ -1604,7 +1594,7 @@ function tickAct(actId){
   var chk=document.getElementById('k'+actId);
   if(!act||!chk) return;
   _doneActs[actId]=!_doneActs[actId];
-  if(_doneActs[actId]){chk.classList.add('done');chk.textContent='v';act.classList.add('completed');}
+  if(_doneActs[actId]){chk.classList.add('done');chk.innerHTML='&#10003;';act.classList.add('completed');}
   else{chk.classList.remove('done');chk.textContent='';act.classList.remove('completed');}
   var done=Object.values(_doneActs).filter(Boolean).length;
   var pct=_totActs?Math.round(done/_totActs*100):0;
@@ -1623,11 +1613,14 @@ function wxIcon(c){return WX_ICON[c]||'&#9925;';}
 function wxDesc(c){return WX_DESC[c]||'Partly cloudy';}
 function toggleWX(idx){
   var el=document.getElementById('wx-'+idx);
-  var btn=document.getElementById('wxbtn-'+idx);
   if(!el) return;
   var open=el.style.display==='block';
   el.style.display=open?'none':'block';
-  if(btn) btn.innerHTML=open?'7-day &#9660;':'Hide &#9650;';
+  var pill=document.getElementById('wc-'+idx);
+  if(pill){
+    var arrow=pill.querySelector('span:last-child');
+    if(arrow) arrow.innerHTML=open?'&#9660;':'&#9650;';
+  }
 }
 function loadWeather(name,idx){
   fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(name)+'&count=1&language=en&format=json')
@@ -1641,9 +1634,7 @@ function loadWeather(name,idx){
     .then(function(r){return r?r.json():null;})
     .then(function(w){
       if(!w||!w.current) return;
-      var card=document.getElementById('wc-'+idx);
-      if(!card) return;
-      card.style.display='block';
+      if(!document.getElementById('wc-'+idx)) return;
       var isM=_isMetric;
       var t=isM?Math.round(w.current.temperature_2m):Math.round(w.current.temperature_2m*9/5+32);
       var unit=isM?'C':'F';
