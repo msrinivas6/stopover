@@ -1085,56 +1085,7 @@ function checkForm(){
   }
 }
 
-function go(){
-  // Always read latest values from inputs
-  S.from=document.getElementById('from-inp').value.trim();
-  S.to=document.getElementById('to-inp').value.trim();
-  if(!S.from||!S.to) return;
-  // API key check handled in result
-
-  document.getElementById('home').style.display='none';
-  document.getElementById('from-sug').style.display='none';
-  document.getElementById('to-sug').style.display='none';
-  document.getElementById('loading').style.display='block';
-  document.getElementById('results').style.display='none';
-  document.getElementById('l-sub').textContent='Finding the best stops between '+S.from+' and '+S.to;
-  window.scrollTo(0,0);
-
-  var steps=['ls1','ls2','ls3','ls4','ls5'];
-  var si=0;
-  var iv=setInterval(function(){
-    if(si>0){document.getElementById(steps[si-1]).classList.remove('active');document.getElementById(steps[si-1]).classList.add('done');}
-    if(si<steps.length){document.getElementById(steps[si]).classList.add('active');si++;}
-    else clearInterval(iv);
-  },1100);
-
-  var numStops;
-  if(S.days<=1) numStops='1-2';
-  else if(S.days<=2) numStops='2-3';
-  else if(S.days<=3) numStops='3-5';
-  else if(S.days<=5) numStops='5-7';
-  else if(S.days<=7) numStops='7-9';
-  else if(S.days<=10) numStops='10-12';
-  else numStops='12-15';
-
-  var vibeInstructions = '';
-  if(S.vibes.length>0){
-    var vibeMap = {
-      scenic:'scenic routes, dramatic landscapes, viewpoints',
-      coastal:'coastal roads, beach towns, ocean views',
-      historic:'historical sites, old towns, museums',
-      offbeat:'quirky hidden gems, roadside attractions',
-      foodie:'food destinations, local cuisine, markets',
-      nature:'national parks, hiking, waterfalls, wildlife',
-      adventure:'outdoor activities, hiking, kayaking, thrills',
-      relaxed:'leisurely pace, small towns, cafes'
-    };
-    var vibeDescs=S.vibes.map(function(v){return vibeMap[v]||v;});
-    vibeInstructions=' Vibes: '+vibeDescs.join(', ')+'. Use non-fastest scenic route.';
-  }
-
-  // City -> currency name & symbol lookup for prompt injection
-  var CITY_CURRENCY = {
+var CITY_CURRENCY = {
     // USA
     'Atlanta':'USD ($)','Miami':'USD ($)','New York':'USD ($)','Los Angeles':'USD ($)',
     'Chicago':'USD ($)','San Francisco':'USD ($)','Boston':'USD ($)','Seattle':'USD ($)',
@@ -1222,7 +1173,57 @@ function go(){
     'Moscow':'RUB (₽)','St Petersburg':'RUB (₽)',
     'Almaty':'KZT (₸)','Tbilisi':'GEL (₾)',
     'Baku':'AZN (₼)','Yerevan':'AMD (֏)',
-  };
+  }
+function go(){
+  // Always read latest values from inputs
+  S.from=document.getElementById('from-inp').value.trim();
+  S.to=document.getElementById('to-inp').value.trim();
+  if(!S.from||!S.to) return;
+  // API key check handled in result
+
+  document.getElementById('home').style.display='none';
+  document.getElementById('from-sug').style.display='none';
+  document.getElementById('to-sug').style.display='none';
+  document.getElementById('loading').style.display='block';
+  document.getElementById('results').style.display='none';
+  document.getElementById('l-sub').textContent='Finding the best stops between '+S.from+' and '+S.to;
+  window.scrollTo(0,0);
+
+  var steps=['ls1','ls2','ls3','ls4','ls5'];
+  var si=0;
+  var iv=setInterval(function(){
+    if(si>0){document.getElementById(steps[si-1]).classList.remove('active');document.getElementById(steps[si-1]).classList.add('done');}
+    if(si<steps.length){document.getElementById(steps[si]).classList.add('active');si++;}
+    else clearInterval(iv);
+  },1100);
+
+  var numStops;
+  if(S.days<=1) numStops='1-2';
+  else if(S.days<=2) numStops='2-3';
+  else if(S.days<=3) numStops='3-5';
+  else if(S.days<=5) numStops='5-7';
+  else if(S.days<=7) numStops='7-9';
+  else if(S.days<=10) numStops='10-12';
+  else numStops='12-15';
+
+  var vibeInstructions = '';
+  if(S.vibes.length>0){
+    var vibeMap = {
+      scenic:'scenic routes, dramatic landscapes, viewpoints',
+      coastal:'coastal roads, beach towns, ocean views',
+      historic:'historical sites, old towns, museums',
+      offbeat:'quirky hidden gems, roadside attractions',
+      foodie:'food destinations, local cuisine, markets',
+      nature:'national parks, hiking, waterfalls, wildlife',
+      adventure:'outdoor activities, hiking, kayaking, thrills',
+      relaxed:'leisurely pace, small towns, cafes'
+    };
+    var vibeDescs=S.vibes.map(function(v){return vibeMap[v]||v;});
+    vibeInstructions=' Vibes: '+vibeDescs.join(', ')+'. Use non-fastest scenic route.';
+  }
+
+  // City -> currency name & symbol lookup for prompt injection
+;
 
   var destCurrency = CITY_CURRENCY[S.to] || 'the local currency of '+S.to;
   var fromCurrency = CITY_CURRENCY[S.from] || destCurrency;
@@ -1294,10 +1295,8 @@ function go(){
       var parsed=JSON.parse(clean.substring(s,e+1));
       if(!parsed||!parsed.stops||!parsed.stops.length){showErr('No stops in response');return;}
       try{
-        alert('Calling showResults, stops='+parsed.stops.length);
         showResults(parsed);
       } catch(renderErr){
-        alert('RENDER ERR: '+renderErr.message+'\nSTACK: '+renderErr.stack.split('\n')[1]);
         showErr('Render error: '+renderErr.message);
       }
     } catch(ex){
