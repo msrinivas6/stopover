@@ -230,45 +230,6 @@ html{overflow-x:hidden;}
 .skipped-body{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(180,100,20,0.04);border:1px dashed rgba(180,100,20,0.2);border-radius:12px;margin-bottom:8px;}
 .skipped-txt{font-size:12px;color:var(–text3);font-weight:600;font-style:italic;}
 
-/* ── WEATHER CARD ── */
-.weather-card{background:linear-gradient(135deg,#e0f2fe,#f0f9ff);border:1.5px solid rgba(0,153,204,0.2);border-radius:14px;padding:12px 14px;margin-bottom:8px;}
-.weather-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
-.weather-main{display:flex;align-items:center;gap:8px;}
-.weather-icon{font-size:24px;}
-.weather-temp{font-size:18px;font-weight:800;color:var(–text);}
-.weather-desc{font-size:11px;color:var(–text2);font-weight:600;}
-.weather-label{font-size:10px;font-weight:800;color:var(–sky);text-transform:uppercase;letter-spacing:0.5px;}
-.weather-details{display:flex;gap:12px;flex-wrap:wrap;}
-.weather-detail{font-size:10px;color:var(–text2);font-weight:600;}
-.weather-expand{font-size:10px;color:var(–sky);font-weight:700;cursor:pointer;background:none;border:none;font-family:var(–sans);padding:4px 0 0;}
-.weather-extra{display:none;margin-top:8px;padding-top:8px;border-top:1px solid rgba(0,153,204,0.15);}
-.weather-forecast{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;}
-.weather-day{text-align:center;flex-shrink:0;min-width:44px;}
-.weather-day-name{font-size:9px;color:var(–text2);font-weight:700;}
-.weather-day-ico{font-size:16px;margin:2px 0;}
-.weather-day-temp{font-size:10px;font-weight:800;color:var(–text);}
-
-/* ── FUEL CARD ── */
-.fuel-card{background:linear-gradient(135deg,#fef9ee,#fff3dc);border:1.5px solid rgba(245,158,11,0.2);border-radius:14px;padding:12px 14px;margin-bottom:12px;}
-.fuel-label{font-size:10px;font-weight:800;color:var(–amber);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;}
-.fuel-inputs{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-.fuel-input-wrap{display:flex;flex-direction:column;gap:3px;flex:1;min-width:80px;}
-.fuel-input-label{font-size:10px;color:var(–text2);font-weight:600;}
-.fuel-input{background:#fff;border:1.5px solid rgba(245,158,11,0.25);border-radius:8px;padding:7px 10px;font-size:13px;font-weight:700;color:var(–text);font-family:var(–sans);width:100%;box-sizing:border-box;}
-.fuel-result{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:8px 12px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;}
-.fuel-result-label{font-size:11px;color:var(–text2);font-weight:600;}
-.fuel-result-val{font-size:16px;font-weight:800;color:var(–sun);}
-
-/* ── TRIP TRACKER ── */
-.act{position:relative;}
-.act-check{width:20px;height:20px;border:2px solid rgba(220,140,60,0.3);border-radius:50%;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;background:#fff;}
-.act-check.done{background:var(–sun);border-color:var(–sun);}
-.act.completed{opacity:0.5;}
-.act.completed .act-name{text-decoration:line-through;}
-.progress-bar-wrap{background:rgba(220,140,60,0.1);border-radius:20px;height:6px;margin:8px 0;overflow:hidden;}
-.progress-bar{background:linear-gradient(90deg,var(–sun),var(–amber));height:100%;border-radius:20px;transition:width 0.4s ease;}
-.progress-label{font-size:10px;color:var(–text2);font-weight:600;text-align:center;margin-bottom:4px;}
-
 /* ── STAY CARD ── */
 .stay-card{background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1.5px solid rgba(0,153,204,0.25);border-radius:14px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px;}
 .stay-icon{width:38px;height:38px;background:linear-gradient(135deg,var(–sky),var(–sky2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
@@ -278,6 +239,17 @@ html{overflow-x:hidden;}
 .stay-type{font-size:11px;font-weight:600;color:var(–text2);margin-bottom:4px;}
 .stay-price{font-size:12px;font-weight:800;color:var(–sun2);}
 .stay-tip{font-size:11px;color:var(–text2);line-height:1.5;margin-top:4px;padding-top:4px;border-top:1px solid rgba(0,153,204,0.15);}
+
+/* ── TRIP TRACKER ── */
+.act{position:relative;}
+.act-check{width:22px;height:22px;border:2px solid rgba(220,140,60,0.3);border-radius:50%;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;background:#fff;font-size:12px;font-weight:800;color:transparent;margin-right:6px;}
+.act-check.done{background:var(–sun);border-color:var(–sun);color:#fff;}
+.act.completed{opacity:0.55;}
+.act.completed .act-name{text-decoration:line-through;}
+.progress-wrap{margin:6px 0 12px;}
+.progress-lbl{font-size:10px;color:var(–text2);font-weight:600;text-align:center;margin-bottom:4px;}
+.progress-bg{background:rgba(220,140,60,0.1);border-radius:20px;height:6px;overflow:hidden;}
+.progress-fill{background:linear-gradient(90deg,var(–sun),var(–amber));height:100%;border-radius:20px;transition:width 0.4s;width:0%;}
 </style>
 
 </head>
@@ -401,13 +373,6 @@ html{overflow-x:hidden;}
 <div class="results" id="results"></div>
 
 <script>
-window.onerror = function(msg, src, line, col, err) {
-  var div = document.createElement('div');
-  div.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:red;color:white;padding:10px;font-size:12px;z-index:9999;word-break:break-all;';
-  div.textContent = 'JS Error: ' + msg + ' (line ' + line + ')';
-  document.body && document.body.appendChild(div);
-  return false;
-};
 // API calls go through secure Vercel backend
 
 var S = {from:'', to:'', days:2, vibes:[], gems:false, parking:false};
@@ -420,22 +385,26 @@ var _isMetric=false;
 var _exchangeRate=1; // USD to local currency rate
 
 // Approximate USD exchange rates (updated periodically)
-
-
-// Unicode symbols - assigned separately to avoid encoding issues
-var USD_RATES={};
-USD_RATES['$']=1;USD_RATES['CA$']=1.36;USD_RATES['MX$']=17.5;
-USD_RATES['A$']=1.53;USD_RATES['NZ$']=1.66;USD_RATES['HK$']=7.82;
-USD_RATES['S$']=1.34;USD_RATES['R$']=5;USD_RATES['AR$']=870;
-USD_RATES['CLP$']=960;USD_RATES['COP$']=3900;USD_RATES['CUP$']=24;
-USD_RATES['KSh']=130;USD_RATES['RM']=4.7;USD_RATES['Rp']=15600;
-USD_RATES['Rs']=300;USD_RATES['Br']=56;USD_RATES['kr']=10.5;
-USD_RATES['Ft']=360;USD_RATES['lei']=4.6;USD_RATES['din']=108;
-USD_RATES['AED ']=3.67;USD_RATES['SAR ']=3.75;USD_RATES['QAR ']=3.64;
-USD_RATES['KWD ']=0.31;USD_RATES['EGP ']=30.9;USD_RATES['MAD ']=10;
-USD_RATES['CHF ']=0.9;USD_RATES['$U']=38.5;USD_RATES['S/.']=3.7;
-USD_RATES['B/.']=1;USD_RATES['Q']=7.8;USD_RATES['R']=18.6;USD_RATES['GHS']=13;
-
+var USD_RATES={
+  '$':1,'CA$':1.36,'MX$':17.5,
+  '£':0.79,'€':0.92,'A$':1.53,'NZ$':1.66,
+  '¥':149,'₩':1330,'₹':83.5,'฿':35.5,
+  'S$':1.34,'RM':4.7,'Rp':15600,'₫':24500,'₱':56,
+  'HK$':7.82,'MOP$':8.06,
+  'AED ':3.67,'SAR ':3.75,'QAR ':3.64,'KWD ':0.31,
+  '₪':3.7,'₺':32,'₽':91,
+  'R$':5,'AR$':870,'CLP$':960,'COP$':3900,
+  'S/.':3.7,'$U':38.5,
+  'R':18.6,'KSh':130,'₦':1500,'EGP ':30.9,
+  'MAD ':10,'Br':56,
+  'Kč':23,'zł':4,'Ft':360,'lei':4.6,
+  'din':108,'лв':1.8,
+  'kr':10.5,'CHF ':0.9,
+  'Rs':300,'₨':132,'৳':110,
+  '₾':2.66,'֏':390,'₼':1.7,
+  'CUP$':24,'B/.':1,'₡':510,'Q':7.8,
+  'GHS':13,'KES (KSh)':130
+};
 
 function convertCost(usdAmount){
   if(!usdAmount||usdAmount<=0) return 0;
@@ -1345,7 +1314,8 @@ function showResults(data){
     if(stop.type==='stopover'){
       var stopCost=0;
       if(stop.activities&&stop.activities.length){
-        stop.activities.forEach(function(a){ stopCost+=Math.min(a.cost||0, 50000); });
+        var actNum=0;
+      stop.activities.forEach(function(a){ stopCost+=Math.min(a.cost||0, 50000); });
       }
       // Cap per stop at reasonable amount
       stopCost=Math.min(stopCost, 50000);
@@ -1467,11 +1437,10 @@ function showResults(data){
     // Activities
     if(stop.activities&&stop.activities.length){
       html+='<div class="acts">';
-      var ai=0;
       stop.activities.forEach(function(a){
-        var actId='act-'+idx+'-'+ai;
+        var actId='a'+idx+'n'+actNum; actNum++;
         html+='<div class="act" id="'+actId+'">'+
-          '<div class="act-check" id="chk-'+actId+'" onclick="toggleActivity(this.id.slice(4))"></div>'+
+          '<div class="act-check" id="k'+actId+'" onclick="tickAct(this.id.slice(1))"></div>'+
           '<div class="act-ico">'+(a.emoji||'🎯')+'</div>'+
           '<div class="act-body">'+
             '<div class="act-name">'+a.name+(a.hiddenGem?'<span style="font-size:9px;font-weight:800;color:#7c3aed;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.2);padding:2px 6px;border-radius:10px;margin-left:6px;vertical-align:middle;">💎 Hidden gem</span>':'')+' </div>'+
@@ -1483,7 +1452,6 @@ function showResults(data){
             '<div class="act-time">'+(a.duration||'1-2h')+'</div>'+
           '</div>'+
         '</div>';
-        ai++;
       });
       html+='</div>';
     }
@@ -1530,25 +1498,6 @@ function showResults(data){
       '</div>';
     }
 
-    // Weather card
-    html+='<div id="weather-'+idx+'" class="weather-card" style="display:none;">'+
-      '<div class="weather-top">'+
-        '<div class="weather-label">🌤️ Weather forecast</div>'+
-        '<button class="weather-expand" onclick="toggleWeatherDetail('+idx+')">Show forecast ▾</button>'+
-      '</div>'+
-      '<div class="weather-main">'+
-        '<div class="weather-icon" id="w-icon-'+idx+'">⏳</div>'+
-        '<div>'+
-          '<div class="weather-temp" id="w-temp-'+idx+'">Loading...</div>'+
-          '<div class="weather-desc" id="w-desc-'+idx+'"></div>'+
-        '</div>'+
-      '</div>'+
-      '<div class="weather-details" id="w-details-'+idx+'"></div>'+
-      '<div class="weather-extra" id="w-extra-'+idx+'">'+
-        '<div class="weather-forecast" id="w-forecast-'+idx+'"></div>'+
-      '</div>'+
-    '</div>';
-
     html+='</div>'; // end stop-body
 
     // Skipped placeholder (shown when skipped)
@@ -1570,34 +1519,20 @@ function showResults(data){
     html+='</div>';
   });
 
-  // Count total activities for progress tracker
-  var totalActivities=0;
-  stops.forEach(function(s){if(s.activities) totalActivities+=s.activities.length;});
-
   // Store stops globally for recalc
   _stopsData=stops;
   _skipped=new Array(stops.length).fill(false);
   _bestSeason=data.bestSeason||'Year round';
 
   // Summary
-  // Fuel estimator card
-  var isMetricFuel=_isMetric;
-  html+='<div class="fuel-card">'+
-    '<div class="fuel-label">⛽ Fuel cost estimator</div>'+
-    '<div class="fuel-inputs">'+
-      '<div class="fuel-input-wrap">'+
-        '<div class="fuel-input-label">'+(isMetricFuel?'Consumption (L/100km)':'Fuel efficiency (MPG)')+'</div>'+
-        '<input class="fuel-input" type="number" id="fuel-eff" placeholder="'+(isMetricFuel?'8':'30')+'" oninput="calcFuel()">'+
-      '</div>'+
-      '<div class="fuel-input-wrap">'+
-        '<div class="fuel-input-label">Fuel price ('+_currencySymbol+'/'+( isMetricFuel?'litre':'gallon')+')</div>'+
-        '<input class="fuel-input" type="number" id="fuel-price" placeholder="'+(isMetricFuel?'1.5':'3.5')+'" oninput="calcFuel()">'+
-      '</div>'+
-    '</div>'+
-    '<div class="fuel-result" id="fuel-result" style="display:none">'+
-      '<span class="fuel-result-label">Estimated fuel cost</span>'+
-      '<span class="fuel-result-val" id="fuel-result-val"></span>'+
-    '</div>'+
+  // Count total activities
+  var totActs=0;
+  stops.forEach(function(s){if(s.activities)totActs+=s.activities.length;});
+  _totActs=totActs; _doneActs={};
+
+  html+='<div class="progress-wrap">'+
+    '<div class="progress-lbl" id="prog-lbl">0 of '+totActs+' activities completed</div>'+
+    '<div class="progress-bg"><div class="progress-fill" id="prog-fill"></div></div>'+
   '</div>';
 
   html+='<div class="summary" id="trip-summary">'+
@@ -1607,28 +1542,11 @@ function showResults(data){
       '<div class="sum-item"><span class="sum-n" id="sum-cost">~'+_currencySymbol+convertCost(totalCost)+'</span><span class="sum-l">Per person</span></div>'+
       '<div class="sum-item"><span class="sum-n">'+(data.bestSeason||'Year round')+'</span><span class="sum-l">Best time</span></div>'+
     '</div>'+
-    // Progress tracker
-    '<div class="progress-label" id="progress-label">0 of '+totalActivities+' activities completed</div>'+
-    '<div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>'+
     '<button class="share-btn" onclick="share()">📤 Share this route</button>'+
-    '<button class="share-btn" style="background:linear-gradient(135deg,#16a34a,#15803d);margin-bottom:8px;" onclick="exportPDF()">📄 Export as PDF</button>'+
     '<button class="back-btn" onclick="reset()">← Plan another route</button>'+
   '</div>';
 
   el.innerHTML=html;
-
-  // Set total activities for tracker
-  _completedActs={};
-  _totalActs=totalActivities;
-
-  // Fetch weather for all non-skipped stops
-  _stopsData.forEach(function(stop,i){
-    if(!_skipped[i]){
-      setTimeout(function(s,idx){
-        return function(){ fetchWeatherForStop(s.name, s.country, idx); };
-      }(stop,i), i*300);
-    }
-  });
 }
 
 function showErr(msg){
@@ -1644,224 +1562,53 @@ function showErr(msg){
   '</div>';
 }
 
-// ── FEATURE: Activity Tracker ──
-var _completedActs={};
-var _totalActs=0;
-
-function toggleActivity(actId){
-  var el=document.getElementById(actId);
-  var check=el.querySelector('.act-check');
-  if(!el||!check) return;
-  _completedActs[actId]=!_completedActs[actId];
-  if(_completedActs[actId]){
-    check.classList.add('done');
-    check.innerHTML='✓';
-    el.classList.add('completed');
+// ── TRIP TRACKER ──
+var _totActs=0, _doneActs={};
+function tickAct(actId){
+  var act=document.getElementById(actId);
+  var chk=document.getElementById('k'+actId);
+  if(!act||!chk) return;
+  _doneActs[actId]=!_doneActs[actId];
+  if(_doneActs[actId]){
+    chk.classList.add('done'); chk.textContent='✓';
+    act.classList.add('completed');
   } else {
-    check.classList.remove('done');
-    check.innerHTML='';
-    el.classList.remove('completed');
+    chk.classList.remove('done'); chk.textContent='';
+    act.classList.remove('completed');
   }
-  updateProgress();
-}
-
-function updateProgress(){
-  var done=Object.values(_completedActs).filter(Boolean).length;
-  var total=_totalActs||1;
-  var pct=Math.round(done/total*100);
-  var bar=document.getElementById('progress-bar');
-  var lbl=document.getElementById('progress-label');
-  if(bar) bar.style.width=pct+'%';
-  if(lbl) lbl.textContent=done+' of '+total+' activities completed'+(pct===100?' 🎉':'');
-}
-
-// ── FEATURE: Fuel Calculator ──
-function calcFuel(){
-  var eff=parseFloat(document.getElementById('fuel-eff').value);
-  var price=parseFloat(document.getElementById('fuel-price').value);
-  var result=document.getElementById('fuel-result');
-  var val=document.getElementById('fuel-result-val');
-  if(!eff||!price||!result||!val){if(result)result.style.display='none';return;}
-
-  // Get total distance from route banner
-  var distText=document.querySelector('.rb-stat-n');
-  var totalDist=0;
-  document.querySelectorAll('.rb-stat-n').forEach(function(el){
-    var m=el.textContent.match(/([\d.]+)/);
-    if(m&&el.parentElement.querySelector('.rb-stat-l')&&el.parentElement.querySelector('.rb-stat-l').textContent==='Distance'){
-      totalDist=parseFloat(m[1]);
-    }
-  });
-  if(!totalDist) totalDist=300; // fallback
-
-  var fuelCost=0;
-  if(_isMetric){
-    // L/100km: (dist * eff/100) * price
-    fuelCost=(totalDist*eff/100)*price;
-  } else {
-    // MPG: (dist/eff) * price
-    fuelCost=(totalDist/eff)*price;
-  }
-  result.style.display='flex';
-  val.textContent='~'+_currencySymbol+Math.round(convertCost(fuelCost));
-}
-
-// ── FEATURE: Weather ──
-var WEATHER_CODES={0:'sun Clear',1:'partly Mostly clear',2:'partly Partly cloudy',3:'cloud Overcast',
-  45:'fog Foggy',48:'fog Icy fog',51:'rain Light drizzle',53:'rain Drizzle',55:'rain Heavy drizzle',
-  61:'rain Light rain',63:'rain Rain',65:'rain Heavy rain',71:'snow Light snow',73:'snow Snow',
-  75:'snow Heavy snow',80:'rain Showers',81:'rain Heavy showers',82:'storm Violent showers',
-  95:'storm Thunderstorm',96:'storm Thunderstorm+hail',99:'storm Heavy thunderstorm'};
-var WEATHER_ICONS={sun:'☀',partly:'⛅',cloud:'☁',fog:'🌫',rain:'🌧',snow:'🌨',storm:'⛈'};
-
-function getWeatherIcon(code){
-  var desc=WEATHER_CODES[code]||'partly Partly cloudy';
-  var key=desc.split(' ')[0];
-  return WEATHER_ICONS[key]||'⛅';
-}
-function getWeatherDesc(code){
-  var desc=WEATHER_CODES[code]||'partly Partly cloudy';
-  return desc.split(' ').slice(1).join(' ');
-}
-
-function fetchWeatherForStop(stopName,stopCountry,idx){
-  // Geocode the city using Open-Meteo geocoding
-  var geoUrl='https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(stopName)+'&count=1&language=en&format=json';
-  fetch(geoUrl)
-    .then(function(r){return r.json();})
-    .then(function(geo){
-      if(!geo.results||!geo.results[0]) return;
-      var lat=geo.results[0].latitude;
-      var lon=geo.results[0].longitude;
-      var weatherUrl='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,weathercode,windspeed_10m,precipitation&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=7';
-      return fetch(weatherUrl);
-    })
-    .then(function(r){return r?r.json():null;})
-    .then(function(w){
-      if(!w||!w.current) return;
-      var card=document.getElementById('weather-'+idx);
-      if(!card) return;
-      card.style.display='block';
-      var curr=w.current;
-      var tempUnit=_isMetric?'°C':'°F';
-      var temp=_isMetric?Math.round(curr.temperature_2m):Math.round(curr.temperature_2m*9/5+32);
-      document.getElementById('w-icon-'+idx).textContent=getWeatherIcon(curr.weathercode);
-      document.getElementById('w-temp-'+idx).textContent=temp+tempUnit;
-      document.getElementById('w-desc-'+idx).textContent=getWeatherDesc(curr.weathercode);
-      document.getElementById('w-details-'+idx).innerHTML=
-        '<span class="weather-detail">💨 '+Math.round(curr.windspeed_10m)+(distUnit==='km'?' km/h':' mph')+'</span>'+
-        '<span class="weather-detail">🌧️ '+Math.round(curr.precipitation||0)+'mm precip</span>';
-      // Build 7-day forecast
-      if(w.daily){
-        var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-        var fcHtml='';
-        for(var d=0;d<Math.min(7,w.daily.weathercode.length);d++){
-          var date=new Date(w.daily.time[d]);
-          var maxT=_isMetric?Math.round(w.daily.temperature_2m_max[d]):Math.round(w.daily.temperature_2m_max[d]*9/5+32);
-          var minT=_isMetric?Math.round(w.daily.temperature_2m_min[d]):Math.round(w.daily.temperature_2m_min[d]*9/5+32);
-          fcHtml+='<div class="weather-day">'+
-            '<div class="weather-day-name">'+days[date.getDay()]+'</div>'+
-            '<div class="weather-day-ico">'+getWeatherIcon(w.daily.weathercode[d])+'</div>'+
-            '<div class="weather-day-temp">'+maxT+'/'+minT+'</div>'+
-          '</div>';
-        }
-        document.getElementById('w-forecast-'+idx).innerHTML=fcHtml;
-      }
-    })
-    .catch(function(e){console.log('Weather fetch error:',e);});
-}
-
-function toggleWeatherDetail(idx){
-  var extra=document.getElementById('w-extra-'+idx);
-  var btn=document.querySelector('#weather-'+idx+' .weather-expand');
-  if(!extra) return;
-  if(extra.style.display==='none'||!extra.style.display){
-    extra.style.display='block';
-    if(btn) btn.textContent='Hide forecast ▴';
-  } else {
-    extra.style.display='none';
-    if(btn) btn.textContent='Show forecast ▾';
-  }
-}
-
-// ── FEATURE: PDF Export ──
-function exportPDF(){
-  var win=window.open('','_blank');
-  var css='body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px;color:#1a1008;}'+
-    'h1{color:#ff7c2a;font-size:24px;margin-bottom:4px;}'+
-    '.meta{color:#7a5c3a;font-size:13px;margin-bottom:20px;}'+
-    '.stop{margin-bottom:24px;border-left:3px solid #ff7c2a;padding-left:16px;}'+
-    '.stop-name{font-size:18px;font-weight:bold;color:#1a1008;margin-bottom:4px;}'+
-    '.stop-badge{font-size:11px;color:#ff7c2a;font-weight:bold;text-transform:uppercase;margin-bottom:8px;}'+
-    '.activity{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0e8e0;font-size:13px;}'+
-    '.act-name{font-weight:600;}'+
-    '.act-cost{color:#ff7c2a;font-weight:700;}'+
-    '.tip{background:#fff8f0;border-radius:8px;padding:8px 12px;margin-top:8px;font-size:12px;color:#7a5c3a;}'+
-    '.drive{text-align:center;padding:10px;color:#b89070;font-size:12px;font-style:italic;}'+
-    '.summary{background:#fff8f0;border-radius:8px;padding:16px;margin-top:20px;}'+
-    '@media print{body{padding:10px;}}';
-
-  var body='<h1>🚗 '+S.from+' → '+S.to+'</h1>'+
-    '<div class="meta">'+S.days+' day'+(S.days>1?'s':'')+' • '+_stopsData.length+' stops • Best time: '+_bestSeason+'</div>';
-
-  _stopsData.forEach(function(stop,i){
-    if(_skipped[i]) return;
-    body+='<div class="stop">'+
-      '<div class="stop-name">'+(stop.emoji||'📍')+' '+stop.name+'</div>'+
-      '<div class="stop-badge">'+stop.type.toUpperCase()+'</div>';
-    if(stop.activities){
-      stop.activities.forEach(function(a){
-        body+='<div class="activity">'+
-          '<span class="act-name">'+(a.emoji||'')+'  '+a.name+'</span>'+
-          '<span class="act-cost">'+(a.cost>0?_currencySymbol+convertCost(a.cost):'Free')+' • '+(a.duration||'')+'</span>'+
-        '</div>';
-      });
-    }
-    if(stop.insiderTip) body+='<div class="tip">💡 '+stop.insiderTip+'</div>';
-    if(stop.bestFood) body+='<div class="tip">🍽️ '+stop.bestFood+'</div>';
-    if(i<_stopsData.length-1 && _stopsData[i+1]){
-      var next=_stopsData[i+1];
-      body+='<div class="drive">🚗 '+( next.driveTimeFromPrev||'')+(next.distanceFromPrev?' · '+next.distanceFromPrev:'')+'</div>';
-    }
-    body+='</div>';
-  });
-
-  body+='<div class="summary"><strong>Trip Summary</strong><br>'+
-    'Total stops: '+_stopsData.filter(function(s,i){return !_skipped[i];}).length+'<br>'+
-    'Best time to visit: '+_bestSeason+'<br>'+
-    'Generated by Stopover — stopoverapp.vercel.app</div>';
-
-  win.document.write('<html><head><title>'+S.from+' to '+S.to+' Road Trip</title><style>'+css+'</style></head><body>'+body+'</body></html>');
-
-win.document.close();
-setTimeout(function(){win.print();},500);
+  var done=Object.values(_doneActs).filter(Boolean).length;
+  var pct=_totActs?Math.round(done/_totActs*100):0;
+  var fill=document.getElementById('prog-fill');
+  var lbl=document.getElementById('prog-lbl');
+  if(fill) fill.style.width=pct+'%';
+  if(lbl) lbl.textContent=done+' of '+_totActs+' activities completed'+(pct===100?' 🎉':'');
 }
 
 function reset(){
-document.getElementById(‘results’).style.display=‘none’;
-document.getElementById(‘loading’).style.display=‘none’;
-document.getElementById(‘home’).style.display=‘flex’;
-document.getElementById(‘from-sug’).style.display=‘none’;
-document.getElementById(‘to-sug’).style.display=‘none’;
-document.getElementById(‘from-inp’).value=’’;
-document.getElementById(‘to-inp’).value=’’;
-// Hide days section and reset day selection
-document.getElementById(‘days-section’).style.display=‘none’;
-document.querySelectorAll(’.day-chip’).forEach(function(c){c.classList.remove(‘on’);});
-S.from=’’;S.to=’’;S.vibes=[];S.days=2;S.gems=false;S.parking=false;
-var gemsEl=document.getElementById(‘gems-toggle’);
-var parkEl=document.getElementById(‘parking-toggle’);
-if(gemsEl) gemsEl.classList.remove(‘on’);
-if(parkEl) parkEl.classList.remove(‘on’);
-document.querySelectorAll(’.vibe-chip’).forEach(function(c){c.classList.remove(‘on’);});
-document.getElementById(‘find-btn’).disabled=true;
-[‘ls1’,‘ls2’,‘ls3’,‘ls4’,‘ls5’].forEach(function(id){
-var el=document.getElementById(id);
-if(el) el.classList.remove(‘active’,‘done’);
-});
-var ls1=document.getElementById(‘ls1’);
-if(ls1) ls1.classList.add(‘active’);
-window.scrollTo(0,0);
+  document.getElementById('results').style.display='none';
+  document.getElementById('loading').style.display='none';
+  document.getElementById('home').style.display='flex';
+  document.getElementById('from-sug').style.display='none';
+  document.getElementById('to-sug').style.display='none';
+  document.getElementById('from-inp').value='';
+  document.getElementById('to-inp').value='';
+  // Hide days section and reset day selection
+  document.getElementById('days-section').style.display='none';
+  document.querySelectorAll('.day-chip').forEach(function(c){c.classList.remove('on');});
+  S.from='';S.to='';S.vibes=[];S.days=2;S.gems=false;S.parking=false;
+  var gemsEl=document.getElementById('gems-toggle');
+  var parkEl=document.getElementById('parking-toggle');
+  if(gemsEl) gemsEl.classList.remove('on');
+  if(parkEl) parkEl.classList.remove('on');
+  document.querySelectorAll('.vibe-chip').forEach(function(c){c.classList.remove('on');});
+  document.getElementById('find-btn').disabled=true;
+  ['ls1','ls2','ls3','ls4','ls5'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.classList.remove('active','done');
+  });
+  var ls1=document.getElementById('ls1');
+  if(ls1) ls1.classList.add('active');
+  window.scrollTo(0,0);
 }
 </script>
 
