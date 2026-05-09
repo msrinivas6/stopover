@@ -1294,8 +1294,10 @@ function go(){
       var parsed=JSON.parse(clean.substring(s,e+1));
       if(!parsed||!parsed.stops||!parsed.stops.length){showErr('No stops in response');return;}
       try{
+        alert('Calling showResults, stops='+parsed.stops.length);
         showResults(parsed);
       } catch(renderErr){
+        alert('RENDER ERR: '+renderErr.message+'\nSTACK: '+renderErr.stack.split('\n')[1]);
         showErr('Render error: '+renderErr.message);
       }
     } catch(ex){
