@@ -1252,7 +1252,7 @@ function go(){
     '"insiderTip":"X","bestFood":"X","bestStartTime":"X"'+(S.days>1?',"overnightStop":false,"suggestedStay":{"type":"X","name":"X","pricePerNight":0,"bookingTip":"X"}':'')+
     '}]}\n'+
     'Include '+S.from+' (start), '+numStops+' stopovers, '+S.to+' (end).\n'+
-    'Activities: major cities 6-8, medium 4-5, small 3. Descriptions max 8 words.\n'+
+    'CRITICAL: Generate 6-8 activities for EVERY stop including start city '+S.from+'. Do not stop early.\n'+
     'All costs in '+destCurrency+'. Return ONLY the JSON object.';
 
   var _fetchOptions={
@@ -1317,7 +1317,6 @@ function go(){
       try{
         showResults(parsed);
       } catch(renderErr){
-        alert('RENDER: '+renderErr.message+'\n'+renderErr.stack.split('\n')[1]);
         showErr('Render error: '+renderErr.message);
       }
     } catch(ex){
@@ -1354,7 +1353,7 @@ function showResults(data){
 
   // Route banner
   // Find overall best travel advice from stops
-  var trafficStops=stops.filter(function(s){return s.trafficWarning;});
+  var trafficStops=stops.filter(function(s){return s.trafficWarning&&s.trafficWarning!=='null';});
   var hasMajorTraffic=trafficStops.length>0;
 
   html+='<div class="route-banner">'+
@@ -1411,7 +1410,7 @@ function showResults(data){
         '<div style="display:flex;flex-direction:column;align-items:center;margin:0 8px;">'+
           '<div class="dc-pill" id="dc-pill-'+idx+'">🚗 '+stop.driveTimeFromPrev+(stop.distanceFromPrev?' · '+stop.distanceFromPrev:'')+'</div>'+
           '<div class="dc-info">'+
-            (stop.trafficWarning?'<span class="dc-traffic">⚠️ '+stop.trafficWarning+'</span>':'')+
+            (stop.trafficWarning&&stop.trafficWarning!=='null'?'<span class="dc-traffic">⚠️ '+stop.trafficWarning+'</span>':'')+
             (stop.bestTravelDay?'<span style="font-size:10px;color:var(--sun);font-weight:600;">🗓 '+stop.bestTravelDay+'</span>':'')+
             '<a class="dc-maps" href="'+mapsUrl+'" target="_blank">🗺 Maps</a>'+
           '</div>'+
