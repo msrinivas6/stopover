@@ -241,17 +241,17 @@ html{overflow-x:hidden;}
 .stay-tip{font-size:11px;color:var(–text2);line-height:1.5;margin-top:4px;padding-top:4px;border-top:1px solid rgba(0,153,204,0.15);}
 
 .act-check{width:18px;height:18px;border:1.5px solid rgba(220,140,60,0.4);border-radius:50%;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;background:#fff;font-size:10px;font-weight:900;color:transparent;margin-right:6px;}
-.act-check.done{background:var(--sun);border-color:var(--sun);color:#fff;}
+.act-check.done{background:var(–sun);border-color:var(–sun);color:#fff;}
 .act.completed{opacity:0.55;}
 .act.completed .act-name{text-decoration:line-through;}
 .progress-wrap{margin:6px 0 12px;}
-.progress-lbl{font-size:10px;color:var(--text2);font-weight:600;text-align:center;margin-bottom:4px;}
+.progress-lbl{font-size:10px;color:var(–text2);font-weight:600;text-align:center;margin-bottom:4px;}
 .progress-bg{background:rgba(220,140,60,0.1);border-radius:20px;height:6px;overflow:hidden;}
-.progress-fill{background:linear-gradient(90deg,var(--sun),var(--amber));height:100%;border-radius:20px;transition:width 0.4s;width:0%;}
+.progress-fill{background:linear-gradient(90deg,var(–sun),var(–amber));height:100%;border-radius:20px;transition:width 0.4s;width:0%;}
 .weather-card{background:linear-gradient(135deg,#e0f2fe,#f0f9ff);border:1.5px solid rgba(0,153,204,0.2);border-radius:14px;padding:12px 14px;margin-bottom:8px;display:none;}
 .weather-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
 .weather-lbl{font-size:10px;font-weight:800;color:#0284c7;text-transform:uppercase;letter-spacing:0.5px;}
-.weather-xbtn{font-size:10px;color:#0284c7;font-weight:700;cursor:pointer;background:none;border:none;font-family:var(--sans);padding:0;}
+.weather-xbtn{font-size:10px;color:#0284c7;font-weight:700;cursor:pointer;background:none;border:none;font-family:var(–sans);padding:0;}
 .weather-main{display:flex;align-items:center;gap:10px;}
 .weather-icon{font-size:24px;line-height:1;}
 .weather-temp{font-size:20px;font-weight:800;color:#0c4a6e;}
@@ -1239,19 +1239,21 @@ function go(){
   if(S.parking) extraOpts+='Add brief parkingTip per activity (max 8 words).\n';
   if(S.days>1) extraOpts+='Mark overnight stopovers with overnightStop:true, add suggestedStay with type/name/pricePerNight/bookingTip in '+destCurrency+'. Never mark start/end as overnight.\n';
 
-  var prompt='Road trip: '+S.from+' to '+S.to+', '+S.days+' day'+(S.days>1?'s':'')+'.'+
+  var prompt='Expert road trip planner. Route: '+S.from+' to '+S.to+'. Days: '+S.days+'.'+
     (vibeInstructions?'\nVibe:'+vibeInstructions.replace(/\n/g,' '):'')+
-    '\nCurrency:'+destCurrency+' Unit:'+distUnit+(extraOpts?'\n'+extraOpts:'')+
-    '\nJSON only:\n'+
-    '{"totalDistance":"X '+distUnit+'","totalDriveTime":"X hrs","bestSeason":"X","stops":['+
+    '\nCurrency: '+destCurrency+'. Distance: '+distUnit+'.'+
+    (extraOpts?'\n'+extraOpts:'')+
+    '\nReturn ONLY valid JSON:\n'+
+    '{"totalDistance":"X '+distUnit+'","totalDriveTime":"X hrs","bestSeason":"X to X","stops":['+
     '{"name":"X","type":"start|stopover|end","emoji":"X","country":"X",'+
-    '"distanceFromPrev":"0 '+distUnit+'","driveTimeFromPrev":"0h","recommendedStay":"Xh",'+
-    '"trafficWarning":"X or null","googleMapsQuery":"City A to City B",'+
-    '"activities":[{"name":"X","emoji":"X","cost":0,"duration":"Xh","description":"X (max 6 words)"'+(S.gems?',"hiddenGem":false':'')+
-    (S.parking?',"parkingTip":"X (max 5 words)"':'')+'}],'+
-    '"insiderTip":"X","bestFood":"X","bestStartTime":"Xam/pm"'+(S.days>1?',"overnightStop":false,"suggestedStay":{"type":"X","name":"X","pricePerNight":0,"bookingTip":"X"}':'')+
+    '"distanceFromPrev":"X '+distUnit+'","driveTimeFromPrev":"X hrs","recommendedStay":"X hrs",'+
+    '"trafficWarning":"X or null","googleMapsQuery":"CityA to CityB",'+
+    '"activities":[{"name":"X","emoji":"X","cost":0,"duration":"X hrs","description":"X"'+(S.gems?',"hiddenGem":false':'')+( S.parking?',"parkingTip":"X"':'')+'}],'+
+    '"insiderTip":"X","bestFood":"X","bestStartTime":"X"'+(S.days>1?',"overnightStop":false,"suggestedStay":{"type":"X","name":"X","pricePerNight":0,"bookingTip":"X"}':'')+
     '}]}\n'+
-    'Rules: '+S.from+'=6-8 acts, each stopover=5-6 acts, '+S.to+'=6-8 acts. ALL stops required. Costs in '+destCurrency+'.';
+    'Include '+S.from+' (start), '+numStops+' stopovers, '+S.to+' (end).\n'+
+    'Activities: major cities 6-8, medium 4-5, small 3. Descriptions max 8 words.\n'+
+    'All costs in '+destCurrency+'. Return ONLY the JSON object.';
 
   var _fetchOptions={
     method:'POST',
