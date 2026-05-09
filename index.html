@@ -241,7 +241,7 @@ html{overflow-x:hidden;}
 .stay-tip{font-size:11px;color:var(–text2);line-height:1.5;margin-top:4px;padding-top:4px;border-top:1px solid rgba(0,153,204,0.15);}
 
 /* ── WEATHER ── */
-.weather-pill{display:none;align-items:center;gap:6px;background:rgba(0,153,204,0.08);border:1px solid rgba(0,153,204,0.2);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;color:#0284c7;cursor:pointer;margin-bottom:6px;}
+.weather-pill{display:none;align-items:center;gap:6px;background:rgba(0,153,204,0.08);border:1px solid rgba(0,153,204,0.2);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;color:#0284c7;cursor:pointer;}
 .weather-extra{display:none;background:linear-gradient(135deg,#e0f2fe,#f0f9ff);border:1.5px solid rgba(0,153,204,0.2);border-radius:12px;padding:10px 12px;margin-bottom:10px;}
 .wf-row{display:flex;gap:6px;overflow-x:auto;}
 .wf-day{text-align:center;flex-shrink:0;min-width:36px;}
@@ -1231,7 +1231,7 @@ function go(){
     '"insiderTip":"X","bestFood":"X","bestStartTime":"X"'+(S.days>1?',"overnightStop":false,"suggestedStay":{"type":"Hotel","name":"X","pricePerNight":0,"bookingTip":"X"}':'')+
     '}]}\n'+
     'Include '+S.from+' as start, '+S.to+' as end, '+numStops+' middle stopovers.\n'+
-    'IMPORTANT: Include iconic landmarks first, then vibe activities. LA/SF/NYC/London/Tokyo=8 acts, medium cities=6, small=4. Keep descriptions under 7 words.\n'+
+    'IMPORTANT: Every stop needs many activities. LA/SF/NYC/Chicago/London/Tokyo/Paris/Sydney=8 activities minimum. Medium cities=6. Small towns=4. Include famous landmarks AND vibe activities. Max 6 words per description.\n'+
     'Each activity: name, emoji, cost ('+destCurrency+', 0=free), duration, description'+(S.gems?', hiddenGem(bool)':'')+
     (S.parking?', parkingTip':'')+'.\n'+
     'Per stop: insiderTip, bestFood, bestStartTime, trafficWarning, googleMapsQuery("City A to City B").\n'+
@@ -1424,18 +1424,22 @@ function showResults(data){
     if(stop.insiderTip) html+='<div style="font-size:10px;color:var(--amber);font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">&#128161; '+stop.insiderTip+'</div>';
     if(stop.bestFood) html+='<div style="font-size:10px;color:var(--sun);font-weight:600;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">&#127860; '+stop.bestFood+'</div>';
     // Weather pill
-    html+='<div class="weather-pill" id="wpill-'+idx+'" onclick="toggleWX('+idx+')">'+
+    // Time + Weather combined in one row
+    html+='<div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">';
+    if(stop.bestStartTime&&stop.type!=='end'){
+      html+='<div style="display:inline-flex;align-items:center;gap:5px;background:rgba(0,153,204,0.07);border:1px solid rgba(0,153,204,0.18);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;color:#075985;">&#128336; '+stop.bestStartTime+'</div>';
+    }
+    html+='<div class="weather-pill" id="wpill-'+idx+'" onclick="toggleWX('+idx+')" style="margin-bottom:0;">'+
       '<span id="wico-'+idx+'">&#8987;</span>'+
       '<span id="wtmp-'+idx+'">--</span>'+
       '<span id="wdsc-'+idx+'"></span>'+
       '<span>&#9660;</span>'+
-    '</div>'+
-    '<div class="weather-extra" id="wext-'+idx+'">'+
+    '</div>';
+    html+='</div>';
+    html+='<div class="weather-extra" id="wext-'+idx+'">'+
       '<div style="font-size:10px;color:#075985;font-weight:600;margin-bottom:6px;" id="wdet-'+idx+'"></div>'+
       '<div class="wf-row" id="wfc-'+idx+'"></div>'+
     '</div>';
-    // Departure time
-    if(stop.bestStartTime&&stop.type!=='end') html+='<div style="display:inline-flex;align-items:center;gap:5px;background:rgba(0,153,204,0.07);border:1px solid rgba(0,153,204,0.18);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:#075985;margin-bottom:8px;">&#128336; '+stop.bestStartTime+'</div>';
     // Activities
     if(stop.activities&&stop.activities.length){
       html+='<div class="acts">';
