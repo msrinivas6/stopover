@@ -241,17 +241,17 @@ html{overflow-x:hidden;}
 .stay-tip{font-size:11px;color:var(–text2);line-height:1.5;margin-top:4px;padding-top:4px;border-top:1px solid rgba(0,153,204,0.15);}
 
 .act-check{width:18px;height:18px;border:1.5px solid rgba(220,140,60,0.4);border-radius:50%;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;background:#fff;font-size:10px;font-weight:900;color:transparent;margin-right:6px;}
-.act-check.done{background:var(--sun);border-color:var(--sun);color:#fff;}
+.act-check.done{background:var(–sun);border-color:var(–sun);color:#fff;}
 .act.completed{opacity:0.55;}
 .act.completed .act-name{text-decoration:line-through;}
 .progress-wrap{margin:6px 0 12px;}
-.progress-lbl{font-size:10px;color:var(--text2);font-weight:600;text-align:center;margin-bottom:4px;}
+.progress-lbl{font-size:10px;color:var(–text2);font-weight:600;text-align:center;margin-bottom:4px;}
 .progress-bg{background:rgba(220,140,60,0.1);border-radius:20px;height:6px;overflow:hidden;}
-.progress-fill{background:linear-gradient(90deg,var(--sun),var(--amber));height:100%;border-radius:20px;transition:width 0.4s;width:0%;}
+.progress-fill{background:linear-gradient(90deg,var(–sun),var(–amber));height:100%;border-radius:20px;transition:width 0.4s;width:0%;}
 .weather-card{background:linear-gradient(135deg,#e0f2fe,#f0f9ff);border:1.5px solid rgba(0,153,204,0.2);border-radius:14px;padding:12px 14px;margin-bottom:8px;display:none;}
 .weather-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
 .weather-lbl{font-size:10px;font-weight:800;color:#0284c7;text-transform:uppercase;letter-spacing:0.5px;}
-.weather-xbtn{font-size:10px;color:#0284c7;font-weight:700;cursor:pointer;background:none;border:none;font-family:var(--sans);padding:0;}
+.weather-xbtn{font-size:10px;color:#0284c7;font-weight:700;cursor:pointer;background:none;border:none;font-family:var(–sans);padding:0;}
 .weather-main{display:flex;align-items:center;gap:10px;}
 .weather-icon{font-size:24px;line-height:1;}
 .weather-temp{font-size:20px;font-weight:800;color:#0c4a6e;}
@@ -1260,7 +1260,7 @@ function go(){
   var _fetchOptions={
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({prompt:prompt,max_tokens:7000})
+    body:JSON.stringify({prompt:prompt,max_tokens:6000})
   };
 
   function doFetch(attemptsLeft){
