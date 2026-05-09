@@ -1295,7 +1295,8 @@ function go(){
       return;
     }
     var txt=d.text||'';
-    if(!txt){console.error('Empty response');showErr();return;}
+    console.log('Response text length:',txt.length,'first 100:',txt.substring(0,100));
+    if(!txt){console.error('Empty response');showErr('Empty response from API');return;}
     try{
       var clean=txt.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
       var s=clean.indexOf('{');var e=clean.lastIndexOf('}');
@@ -1304,16 +1305,16 @@ function go(){
         if(parsed&&parsed.stops&&parsed.stops.length>0){
           showResults(parsed);
         } else {
-          console.error('No stops in response');
-          showErr();
+          console.error('No stops in response, parsed:', JSON.stringify(parsed).substring(0,200));
+          showErr('No stops found in response. Please try again.');
         }
       } else {
         console.error('No JSON found in:',txt.substring(0,200));
-        showErr();
+        showErr('Bad response format: '+txt.substring(0,100));
       }
     } catch(ex){
       console.error('JSON parse error:',ex,'text:',txt.substring(0,200));
-      showErr();
+      showErr('Parse error: '+ex.message+' in: '+txt.substring(0,80));
     }
   })
   .catch(function(e){console.error('Fetch error:',e);clearInterval(iv);showErr();});
