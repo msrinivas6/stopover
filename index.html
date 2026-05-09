@@ -1264,8 +1264,8 @@ function go(){
   function doFetch(attemptsLeft){
     var _controller=new AbortController();
     var _timer=setTimeout(function(){_controller.abort();},20000);
-    _fetchOptions.signal=_controller.signal;
-    return fetch('/api/route',_fetchOptions).then(function(r){clearTimeout(_timer);return r;}).catch(function(e){clearTimeout(_timer);if(e.name==='AbortError'){return {json:function(){return Promise.resolve({error:'timeout'});}};} throw e;})
+    var _opts={method:_fetchOptions.method,headers:_fetchOptions.headers,body:_fetchOptions.body,signal:_controller.signal};
+    return fetch('/api/route',_opts).then(function(r){clearTimeout(_timer);return r;}).catch(function(e){clearTimeout(_timer);if(e.name==='AbortError'){return {json:function(){return Promise.resolve({error:'timeout'});}};} throw e;})
       .then(function(r){
         if(r.status===429){
           // Rate limited - DO NOT retry, just return error immediately
