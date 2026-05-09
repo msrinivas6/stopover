@@ -1302,6 +1302,7 @@ function go(){
 }
 
 function showResults(data){
+  try {
   document.getElementById('loading').style.display='none';
   var el=document.getElementById('results');
   el.style.display='block';
@@ -1547,6 +1548,12 @@ function showResults(data){
   '</div>';
 
   el.innerHTML=html;
+  } catch(err) {
+    console.error('showResults crash:', err.message, err.stack);
+    document.getElementById('loading').style.display='none';
+    document.getElementById('results').style.display='block';
+    document.getElementById('results').innerHTML='<div style="padding:40px;text-align:center;"><div style="font-size:48px;">😕</div><div style="font-size:16px;font-weight:700;margin:16px 0 8px;">Render error</div><div style="font-size:12px;color:red;word-break:break-all;padding:0 20px;">'+err.message+'</div><button onclick="reset()" style="margin-top:20px;padding:12px 24px;background:#ff7c2a;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Try another route</button></div>';
+  }
 }
 
 function showErr(msg){
