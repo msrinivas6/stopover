@@ -250,6 +250,24 @@ html{overflow-x:hidden;}
 .progress-lbl{font-size:10px;color:var(–text2);font-weight:600;text-align:center;margin-bottom:4px;}
 .progress-bg{background:rgba(220,140,60,0.1);border-radius:20px;height:6px;overflow:hidden;}
 .progress-fill{background:linear-gradient(90deg,var(–sun),var(–amber));height:100%;border-radius:20px;transition:width 0.4s;width:0%;}
+
+/* ── WEATHER ── */
+.weather-card{background:linear-gradient(135deg,#e0f2fe,#f0f9ff);border:1.5px solid rgba(0,153,204,0.2);border-radius:14px;padding:12px 14px;margin-top:8px;display:none;}
+.weather-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.weather-lbl{font-size:10px;font-weight:800;color:#0284c7;text-transform:uppercase;letter-spacing:0.5px;}
+.weather-xbtn{font-size:10px;color:#0284c7;font-weight:700;cursor:pointer;background:none;border:none;font-family:var(–sans);padding:0;}
+.weather-main{display:flex;align-items:center;gap:10px;}
+.weather-icon{font-size:24px;line-height:1;}
+.weather-temp{font-size:20px;font-weight:800;color:#0c4a6e;}
+.weather-desc{font-size:11px;color:#075985;font-weight:600;margin-top:2px;}
+.weather-details{display:flex;gap:12px;margin-top:6px;}
+.weather-det{font-size:10px;color:#075985;font-weight:600;}
+.weather-extra{display:none;margin-top:10px;padding-top:8px;border-top:1px solid rgba(0,153,204,0.15);}
+.wf-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;}
+.wf-day{text-align:center;flex-shrink:0;min-width:38px;}
+.wf-day-name{font-size:9px;color:#075985;font-weight:700;display:block;}
+.wf-day-icon{font-size:14px;display:block;margin:2px 0;}
+.wf-day-temp{font-size:10px;font-weight:800;color:#0c4a6e;display:block;}
 </style>
 
 </head>
@@ -1517,6 +1535,25 @@ function showResults(data){
       '</div>';
     }
 
+    // Weather card
+    html+='<div class="weather-card" id="wc-'+idx+'">'+
+      '<div class="weather-top">'+
+        '<span class="weather-lbl">&#127780; Weather at this stop</span>'+
+        '<button class="weather-xbtn" id="wxbtn-'+idx+'" onclick="toggleWX('+idx+')">7-day &#9660;</button>'+
+      '</div>'+
+      '<div class="weather-main">'+
+        '<div class="weather-icon" id="wi-'+idx+'">&#8987;</div>'+
+        '<div>'+
+          '<div class="weather-temp" id="wt-'+idx+'">Loading...</div>'+
+          '<div class="weather-desc" id="wd-'+idx+'"></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="weather-details" id="wdet-'+idx+'"></div>'+
+      '<div class="weather-extra" id="wx-'+idx+'">'+
+        '<div class="wf-row" id="wf-'+idx+'"></div>'+
+      '</div>'+
+    '</div>';
+
     html+='</div>';
   });
 
@@ -1548,6 +1585,12 @@ function showResults(data){
   '</div>';
 
   el.innerHTML=html;
+  // Fetch weather for each stop with staggered delay
+  _stopsData.forEach(function(stop,i){
+    if(!_skipped[i]){
+      setTimeout(function(s,ix){return function(){loadWeather(s.name,ix);};}(stop,i), i*500);
+    }
+  });
   } catch(err) {
     console.error('showResults crash:', err.message, err.stack);
     document.getElementById('loading').style.display='none';
@@ -1567,6 +1610,72 @@ function showErr(msg){
     '<button class="find-btn" style="max-width:300px;width:100%;margin-bottom:12px;" onclick="go()">🔄 Try again</button>'+
     '<button class="back-btn" style="max-width:300px;width:100%;" onclick="reset()">← Try another route</button>'+
   '</div>';
+}
+
+// ── WEATHER ──
+var WX_DESC={0:'Clear',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',48:'Icy fog',
+  51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',
+  71:'Light snow',73:'Snow',75:'Heavy snow',80:'Showers',81:'Heavy showers',95:'Thunderstorm',99:'Thunderstorm'};
+var WX_ICON={0:'&#9728;',1:'&#9925;',2:'&#9925;',3:'&#9729;',45:'&#127787;',48:'&#127787;',
+  51:'&#127746;',53:'&#127746;',55:'&#127746;',61:'&#127747;',63:'&#127747;',65:'&#127747;',
+  71:'&#10052;',73:'&#10052;',75:'&#10052;',80:'&#127746;',81:'&#127747;',95:'&#9928;',99:'&#9928;'};
+function wxIcon(c){return WX_ICON[c]||'&#9925;';}
+function wxDesc(c){return WX_DESC[c]||'Partly cloudy';}
+function toggleWX(idx){
+  var el=document.getElementById('wx-'+idx);
+  var btn=document.getElementById('wxbtn-'+idx);
+  if(!el) return;
+  var open=el.style.display==='block';
+  el.style.display=open?'none':'block';
+  if(btn) btn.innerHTML=open?'7-day &#9660;':'Hide &#9650;';
+}
+function loadWeather(name,idx){
+  fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(name)+'&count=1&language=en&format=json')
+    .then(function(r){return r.json();})
+    .then(function(geo){
+      if(!geo.results||!geo.results[0]) return;
+      var lat=geo.results[0].latitude, lon=geo.results[0].longitude;
+      return fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+
+        '&current=temperature_2m,weathercode,windspeed_10m,precipitation&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=7');
+    })
+    .then(function(r){return r?r.json():null;})
+    .then(function(w){
+      if(!w||!w.current) return;
+      var card=document.getElementById('wc-'+idx);
+      if(!card) return;
+      card.style.display='block';
+      var isM=_isMetric;
+      var t=isM?Math.round(w.current.temperature_2m):Math.round(w.current.temperature_2m*9/5+32);
+      var unit=isM?'C':'F';
+      var ico=document.getElementById('wi-'+idx);
+      var tmp=document.getElementById('wt-'+idx);
+      var dsc=document.getElementById('wd-'+idx);
+      var det=document.getElementById('wdet-'+idx);
+      if(ico) ico.innerHTML=wxIcon(w.current.weathercode);
+      if(tmp) tmp.textContent=t+'°'+unit;
+      if(dsc) dsc.textContent=wxDesc(w.current.weathercode);
+      if(det) det.innerHTML=
+        '<span class="weather-det">&#128168; '+Math.round(w.current.windspeed_10m)+(isM?' km/h':' mph')+'</span>'+
+        '<span class="weather-det">&#127783; '+Math.round((w.current.precipitation||0)*10)/10+'mm</span>';
+      // 7-day forecast
+      if(w.daily){
+        var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        var fc='';
+        for(var d=0;d<Math.min(7,w.daily.weathercode.length);d++){
+          var dt=new Date(w.daily.time[d]);
+          var hi=isM?Math.round(w.daily.temperature_2m_max[d]):Math.round(w.daily.temperature_2m_max[d]*9/5+32);
+          var lo=isM?Math.round(w.daily.temperature_2m_min[d]):Math.round(w.daily.temperature_2m_min[d]*9/5+32);
+          fc+='<div class="wf-day">'+
+            '<span class="wf-day-name">'+days[dt.getDay()]+'</span>'+
+            '<span class="wf-day-icon">'+wxIcon(w.daily.weathercode[d])+'</span>'+
+            '<span class="wf-day-temp">'+hi+'/'+lo+'</span>'+
+          '</div>';
+        }
+        var wfEl=document.getElementById('wf-'+idx);
+        if(wfEl) wfEl.innerHTML=fc;
+      }
+    })
+    .catch(function(e){console.log('Weather error:',e);});
 }
 
 // ── TRIP TRACKER ──
