@@ -1251,8 +1251,7 @@ function go(){
     (S.parking?',"parkingTip":"X"':'')+'}],'+
     '"insiderTip":"X","bestFood":"X","bestStartTime":"X"'+(S.days>1?',"overnightStop":false,"suggestedStay":{"type":"Hotel","name":"X","pricePerNight":0,"bookingTip":"X"}':'')+
     '}]}\n'+
-    'CRITICAL: ALL stops including start city MUST have activities. Start: '+S.from+' ('+numStops+' middle stops) End: '+S.to+'.\n'+
-    'Every stop needs activities: major cities=6-8, medium=4-5, small=3. Short descriptions only.\n'+
+    'ALL stops need activities (incl. '+S.from+'). Major cities: 6 acts, medium: 4, small: 3. Descriptions max 8 words.\n'+
     'Each activity: name, emoji, cost ('+destCurrency+', 0=free), duration, description'+(S.gems?', hiddenGem(bool)':'')+
     (S.parking?', parkingTip':'')+'.\n'+
     'Per stop: insiderTip, bestFood, bestStartTime, trafficWarning, googleMapsQuery("City A to City B").\n'+
@@ -1261,7 +1260,7 @@ function go(){
   var _fetchOptions={
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({prompt:prompt,max_tokens:Math.min(4500,2500+S.days*200+(S.parking?400:0)+(S.gems?200:0))})
+    body:JSON.stringify({prompt:prompt,max_tokens:5000})
   };
 
   function doFetch(attemptsLeft){
