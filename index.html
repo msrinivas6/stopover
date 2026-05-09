@@ -264,6 +264,10 @@ html{overflow-x:hidden;}
 .wf-day-name{font-size:9px;color:#075985;font-weight:700;display:block;}
 .wf-day-icon{font-size:14px;display:block;margin:2px 0;}
 .wf-day-temp{font-size:10px;font-weight:800;color:#0c4a6e;display:block;}
+
+/* Disable pull-to-refresh on results */
+#results{overscroll-behavior-y:contain;}
+.home{overscroll-behavior-y:auto;}
 </style>
 
 </head>
@@ -1297,7 +1301,6 @@ function go(){
       try{
         showResults(parsed);
       } catch(renderErr){
-        alert('ERR:'+renderErr.message+' L:'+renderErr.stack.split(':').pop());
         showErr('Render error: '+renderErr.message);
       }
     } catch(ex){
@@ -1655,6 +1658,22 @@ function loadWeather(name,idx){
       }
     }).catch(function(){});
 }
+// Prevent pull-to-refresh on results page
+document.addEventListener('touchstart', function(e){
+  if(document.getElementById('results').style.display==='block'){
+    _touchStartY=e.touches[0].clientY;
+  }
+}, {passive:true});
+document.addEventListener('touchmove', function(e){
+  if(document.getElementById('results').style.display==='block'){
+    var el=document.getElementById('results');
+    if(el.scrollTop===0 && e.touches[0].clientY>_touchStartY){
+      e.preventDefault();
+    }
+  }
+}, {passive:false});
+var _touchStartY=0;
+
 function reset(){
   document.getElementById('results').style.display='none';
   document.getElementById('loading').style.display='none';
