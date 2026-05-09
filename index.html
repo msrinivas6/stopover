@@ -240,34 +240,14 @@ html{overflow-x:hidden;}
 .stay-price{font-size:12px;font-weight:800;color:var(–sun2);}
 .stay-tip{font-size:11px;color:var(–text2);line-height:1.5;margin-top:4px;padding-top:4px;border-top:1px solid rgba(0,153,204,0.15);}
 
-.act-check{width:18px;height:18px;border:1.5px solid rgba(220,140,60,0.4);border-radius:50%;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;background:#fff;font-size:10px;font-weight:900;color:transparent;margin-right:6px;}
-.act-check.done{background:var(–sun);border-color:var(–sun);color:#fff;}
-.act.completed{opacity:0.55;}
-.act.completed .act-name{text-decoration:line-through;}
-.progress-wrap{margin:6px 0 12px;}
-.progress-lbl{font-size:10px;color:var(–text2);font-weight:600;text-align:center;margin-bottom:4px;}
-.progress-bg{background:rgba(220,140,60,0.1);border-radius:20px;height:6px;overflow:hidden;}
-.progress-fill{background:linear-gradient(90deg,var(–sun),var(–amber));height:100%;border-radius:20px;transition:width 0.4s;width:0%;}
-.weather-card{background:linear-gradient(135deg,#e0f2fe,#f0f9ff);border:1.5px solid rgba(0,153,204,0.2);border-radius:14px;padding:12px 14px;margin-bottom:8px;display:none;}
-.weather-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
-.weather-lbl{font-size:10px;font-weight:800;color:#0284c7;text-transform:uppercase;letter-spacing:0.5px;}
-.weather-xbtn{font-size:10px;color:#0284c7;font-weight:700;cursor:pointer;background:none;border:none;font-family:var(–sans);padding:0;}
-.weather-main{display:flex;align-items:center;gap:10px;}
-.weather-icon{font-size:24px;line-height:1;}
-.weather-temp{font-size:20px;font-weight:800;color:#0c4a6e;}
-.weather-desc{font-size:11px;color:#075985;font-weight:600;margin-top:2px;}
-.weather-details{display:flex;gap:12px;margin-top:6px;}
-.weather-det{font-size:10px;color:#075985;font-weight:600;}
-.weather-extra{display:none;margin-top:10px;padding-top:8px;border-top:1px solid rgba(0,153,204,0.15);}
-.wf-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;}
-.wf-day{text-align:center;flex-shrink:0;min-width:38px;}
-.wf-day-name{font-size:9px;color:#075985;font-weight:700;display:block;}
-.wf-day-icon{font-size:14px;display:block;margin:2px 0;}
-.wf-day-temp{font-size:10px;font-weight:800;color:#0c4a6e;display:block;}
-
-/* Disable pull-to-refresh on results */
-#results{overscroll-behavior-y:contain;}
-.home{overscroll-behavior-y:auto;}
+/* ── WEATHER ── */
+.weather-pill{display:none;align-items:center;gap:6px;background:rgba(0,153,204,0.08);border:1px solid rgba(0,153,204,0.2);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;color:#0284c7;cursor:pointer;margin-bottom:6px;}
+.weather-extra{display:none;background:linear-gradient(135deg,#e0f2fe,#f0f9ff);border:1.5px solid rgba(0,153,204,0.2);border-radius:12px;padding:10px 12px;margin-bottom:10px;}
+.wf-row{display:flex;gap:6px;overflow-x:auto;}
+.wf-day{text-align:center;flex-shrink:0;min-width:36px;}
+.wf-day span{display:block;font-size:9px;color:#075985;font-weight:700;}
+.wf-day i{display:block;font-size:13px;font-style:normal;}
+.wf-day b{display:block;font-size:10px;font-weight:800;color:#0c4a6e;}
 </style>
 
 </head>
@@ -396,7 +376,6 @@ html{overflow-x:hidden;}
 var S = {from:'', to:'', days:2, vibes:[], gems:false, parking:false};
 
 var _stopsData=[];
-var _lastResult=null; // cache last successful route
 var _skipped=[];
 var _bestSeason='Year round';
 var _currencySymbol='$';
@@ -1090,7 +1069,56 @@ function checkForm(){
   }
 }
 
-var CITY_CURRENCY = {
+function go(){
+  // Always read latest values from inputs
+  S.from=document.getElementById('from-inp').value.trim();
+  S.to=document.getElementById('to-inp').value.trim();
+  if(!S.from||!S.to) return;
+  // API key check handled in result
+
+  document.getElementById('home').style.display='none';
+  document.getElementById('from-sug').style.display='none';
+  document.getElementById('to-sug').style.display='none';
+  document.getElementById('loading').style.display='block';
+  document.getElementById('results').style.display='none';
+  document.getElementById('l-sub').textContent='Finding the best stops between '+S.from+' and '+S.to;
+  window.scrollTo(0,0);
+
+  var steps=['ls1','ls2','ls3','ls4','ls5'];
+  var si=0;
+  var iv=setInterval(function(){
+    if(si>0){document.getElementById(steps[si-1]).classList.remove('active');document.getElementById(steps[si-1]).classList.add('done');}
+    if(si<steps.length){document.getElementById(steps[si]).classList.add('active');si++;}
+    else clearInterval(iv);
+  },1100);
+
+  var numStops;
+  if(S.days<=1) numStops='1-2';
+  else if(S.days<=2) numStops='2-3';
+  else if(S.days<=3) numStops='3-5';
+  else if(S.days<=5) numStops='5-7';
+  else if(S.days<=7) numStops='7-9';
+  else if(S.days<=10) numStops='10-12';
+  else numStops='12-15';
+
+  var vibeInstructions = '';
+  if(S.vibes.length>0){
+    var vibeMap = {
+      scenic:'scenic routes, dramatic landscapes, viewpoints',
+      coastal:'coastal roads, beach towns, ocean views',
+      historic:'historical sites, old towns, museums',
+      offbeat:'quirky hidden gems, roadside attractions',
+      foodie:'food destinations, local cuisine, markets',
+      nature:'national parks, hiking, waterfalls, wildlife',
+      adventure:'outdoor activities, hiking, kayaking, thrills',
+      relaxed:'leisurely pace, small towns, cafes'
+    };
+    var vibeDescs=S.vibes.map(function(v){return vibeMap[v]||v;});
+    vibeInstructions=' Vibes: '+vibeDescs.join(', ')+'. Use non-fastest scenic route.';
+  }
+
+  // City -> currency name & symbol lookup for prompt injection
+  var CITY_CURRENCY = {
     // USA
     'Atlanta':'USD ($)','Miami':'USD ($)','New York':'USD ($)','Los Angeles':'USD ($)',
     'Chicago':'USD ($)','San Francisco':'USD ($)','Boston':'USD ($)','Seattle':'USD ($)',
@@ -1178,147 +1206,100 @@ var CITY_CURRENCY = {
     'Moscow':'RUB (₽)','St Petersburg':'RUB (₽)',
     'Almaty':'KZT (₸)','Tbilisi':'GEL (₾)',
     'Baku':'AZN (₼)','Yerevan':'AMD (֏)',
-  }
-function go(){
-  // Always read latest values from inputs
-  S.from=document.getElementById('from-inp').value.trim();
-  S.to=document.getElementById('to-inp').value.trim();
-  if(!S.from||!S.to) return;
-  // API key check handled in result
-
-  document.getElementById('home').style.display='none';
-  document.getElementById('from-sug').style.display='none';
-  document.getElementById('to-sug').style.display='none';
-  document.getElementById('loading').style.display='block';
-  document.getElementById('results').style.display='none';
-  document.getElementById('l-sub').textContent='Finding the best stops between '+S.from+' and '+S.to;
-  window.scrollTo(0,0);
-
-  var steps=['ls1','ls2','ls3','ls4','ls5'];
-  var si=0;
-  var iv=setInterval(function(){
-    if(si>0){document.getElementById(steps[si-1]).classList.remove('active');document.getElementById(steps[si-1]).classList.add('done');}
-    if(si<steps.length){document.getElementById(steps[si]).classList.add('active');si++;}
-    else clearInterval(iv);
-  },1100);
-
-  var numStops;
-  if(S.days<=1) numStops='1-2';
-  else if(S.days<=2) numStops='2-3';
-  else if(S.days<=3) numStops='3-5';
-  else if(S.days<=5) numStops='5-7';
-  else if(S.days<=7) numStops='7-9';
-  else if(S.days<=10) numStops='10-12';
-  else numStops='12-15';
-
-  var vibeInstructions = '';
-  if(S.vibes.length>0){
-    var vibeMap = {
-      scenic:'scenic routes, dramatic landscapes, viewpoints',
-      coastal:'coastal roads, beach towns, ocean views',
-      historic:'historical sites, old towns, museums',
-      offbeat:'quirky hidden gems, roadside attractions',
-      foodie:'food destinations, local cuisine, markets',
-      nature:'national parks, hiking, waterfalls, wildlife',
-      adventure:'outdoor activities, hiking, kayaking, thrills',
-      relaxed:'leisurely pace, small towns, cafes'
-    };
-    var vibeDescs=S.vibes.map(function(v){return vibeMap[v]||v;});
-    vibeInstructions=' Vibes: '+vibeDescs.join(', ')+'. Use non-fastest scenic route.';
-  }
-
-  // City -> currency name & symbol lookup for prompt injection
-;
+  };
 
   var destCurrency = CITY_CURRENCY[S.to] || 'the local currency of '+S.to;
   var fromCurrency = CITY_CURRENCY[S.from] || destCurrency;
   var distUnit = (S.to.match(/Atlanta|Miami|New York|Los Angeles|Chicago|San Francisco|Boston|Seattle|Dallas|Houston|Denver|Las Vegas|Orlando|Washington DC|Nashville|Austin|Portland|Minneapolis|Phoenix|San Diego|Philadelphia|New Orleans|Tampa|Detroit|Sacramento|Kansas City|Pittsburgh|Honolulu|Anchorage|St Louis|Salt Lake City|Boise|Richmond|Savannah|Charleston|Raleigh|Charlotte|Memphis|Baltimore|Louisville|Milwaukee|Albuquerque|Tucson|Cincinnati|San Antonio|London|Edinburgh|Manchester|Birmingham|Glasgow|Liverpool|Cardiff/)) ? 'miles' : 'km';
 
   var extraOpts='';
-  if(S.gems) extraOpts+='Mix in hidden local gems, mark with hiddenGem:true.\n';
-  if(S.parking) extraOpts+='Add brief parkingTip per activity (max 8 words).\n';
+  if(S.gems) extraOpts+='Prefer hidden local gems over tourist traps. Mark hidden gems with hiddenGem:true.\n';
+  if(S.parking) extraOpts+='Add parkingTip to each activity with best nearby parking or transit tip.\n';
   if(S.days>1) extraOpts+='Mark overnight stopovers with overnightStop:true, add suggestedStay with type/name/pricePerNight/bookingTip in '+destCurrency+'. Never mark start/end as overnight.\n';
 
-  var prompt='Expert road trip planner. Route: '+S.from+' to '+S.to+'. Days: '+S.days+'.'+
+  var prompt='Expert road trip planner. Route: '+S.from+' → '+S.to+'. Days: '+S.days+'.'+
     (vibeInstructions?'\nVibe:'+vibeInstructions.replace(/\n/g,' '):'')+
-    '\nCurrency: '+destCurrency+'. Distance: '+distUnit+'.'+
+    '\nCurrency: '+destCurrency+' (use real local prices, not USD). Distance unit: '+distUnit+'.'+
     (extraOpts?'\n'+extraOpts:'')+
-    '\nReturn ONLY valid JSON:\n'+
-    '{"totalDistance":"X '+distUnit+'","totalDriveTime":"X hrs","bestSeason":"X to X","stops":['+
-    '{"name":"X","type":"start|stopover|end","emoji":"X","country":"X",'+
-    '"distanceFromPrev":"X '+distUnit+'","driveTimeFromPrev":"X hrs","recommendedStay":"X hrs",'+
-    '"trafficWarning":"X or null","googleMapsQuery":"CityA to CityB",'+
-    '"activities":[{"name":"X","emoji":"X","cost":0,"duration":"X hrs","description":"X"'+(S.gems?',"hiddenGem":false':'')+( S.parking?',"parkingTip":"X"':'')+'}],'+
-    '"insiderTip":"X","bestFood":"X","bestStartTime":"X"'+(S.days>1?',"overnightStop":false,"suggestedStay":{"type":"X","name":"X","pricePerNight":0,"bookingTip":"X"}':'')+
+    '\nReturn ONLY this JSON structure:\n'+
+    '{"totalDistance":"X '+distUnit+'","totalDriveTime":"X hrs","bestSeason":"X","stops":['+
+    '{"name":"City","type":"start|stopover|end","emoji":"🏙️","country":"X",'+
+    '"distanceFromPrev":"0 '+distUnit+'","driveTimeFromPrev":"0 hrs","recommendedStay":"X hrs","trafficWarning":"e.g. Heavy traffic leaving LA 7-9AM and 4-7PM","bestTravelDay":"e.g. Tue-Thu mornings","googleMapsQuery":"Los Angeles CA to Santa Barbara CA",'+
+    '"totalCostPerPerson":0,'+
+    '"activities":[{"name":"X","emoji":"🎭","cost":0,"duration":"X hrs","description":"X"'+(S.gems?',"hiddenGem":false':'')+
+    (S.parking?',"parkingTip":"X"':'')+'}],'+
+    '"insiderTip":"X","bestFood":"X","bestStartTime":"X"'+(S.days>1?',"overnightStop":false,"suggestedStay":{"type":"Hotel","name":"X","pricePerNight":0,"bookingTip":"X"}':'')+
     '}]}\n'+
-    'Include '+S.from+' (start), '+numStops+' stopovers, '+S.to+' (end).\n'+
-    'CRITICAL: Generate 6-8 activities for EVERY stop including start city '+S.from+'. Do not stop early.\n'+
-    'All costs in '+destCurrency+'. Return ONLY the JSON object.';
+    'Include '+S.from+' as start, '+S.to+' as end, '+numStops+' middle stopovers.\n'+
+    'IMPORTANT: Generate LOTS of activities — major cities like LA, NYC, Tokyo, Paris, Mumbai, Sydney need 6-8 activities minimum. Medium cities 4-5. Small towns 3. Do not cut short.\n'+
+    'Each activity: name, emoji, cost ('+destCurrency+', 0=free), duration, description'+(S.gems?', hiddenGem(bool)':'')+
+    (S.parking?', parkingTip':'')+'.\n'+
+    'Per stop: insiderTip, bestFood, bestStartTime, trafficWarning, googleMapsQuery("City A to City B").\n'+
+    'All costs in '+destCurrency+'. Return ONLY JSON.';
 
   var _fetchOptions={
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({prompt:prompt,max_tokens:4000})
+    body:JSON.stringify({prompt:prompt,max_tokens:Math.min(5000,2500+S.days*200+(S.parking?800:0)+(S.gems?400:0))})
   };
 
-  function doFetch(){
+  function doFetch(attemptsLeft){
     return fetch('/api/route',_fetchOptions)
       .then(function(r){
         if(r.status===429){
-          return {error:'rate_limit'};
+          // Rate limited - DO NOT retry, just return error immediately
+          return {error:'rate_limit',message:'Too many requests. Please wait 30 seconds and try again.'};
         }
         return r.json();
       })
-      .catch(function(e){
-        return {error:'network',message:e.message};
+      .then(function(d){
+        // Only retry on server errors (500), never on rate limits or client errors
+        if(d&&d.error&&d.error!=='rate_limit'&&attemptsLeft>0){
+          console.log('Server error, retrying once...',d.error);
+          return new Promise(function(res){setTimeout(res,2000);}).then(function(){return doFetch(0);});
+        }
+        return d;
       });
   }
 
-  doFetch()
+  doFetch(2)
   .then(function(d){
     clearInterval(iv);
     if(d.error){
-      if(d.error==='rate_limit'){
-      var secs=30;
-      var iv2=setInterval(function(){
-        secs--;
-        var btn=document.querySelector('.find-btn');
-        if(btn) btn.textContent='Please wait '+secs+'s...';
-        if(secs<=0){
-          clearInterval(iv2);
-          if(btn){btn.textContent='&#128507; Find My Stopovers';btn.disabled=false;}
-          document.getElementById('loading').style.display='none';
-          document.getElementById('results').style.display='none';
-          document.getElementById('home').style.display='block';
-        }
-      },1000);
-      return;
-    }
-    showErr('API error: '+d.error);
+      console.error('API error:',d.error);
+      if(d.error==='rate_limit'||d.message){
+        showErr('⏱️ Too many requests — please wait 10 seconds and tap Try again.');
+      } else {
+        showErr();
+      }
       return;
     }
     var txt=d.text||'';
-    if(!txt){showErr('Empty response from API');return;}
+    if(!txt){console.error('Empty response');showErr();return;}
     try{
-      var clean=txt.replace(/```json/gi,'').replace(/```/g,'').trim();
+      var clean=txt.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
       var s=clean.indexOf('{');var e=clean.lastIndexOf('}');
-      if(s===-1||e===-1){showErr('No JSON found: '+txt.substring(0,80));return;}
-      var parsed=JSON.parse(clean.substring(s,e+1));
-      if(!parsed||!parsed.stops||!parsed.stops.length){showErr('No stops in response');return;}
-      try{
-        showResults(parsed);
-      } catch(renderErr){
-        showErr('Render error: '+renderErr.message);
+      if(s!==-1&&e!==-1){
+        var parsed=JSON.parse(clean.substring(s,e+1));
+        if(parsed&&parsed.stops&&parsed.stops.length>0){
+          showResults(parsed);
+        } else {
+          console.error('No stops in response');
+          showErr();
+        }
+      } else {
+        console.error('No JSON found in:',txt.substring(0,200));
+        showErr();
       }
     } catch(ex){
-      showErr('Parse error: '+ex.message);
+      console.error('JSON parse error:',ex,'text:',txt.substring(0,200));
+      showErr();
     }
   })
-  .catch(function(e){clearInterval(iv);showErr('Network error: '+e.message);});
+  .catch(function(e){console.error('Fetch error:',e);clearInterval(iv);showErr();});
 }
 
 function showResults(data){
-  _lastResult=data; // cache for retry
   document.getElementById('loading').style.display='none';
   var el=document.getElementById('results');
   el.style.display='block';
@@ -1331,7 +1312,7 @@ function showResults(data){
     if(stop.type==='stopover'){
       var stopCost=0;
       if(stop.activities&&stop.activities.length){
-      stop.activities.forEach(function(a){ stopCost+=Math.min(a.cost||0, 50000); });
+        stop.activities.forEach(function(a){ stopCost+=Math.min(a.cost||0, 50000); });
       }
       // Cap per stop at reasonable amount
       stopCost=Math.min(stopCost, 50000);
@@ -1363,7 +1344,7 @@ function showResults(data){
   '</div>';
   if(hasMajorTraffic){
     html+='<div style="background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.15);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:#dc2626;font-weight:600;line-height:1.5;">'+
-      '⚠️ <strong>Traffic heads up:</strong> '+trafficStops.length+' leg'+(trafficStops.length>1?'s':'')+' '+(trafficStops.length>1?'have':'has')+' known congestion. Use the 🗺 Maps links to check live conditions before you drive.'+
+      '⚠️ <strong>Traffic heads up:</strong> '+trafficStops.length+' leg'+(trafficStops.length>1?'s have':'has')+' known congestion. Use the 🗺 Maps links to check live conditions before you drive.'+
     '</div>';
   }
 
@@ -1390,11 +1371,8 @@ function showResults(data){
   stops.forEach(function(stop,idx){
     // Drive connector
     if(idx>0&&stop.driveTimeFromPrev){
-      // Always build Maps URL from actual stop names (don't trust AI's googleMapsQuery)
       var prevStopName=S.from;
-      for(var pi=idx-1;pi>=0;pi--){
-        if(!_skipped[pi]){prevStopName=stops[pi].name;break;}
-      }
+      for(var pi=idx-1;pi>=0;pi--){if(!_skipped[pi]){prevStopName=stops[pi].name;break;}}
       var mapsUrl='https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(prevStopName)+'&destination='+encodeURIComponent(stop.name)+'&travelmode=driving';
       html+='<div class="drive-connector" id="dc-'+idx+'">'+
         '<div class="dc-line"></div>'+
@@ -1436,35 +1414,26 @@ function showResults(data){
 
     html+='<div id="'+stopId+'" style="display:block">';  // Always show body initially
     if(isStart){
-      var startMapsUrl='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(stop.name);
-      html+='<a href="'+startMapsUrl+'" target="_blank" class="dc-maps" style="display:inline-block;margin-bottom:8px;">&#128506; Explore on Maps</a>';
+      var sMapsUrl='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(stop.name);
+      html+='<a href="'+sMapsUrl+'" target="_blank" class="dc-maps" style="display:inline-block;margin-bottom:8px;">&#128506; Explore on Maps</a>';
       html+='<div style="background:rgba(255,124,42,0.06);border:1px dashed rgba(255,124,42,0.2);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:12px;color:var(--text2);line-height:1.6;">'+'&#128640; <strong>Your journey starts here.</strong> Tap Skip above if you live here, or explore what to see before you leave.'+'</div>';
     }
 
-    // Compact info bar: departure time + weather inline
-    html+='<div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">'+
-      (stop.bestStartTime&&stop.type!=='end'?
-        '<div style="display:flex;align-items:center;gap:5px;background:rgba(0,153,204,0.07);border:1px solid rgba(0,153,204,0.18);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;color:#075985;">'+
-          '&#128336; '+stop.bestStartTime+
-        '</div>':'') +
-      '<div id="wc-'+idx+'" style="display:none;align-items:center;gap:5px;background:rgba(0,153,204,0.07);border:1px solid rgba(0,153,204,0.18);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;color:#075985;cursor:pointer;" onclick="toggleWX('+idx+')">'+
-        '<span id="wi-'+idx+'">&#8987;</span>'+
-        '<span id="wt-'+idx+'"></span>'+
-        '<span id="wd-'+idx+'" style="font-weight:600;opacity:0.8;"></span>'+
-        '<span style="opacity:0.6;">&#9660;</span>'+
-      '</div>'+
+    if(stop.insiderTip) html+='<div style="font-size:10px;color:var(--amber);font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">&#128161; '+stop.insiderTip+'</div>';
+    if(stop.bestFood) html+='<div style="font-size:10px;color:var(--sun);font-weight:600;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">&#127860; '+stop.bestFood+'</div>';
+    // Weather pill
+    html+='<div class="weather-pill" id="wpill-'+idx+'" onclick="toggleWX('+idx+')">'+
+      '<span id="wico-'+idx+'">&#8987;</span>'+
+      '<span id="wtmp-'+idx+'">--</span>'+
+      '<span id="wdsc-'+idx+'"></span>'+
+      '<span>&#9660;</span>'+
     '</div>'+
-    '<div id="wx-'+idx+'" style="display:none;background:linear-gradient(135deg,#e0f2fe,#f0f9ff);border:1.5px solid rgba(0,153,204,0.2);border-radius:12px;padding:10px 12px;margin-bottom:10px;">'+
-      '<div style="display:flex;gap:6px;margin-bottom:6px;font-size:10px;color:#075985;font-weight:600;" id="wdet-'+idx+'"></div>'+
-      '<div style="display:flex;gap:6px;overflow-x:auto;" id="wf-'+idx+'"></div>'+
+    '<div class="weather-extra" id="wext-'+idx+'">'+
+      '<div style="font-size:10px;color:#075985;font-weight:600;margin-bottom:6px;" id="wdet-'+idx+'"></div>'+
+      '<div class="wf-row" id="wfc-'+idx+'"></div>'+
     '</div>';
-    // Compact insider + must eat - single line each
-    if(stop.insiderTip){
-      html+='<div style="font-size:10px;color:var(--amber);font-weight:600;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">&#128161; '+stop.insiderTip+'</div>';
-    }
-    if(stop.bestFood){
-      html+='<div style="font-size:10px;color:var(--sun);font-weight:600;margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">&#127860; '+stop.bestFood+'</div>';
-    }
+    // Departure time
+    if(stop.bestStartTime&&stop.type!=='end') html+='<div style="display:inline-flex;align-items:center;gap:5px;background:rgba(0,153,204,0.07);border:1px solid rgba(0,153,204,0.18);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:#075985;margin-bottom:8px;">&#128336; '+stop.bestStartTime+'</div>';
     // Activities
     if(stop.activities&&stop.activities.length){
       html+='<div class="acts">';
@@ -1485,8 +1454,31 @@ function showResults(data){
       html+='</div>';
     }
 
-
-
+    // Tips
+    if(stop.insiderTip||stop.bestFood){
+      html+='<div class="tip-row">';
+      if(stop.insiderTip){
+        html+='<div class="tip-box">'+
+          '<div class="tip-label">💡 Insider</div>'+
+          '<div class="tip-text">'+stop.insiderTip+'</div>'+
+        '</div>';
+      }
+      if(stop.bestFood){
+        html+='<div class="tip-box food">'+
+          '<div class="tip-label">🍽️ Must eat</div>'+
+          '<div class="tip-text">'+stop.bestFood+'</div>'+
+        '</div>';
+      }
+      html+='</div>';
+    }
+    if(stop.bestStartTime && stop.type!=='end'){
+      html+='<div class="tip-row">'+
+        '<div class="tip-box" style="width:100%;background:rgba(0,153,204,0.06);border-color:rgba(0,153,204,0.18);">'+
+          '<div class="tip-label">'+(stop.type==='start'?'🕐 Departure time':'🕐 Best start time')+'</div>'+
+          '<div class="tip-text">'+stop.bestStartTime+'</div>'+
+        '</div>'+
+      '</div>';
+    }
 
     // Overnight stay suggestion
     if(S.days>1 && stop.overnightStop && stop.suggestedStay && stop.type!=='start' && stop.type!=='end'){
@@ -1544,9 +1536,7 @@ function showResults(data){
 
   el.innerHTML=html;
   _stopsData.forEach(function(stop,i){
-    if(!_skipped[i]){
-      setTimeout(function(s,ix){return function(){loadWeather(s.name,ix);};}(stop,i),i*500);
-    }
+    if(!_skipped[i]) setTimeout(function(s,ix){return function(){loadWeather(s.name,ix);};}(stop,i),i*500);
   });
 }
 
@@ -1563,66 +1553,56 @@ function showErr(msg){
   '</div>';
 }
 
-
-var WX_DESC={0:'Clear',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',
-  51:'Light drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',
-  71:'Light snow',73:'Snow',80:'Showers',95:'Thunderstorm'};
-var WX_ICON={0:'&#9728;',1:'&#9925;',2:'&#9925;',3:'&#9729;',45:'&#127787;',
-  51:'&#127746;',61:'&#127747;',63:'&#127747;',65:'&#127747;',
-  71:'&#10052;',73:'&#10052;',80:'&#127746;',95:'&#9928;'};
-function wxIcon(c){return WX_ICON[c]||'&#9925;';}
-function wxDesc(c){return WX_DESC[c]||'Partly cloudy';}
+var WX_ICON={0:'&#9728;',1:'&#9925;',2:'&#9925;',3:'&#9729;',45:'&#127787;',51:'&#127746;',61:'&#127747;',63:'&#127747;',65:'&#127747;',71:'&#10052;',73:'&#10052;',80:'&#127746;',95:'&#9928;'};
+var WX_DESC={0:'Clear',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',51:'Drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Snow',73:'Snow',80:'Showers',95:'Thunderstorm'};
+function wxI(c){return WX_ICON[c]||'&#9925;';}
+function wxD(c){return WX_DESC[c]||'Partly cloudy';}
 function toggleWX(idx){
-  var el=document.getElementById('wx-'+idx);
+  var el=document.getElementById('wext-'+idx);
+  var pill=document.getElementById('wpill-'+idx);
   if(!el) return;
   var open=el.style.display==='block';
   el.style.display=open?'none':'block';
-  var pill=document.getElementById('wc-'+idx);
-  if(pill){
-    var arrow=pill.querySelector('span:last-child');
-    if(arrow) arrow.innerHTML=open?'&#9660;':'&#9650;';
-  }
+  if(pill){var arr=pill.querySelector('span:last-child');if(arr)arr.innerHTML=open?'&#9660;':'&#9650;';}
 }
 function loadWeather(name,idx){
   fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(name)+'&count=1&language=en&format=json')
-    .then(function(r){return r.json();})
-    .then(function(geo){
-      if(!geo.results||!geo.results[0]) return null;
-      var lat=geo.results[0].latitude, lon=geo.results[0].longitude;
-      return fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+
-        '&current=temperature_2m,weathercode,windspeed_10m,precipitation&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=7');
-    })
-    .then(function(r){return r?r.json():null;})
-    .then(function(w){
-      if(!w||!w.current) return;
-      var wxPill=document.getElementById('wc-'+idx);
-      if(!wxPill) return;
-      wxPill.style.display='flex';
-      var isM=_isMetric;
-      var t=isM?Math.round(w.current.temperature_2m):Math.round(w.current.temperature_2m*9/5+32);
-      var unit=isM?'C':'F';
-      var ico=document.getElementById('wi-'+idx);
-      var tmp=document.getElementById('wt-'+idx);
-      var dsc=document.getElementById('wd-'+idx);
-      var det=document.getElementById('wdet-'+idx);
-      if(ico) ico.innerHTML=wxIcon(w.current.weathercode);
-      if(tmp) tmp.textContent=t+'°'+unit;
-      if(dsc) dsc.textContent=wxDesc(w.current.weathercode);
-      if(det) det.innerHTML='<span class="weather-det">&#128168; '+Math.round(w.current.windspeed_10m)+(isM?' km/h':' mph')+'</span>'+
-        '<span class="weather-det">&#127783; '+Math.round((w.current.precipitation||0)*10)/10+'mm</span>';
-      if(w.daily){
-        var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-        var fc='';
-        for(var d=0;d<Math.min(7,w.daily.weathercode.length);d++){
-          var dt=new Date(w.daily.time[d]);
-          var hi=isM?Math.round(w.daily.temperature_2m_max[d]):Math.round(w.daily.temperature_2m_max[d]*9/5+32);
-          var lo=isM?Math.round(w.daily.temperature_2m_min[d]):Math.round(w.daily.temperature_2m_min[d]*9/5+32);
-          fc+='<div class="wf-day"><span class="wf-day-name">'+days[dt.getDay()]+'</span><span class="wf-day-icon">'+wxIcon(w.daily.weathercode[d])+'</span><span class="wf-day-temp">'+hi+'/'+lo+'</span></div>';
-        }
-        var wfEl=document.getElementById('wf-'+idx);
-        if(wfEl) wfEl.innerHTML=fc;
+  .then(function(r){return r.json();})
+  .then(function(geo){
+    if(!geo.results||!geo.results[0]) return null;
+    var lat=geo.results[0].latitude,lon=geo.results[0].longitude;
+    return fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,weathercode,windspeed_10m&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=7');
+  })
+  .then(function(r){return r?r.json():null;})
+  .then(function(w){
+    if(!w||!w.current) return;
+    var pill=document.getElementById('wpill-'+idx);
+    if(!pill) return;
+    pill.style.display='flex';
+    var isM=_isMetric;
+    var t=isM?Math.round(w.current.temperature_2m):Math.round(w.current.temperature_2m*9/5+32);
+    var u=isM?'C':'F';
+    var ico=document.getElementById('wico-'+idx);
+    var tmp=document.getElementById('wtmp-'+idx);
+    var dsc=document.getElementById('wdsc-'+idx);
+    var det=document.getElementById('wdet-'+idx);
+    if(ico) ico.innerHTML=wxI(w.current.weathercode);
+    if(tmp) tmp.textContent=t+'°'+u;
+    if(dsc) dsc.textContent=wxD(w.current.weathercode);
+    if(det) det.innerHTML='&#128168; '+Math.round(w.current.windspeed_10m)+(isM?' km/h':' mph');
+    if(w.daily){
+      var days=['Su','Mo','Tu','We','Th','Fr','Sa'];
+      var fc='';
+      for(var d=0;d<Math.min(7,w.daily.weathercode.length);d++){
+        var dt=new Date(w.daily.time[d]);
+        var hi=isM?Math.round(w.daily.temperature_2m_max[d]):Math.round(w.daily.temperature_2m_max[d]*9/5+32);
+        var lo=isM?Math.round(w.daily.temperature_2m_min[d]):Math.round(w.daily.temperature_2m_min[d]*9/5+32);
+        fc+='<div class="wf-day"><span>'+days[dt.getDay()]+'</span><i>'+wxI(w.daily.weathercode[d])+'</i><b>'+hi+'/'+lo+'</b></div>';
       }
-    }).catch(function(){});
+      var wfc=document.getElementById('wfc-'+idx);
+      if(wfc) wfc.innerHTML=fc;
+    }
+  }).catch(function(){});
 }
 function reset(){
   document.getElementById('results').style.display='none';
