@@ -1281,7 +1281,6 @@ function go(){
   doFetch(2)
   .then(function(d){
     clearInterval(iv);
-    alert('Got response: error='+d.error+' textLen='+(d.text||'').length+' first50='+(d.text||'').substring(0,50));
     if(d.error){
       showErr(d.error==='rate_limit'?'Rate limited. Wait 30s and retry.':'API error: '+d.error);
       return;
@@ -1294,7 +1293,12 @@ function go(){
       if(s===-1||e===-1){showErr('No JSON found: '+txt.substring(0,80));return;}
       var parsed=JSON.parse(clean.substring(s,e+1));
       if(!parsed||!parsed.stops||!parsed.stops.length){showErr('No stops in response');return;}
-      showResults(parsed);
+      try{
+        showResults(parsed);
+      } catch(renderErr){
+        alert('Render crash: '+renderErr.message+' at '+renderErr.stack.split('\n')[1]);
+        showErr('Render error: '+renderErr.message);
+      }
     } catch(ex){
       showErr('Parse error: '+ex.message);
     }
