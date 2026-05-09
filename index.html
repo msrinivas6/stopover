@@ -1240,7 +1240,7 @@ function go(){
   var _fetchOptions={
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({prompt:prompt,max_tokens:Math.min(5000,2500+S.days*200+(S.parking?800:0)+(S.gems?400:0))})
+    body:JSON.stringify({prompt:prompt,max_tokens:Math.min(8000,4000+S.days*300+(S.parking?800:0)+(S.gems?400:0))})
   };
 
   function doFetch(attemptsLeft){
@@ -1274,33 +1274,74 @@ function go(){
       }
       return;
     }
-    console.log('[Stopover] Raw API response:',JSON.stringify(d).substring(0,500));
     var txt=d.text||'';
-    if(!txt){console.error('Empty response',d);showErr('The AI returned an empty response.','Response keys: '+Object.keys(d).join(', ')+' | text value: '+JSON.stringify(d.text));return;}
+    if(!txt){console.error('Empty response');showErr();return;}
     try{
       var clean=txt.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
-      var s=clean.indexOf('{');var e=clean.lastIndexOf('}');
-      if(s!==-1&&e!==-1){
-        var parsed=JSON.parse(clean.substring(s,e+1));
-        if(parsed&&parsed.stops&&parsed.stops.length>0){
+      var s=clean.indexOf('{');
+      if(s===-1){console.error('No JSON found');showErr('The AI response contained no JSON.','First 300 chars: '+txt.substring(0,300));return;}
+      // Attempt 1: find last closing brace (happy path)
+      var jsonStr='';
+      var e=clean.lastIndexOf('}');
+      if(e!==-1) jsonStr=clean.substring(s,e+1);
+      // Try parsing — if it fails, attempt truncation repair
+      var parsed=null;
+      try{
+        parsed=JSON.parse(jsonStr);
+      }catch(ex1){
+        console.warn('Direct parse failed, attempting truncation repair…',ex1.message);
+        // Repair: take everything from first { and close any open brackets/braces
+        try{
+          var raw=clean.substring(s);
+          // Count open braces/brackets to know what needs closing
+          var depth=0;var arrDepth=0;var inStr=false;var esc=false;
+          for(var ci=0;ci<raw.length;ci++){
+            var ch=raw[ci];
+            if(esc){esc=false;continue;}
+            if(ch==='\\'){esc=true;continue;}
+            if(ch==='"'){inStr=!inStr;continue;}
+            if(inStr) continue;
+            if(ch==='{') depth++;
+            else if(ch==='}') depth--;
+            else if(ch==='[') arrDepth++;
+            else if(ch===']') arrDepth--;
+          }
+          // Trim to last complete value — cut off at last comma if unclosed
+          var repaired=raw.trimEnd();
+          // Remove trailing comma before we close
+          repaired=repaired.replace(/,\s*$/,'');
+          // Close open arrays first, then objects
+          for(var ai=0;ai<arrDepth;ai++) repaired+=']';
+          for(var oi=0;oi<depth;oi++) repaired+='}';
+          parsed=JSON.parse(repaired);
+          console.log('Truncation repair succeeded. Stops recovered:',parsed.stops?parsed.stops.length:0);
+        }catch(ex2){
+          console.error('Repair also failed:',ex2.message,'raw start:',clean.substring(s,s+200));
+          showErr('Response was cut off and could not be repaired. Try fewer days or disable extras.','Parse error: '+ex2.message+' | Text start: '+clean.substring(s,s+200));
+          return;
+        }
+      }
+      if(parsed&&parsed.stops&&parsed.stops.length>0){
+        // Filter out any stops that are incomplete (missing required name field)
+        parsed.stops=parsed.stops.filter(function(st){return st&&st.name;});
+        if(parsed.stops.length>0){
           try{
             showResults(parsed);
           }catch(re){
             showErr('Render error: '+re.message,'Stack: '+re.stack);
           }
         } else {
-          showErr('No stops found in response.','Parsed keys: '+Object.keys(parsed).join(', ')+' | stops: '+JSON.stringify(parsed.stops));
+          showErr('No valid stops found after repair.','Parsed keys: '+Object.keys(parsed).join(', '));
         }
       } else {
-        console.error('No JSON found in:',txt.substring(0,200));
-        showErr('The AI response was not valid JSON.','First 300 chars: '+txt.substring(0,300));
+        showErr('No stops found in response.','Parsed keys: '+(parsed?Object.keys(parsed).join(', '):'null'));
       }
     } catch(ex){
-      console.error('JSON parse error:',ex,'text:',txt.substring(0,200));
-      showErr('JSON parse failed: '+ex.message,'Raw text (first 300): '+txt.substring(0,300));
+      console.error('Outer parse error:',ex,'text:',txt.substring(0,200));
+      showErr('Unexpected error parsing response.',''+ex);
     }
   })
-  .catch(function(e){console.error('Fetch error:',e);clearInterval(iv);showErr('Network error — could not reach the server.',''+e);});
+  .catch(function(e){console.error('Fetch error:',e);clearInterval(iv);showErr();});
 }
 
 function showResults(data){
@@ -1523,23 +1564,14 @@ function showResults(data){
   });
 }
 
-function showErr(msg,detail){
+function showErr(msg){
   document.getElementById('loading').style.display='none';
   var el=document.getElementById('results');
   el.style.display='block';
-  var errLabel=msg||'Something went wrong. Please try again.';
-  var detailHtml='';
-  if(detail){
-    detailHtml='<div style="background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2);border-radius:10px;padding:10px 14px;margin-bottom:16px;max-width:320px;word-break:break-word;text-align:left;">'+
-      '<div style="font-size:10px;font-weight:800;color:#dc2626;margin-bottom:4px;">DEBUG INFO</div>'+
-      '<div style="font-size:11px;color:#991b1b;font-family:monospace;line-height:1.6;">'+detail+'</div>'+
-    '</div>';
-  }
   el.innerHTML='<div style="background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;">'+
     '<div style="font-size:52px;margin-bottom:20px;">😕</div>'+
     '<div style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:10px;">Could not generate route</div>'+
-    '<div style="font-size:14px;color:var(--text2);line-height:1.75;margin-bottom:16px;max-width:300px;">'+errLabel+'</div>'+
-    detailHtml+
+    '<div style="font-size:14px;color:var(--text2);line-height:1.75;margin-bottom:24px;max-width:300px;">Something went wrong. Please try again.</div>'+
     '<button class="find-btn" style="max-width:300px;width:100%;margin-bottom:12px;" onclick="go()">🔄 Try again</button>'+
     '<button class="back-btn" style="max-width:300px;width:100%;" onclick="reset()">← Try another route</button>'+
   '</div>';
