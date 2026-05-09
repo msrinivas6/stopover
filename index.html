@@ -248,6 +248,11 @@ html{overflow-x:hidden;}
 .wf-day span{display:block;font-size:9px;color:#075985;font-weight:700;}
 .wf-day i{display:block;font-size:13px;font-style:normal;}
 .wf-day b{display:block;font-size:10px;font-weight:800;color:#0c4a6e;}
+
+/* ── PDF EXPORT BUTTON ── */
+.export-btn{width:100%;background:var(–bg2);border:1.5px solid var(–border2);color:var(–text2);border-radius:var(–r);padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(–sans);transition:all 0.2s;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;}
+.export-btn:hover{border-color:var(–sky);color:var(–sky);}
+.export-btn:disabled{opacity:0.5;cursor:not-allowed;}
 </style>
 
 </head>
@@ -1230,7 +1235,7 @@ function go(){
     (S.parking?',"parkingTip":"X"':'')+'}],'+
     '"insiderTip":"X","bestFood":"X","bestStartTime":"X"'+(S.days>1?',"overnightStop":false,"suggestedStay":{"type":"Hotel","name":"X","pricePerNight":0,"bookingTip":"X"}':'')+
     '}]}\n'+
-    'Include '+S.from+' as start, '+S.to+' as end, '+numStops+' middle stopovers.\n'+
+    'Include '+S.from+' as start (with activities), '+S.to+' as end (WITH FULL ACTIVITIES — treat destination same as a stopover, minimum 6 activities), '+numStops+' middle stopovers.\n'+
     'IMPORTANT: Every stop needs many activities. LA/SF/NYC/Chicago/London/Tokyo/Paris/Sydney=8 activities minimum. Medium cities=6. Small towns=4. Include famous landmarks AND vibe activities. Max 6 words per description.\n'+
     'Each activity: name, emoji, cost ('+destCurrency+', 0=free), duration, description'+(S.gems?', hiddenGem(bool)':'')+
     (S.parking?', parkingTip':'')+'.\n'+
@@ -1279,66 +1284,47 @@ function go(){
     try{
       var clean=txt.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
       var s=clean.indexOf('{');
-      if(s===-1){console.error('No JSON found');showErr('The AI response contained no JSON.','First 300 chars: '+txt.substring(0,300));return;}
-      // Attempt 1: find last closing brace (happy path)
-      var jsonStr='';
-      var e=clean.lastIndexOf('}');
-      if(e!==-1) jsonStr=clean.substring(s,e+1);
-      // Try parsing — if it fails, attempt truncation repair
+      if(s===-1){console.error('No JSON found');showErr();return;}
       var parsed=null;
+      // Attempt 1: direct parse up to last closing brace
       try{
-        parsed=JSON.parse(jsonStr);
+        var e=clean.lastIndexOf('}');
+        parsed=JSON.parse(clean.substring(s,e+1));
       }catch(ex1){
-        console.warn('Direct parse failed, attempting truncation repair…',ex1.message);
-        // Repair: take everything from first { and close any open brackets/braces
+        // Attempt 2: repair truncated JSON by closing open brackets/braces
+        console.warn('Direct parse failed, attempting repair:',ex1.message);
         try{
           var raw=clean.substring(s);
-          // Count open braces/brackets to know what needs closing
-          var depth=0;var arrDepth=0;var inStr=false;var esc=false;
+          var depth=0,arrDepth=0,inStr=false,esc=false;
           for(var ci=0;ci<raw.length;ci++){
             var ch=raw[ci];
             if(esc){esc=false;continue;}
             if(ch==='\\'){esc=true;continue;}
             if(ch==='"'){inStr=!inStr;continue;}
             if(inStr) continue;
-            if(ch==='{') depth++;
-            else if(ch==='}') depth--;
-            else if(ch==='[') arrDepth++;
-            else if(ch===']') arrDepth--;
+            if(ch==='{')depth++;else if(ch==='}')depth--;
+            else if(ch==='[')arrDepth++;else if(ch===']')arrDepth--;
           }
-          // Trim to last complete value — cut off at last comma if unclosed
-          var repaired=raw.trimEnd();
-          // Remove trailing comma before we close
-          repaired=repaired.replace(/,\s*$/,'');
-          // Close open arrays first, then objects
+          var repaired=raw.trimEnd().replace(/,\s*$/,'');
           for(var ai=0;ai<arrDepth;ai++) repaired+=']';
           for(var oi=0;oi<depth;oi++) repaired+='}';
           parsed=JSON.parse(repaired);
-          console.log('Truncation repair succeeded. Stops recovered:',parsed.stops?parsed.stops.length:0);
+          console.log('Repair succeeded, stops:',parsed.stops?parsed.stops.length:0);
         }catch(ex2){
-          console.error('Repair also failed:',ex2.message,'raw start:',clean.substring(s,s+200));
-          showErr('Response was cut off and could not be repaired. Try fewer days or disable extras.','Parse error: '+ex2.message+' | Text start: '+clean.substring(s,s+200));
+          console.error('Repair failed:',ex2.message);
+          showErr();
           return;
         }
       }
       if(parsed&&parsed.stops&&parsed.stops.length>0){
-        // Filter out any stops that are incomplete (missing required name field)
         parsed.stops=parsed.stops.filter(function(st){return st&&st.name;});
         if(parsed.stops.length>0){
-          try{
-            showResults(parsed);
-          }catch(re){
-            showErr('Render error: '+re.message,'Stack: '+re.stack);
-          }
-        } else {
-          showErr('No valid stops found after repair.','Parsed keys: '+Object.keys(parsed).join(', '));
-        }
-      } else {
-        showErr('No stops found in response.','Parsed keys: '+(parsed?Object.keys(parsed).join(', '):'null'));
-      }
+          try{showResults(parsed);}catch(re){showErr();}
+        } else {showErr();}
+      } else {showErr();}
     } catch(ex){
-      console.error('Outer parse error:',ex,'text:',txt.substring(0,200));
-      showErr('Unexpected error parsing response.',''+ex);
+      console.error('Parse error:',ex);
+      showErr();
     }
   })
   .catch(function(e){console.error('Fetch error:',e);clearInterval(iv);showErr();});
@@ -1555,6 +1541,7 @@ function showResults(data){
       '<div class="sum-item"><span class="sum-n">'+(data.bestSeason||'Year round')+'</span><span class="sum-l">Best time</span></div>'+
     '</div>'+
     '<button class="share-btn" onclick="share()">📤 Share this route</button>'+
+    '<button class="export-btn" id="export-btn" onclick="exportPDF()">📄 Export as PDF</button>'+
     '<button class="back-btn" onclick="reset()">← Plan another route</button>'+
   '</div>';
 
@@ -1653,6 +1640,85 @@ function reset(){
   var ls1=document.getElementById('ls1');
   if(ls1) ls1.classList.add('active');
   window.scrollTo(0,0);
+}
+</script>
+
+<!-- PDF Export -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+function exportPDF(){
+  var btn=document.getElementById('export-btn');
+  if(btn){btn.disabled=true;btn.innerHTML='⏳ Generating PDF…';}
+
+  var hideSelectors=['.skip-btn','.swap-btn','.hdr-tag','#export-btn','.share-btn','.back-btn','.weather-pill','.weather-extra'];
+  var hidden=[];
+  hideSelectors.forEach(function(sel){
+    document.querySelectorAll(sel).forEach(function(el){
+      if(el.style.display!=='none'){hidden.push({el:el,prev:el.style.display});el.style.display='none';}
+    });
+  });
+
+  var target=document.getElementById('results');
+  var origBg=target.style.background;
+  target.style.background='#fff8f0';
+
+  html2canvas(target,{
+    scale:2,useCORS:true,backgroundColor:'#fff8f0',logging:false,
+    windowWidth:target.scrollWidth,height:target.scrollHeight,scrollY:0
+  }).then(function(canvas){
+    hidden.forEach(function(h){h.el.style.display=h.prev;});
+    target.style.background=origBg;
+
+    var pdf=new jspdf.jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    var pageW=pdf.internal.pageSize.getWidth();
+    var pageH=pdf.internal.pageSize.getHeight();
+    var margin=10;
+    var contentW=pageW-(margin*2);
+    var ratio=contentW/(canvas.width/2);
+    var totalH=canvas.height/2*ratio;
+    var printableH=pageH-margin*2-8;
+    var totalPages=Math.ceil(totalH/printableH);
+    var srcHPerPage=(printableH/ratio)*(canvas.width/contentW);
+
+    for(var p=0;p<totalPages;p++){
+      if(p>0) pdf.addPage();
+      // Header bar
+      pdf.setFillColor(255,124,42);
+      pdf.rect(0,0,pageW,8,'F');
+      pdf.setTextColor(255,255,255);
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica','bold');
+      pdf.text('STOPOVER  '+S.from.toUpperCase()+' → '+S.to.toUpperCase(),margin,5.5);
+      pdf.text('Page '+(p+1)+' of '+totalPages,pageW-margin,5.5,{align:'right'});
+      pdf.setTextColor(0,0,0);
+      // Slice
+      var srcY=p*srcHPerPage;
+      var sliceH=Math.min(srcHPerPage,canvas.height-srcY);
+      if(sliceH<=0) break;
+      var sliceCanvas=document.createElement('canvas');
+      sliceCanvas.width=canvas.width;sliceCanvas.height=sliceH;
+      sliceCanvas.getContext('2d').drawImage(canvas,0,-srcY);
+      var sliceImg=sliceCanvas.toDataURL('image/jpeg',0.92);
+      pdf.addImage(sliceImg,'JPEG',margin,8+margin,contentW,sliceH/2*ratio);
+    }
+    pdf.setFontSize(8);pdf.setTextColor(150,100,60);
+    pdf.text('stopoverapp.vercel.app',pageW/2,pageH-4,{align:'center'});
+
+    var filename='Stopover_'+S.from.replace(/\s/g,'_')+'_to_'+S.to.replace(/\s/g,'_')+'.pdf';
+    pdf.save(filename);
+    if(btn){btn.disabled=false;btn.innerHTML='✅ PDF Downloaded!';}
+    setTimeout(function(){if(btn)btn.innerHTML='📄 Export as PDF';},3000);
+  }).catch(function(err){
+    console.error('PDF error:',err);
+    hidden.forEach(function(h){h.el.style.display=h.prev;});
+    target.style.background=origBg;
+    if(btn){btn.disabled=false;btn.innerHTML='❌ Try again';}
+    setTimeout(function(){if(btn)btn.innerHTML='📄 Export as PDF';},2000);
+  });
 }
 </script>
 
