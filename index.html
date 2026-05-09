@@ -1295,8 +1295,9 @@ function go(){
       return;
     }
     var txt=d.text||'';
-    console.log('Response text length:',txt.length,'first 100:',txt.substring(0,100));
-    if(!txt){console.error('Empty response');showErr('Empty response from API');return;}
+    if(!txt){showErr('Empty API response');return;}
+    // Temporarily show first 200 chars for debugging
+    document.title='DBG:'+txt.substring(0,50);
     try{
       var clean=txt.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
       var s=clean.indexOf('{');var e=clean.lastIndexOf('}');
