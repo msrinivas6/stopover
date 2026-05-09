@@ -1261,29 +1261,20 @@ function go(){
     body:JSON.stringify({prompt:prompt,max_tokens:4000})
   };
 
-  function doFetch(attemptsLeft){
-    var _controller=new AbortController();
-    var _timer=setTimeout(function(){_controller.abort();},20000);
-    var _opts={method:_fetchOptions.method,headers:_fetchOptions.headers,body:_fetchOptions.body,signal:_controller.signal};
-    return fetch('/api/route',_opts).then(function(r){clearTimeout(_timer);return r;}).catch(function(e){clearTimeout(_timer);if(e.name==='AbortError'){return {json:function(){return Promise.resolve({error:'timeout'});}};} throw e;})
+  function doFetch(){
+    return fetch('/api/route',_fetchOptions)
       .then(function(r){
         if(r.status===429){
-          // Rate limited - DO NOT retry, just return error immediately
-          return {error:'rate_limit',message:'Too many requests. Please wait 30 seconds and try again.'};
+          return {error:'rate_limit'};
         }
         return r.json();
       })
-      .then(function(d){
-        // Only retry on server errors (500), never on rate limits or client errors
-        if(d&&d.error&&d.error!=='rate_limit'&&attemptsLeft>0){
-          console.log('Server error, retrying once...',d.error);
-          return new Promise(function(res){setTimeout(res,2000);}).then(function(){return doFetch(0);});
-        }
-        return d;
+      .catch(function(e){
+        return {error:'network',message:e.message};
       });
   }
 
-  doFetch(2)
+  doFetch()
   .then(function(d){
     clearInterval(iv);
     if(d.error){
