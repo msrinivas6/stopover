@@ -240,8 +240,6 @@ html{overflow-x:hidden;}
 .stay-price{font-size:12px;font-weight:800;color:var(–sun2);}
 .stay-tip{font-size:11px;color:var(–text2);line-height:1.5;margin-top:4px;padding-top:4px;border-top:1px solid rgba(0,153,204,0.15);}
 
-/* ── TRIP TRACKER ── */
-.act{position:relative;}
 .act-check{width:22px;height:22px;border:2px solid rgba(220,140,60,0.3);border-radius:50%;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;background:#fff;font-size:12px;font-weight:800;color:transparent;margin-right:6px;}
 .act-check.done{background:var(–sun);border-color:var(–sun);color:#fff;}
 .act.completed{opacity:0.55;}
@@ -250,9 +248,7 @@ html{overflow-x:hidden;}
 .progress-lbl{font-size:10px;color:var(–text2);font-weight:600;text-align:center;margin-bottom:4px;}
 .progress-bg{background:rgba(220,140,60,0.1);border-radius:20px;height:6px;overflow:hidden;}
 .progress-fill{background:linear-gradient(90deg,var(–sun),var(–amber));height:100%;border-radius:20px;transition:width 0.4s;width:0%;}
-
-/* ── WEATHER ── */
-.weather-card{background:linear-gradient(135deg,#e0f2fe,#f0f9ff);border:1.5px solid rgba(0,153,204,0.2);border-radius:14px;padding:12px 14px;margin-top:8px;display:none;}
+.weather-card{background:linear-gradient(135deg,#e0f2fe,#f0f9ff);border:1.5px solid rgba(0,153,204,0.2);border-radius:14px;padding:12px 14px;margin-bottom:8px;display:none;}
 .weather-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
 .weather-lbl{font-size:10px;font-weight:800;color:#0284c7;text-transform:uppercase;letter-spacing:0.5px;}
 .weather-xbtn{font-size:10px;color:#0284c7;font-weight:700;cursor:pointer;background:none;border:none;font-family:var(–sans);padding:0;}
@@ -1295,9 +1291,7 @@ function go(){
       return;
     }
     var txt=d.text||'';
-    if(!txt){showErr('Empty API response');return;}
-    // Temporarily show first 200 chars for debugging
-    document.title='DBG:'+txt.substring(0,50);
+    if(!txt){console.error('Empty response');showErr();return;}
     try{
       var clean=txt.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
       var s=clean.indexOf('{');var e=clean.lastIndexOf('}');
@@ -1306,23 +1300,22 @@ function go(){
         if(parsed&&parsed.stops&&parsed.stops.length>0){
           showResults(parsed);
         } else {
-          console.error('No stops in response, parsed:', JSON.stringify(parsed).substring(0,200));
-          showErr('No stops found in response. Please try again.');
+          console.error('No stops in response');
+          showErr();
         }
       } else {
         console.error('No JSON found in:',txt.substring(0,200));
-        showErr('Bad response format: '+txt.substring(0,100));
+        showErr();
       }
     } catch(ex){
       console.error('JSON parse error:',ex,'text:',txt.substring(0,200));
-      showErr('Parse error: '+ex.message+' in: '+txt.substring(0,80));
+      showErr();
     }
   })
   .catch(function(e){console.error('Fetch error:',e);clearInterval(iv);showErr();});
 }
 
 function showResults(data){
-  try {
   document.getElementById('loading').style.display='none';
   var el=document.getElementById('results');
   el.style.display='block';
@@ -1454,7 +1447,7 @@ function showResults(data){
       html+='<div style="background:rgba(255,124,42,0.06);border:1px dashed rgba(255,124,42,0.2);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:12px;color:var(--text2);line-height:1.6;">'+'🚀 <strong>Your journey starts here.</strong> Tap Skip above if you live here, or explore what to see before you leave.'+'</div>';
     }
 
-    // Departure time + Weather at top
+    // Departure time
     if(stop.bestStartTime && stop.type!=='end'){
       html+='<div class="tip-row">'+
         '<div class="tip-box" style="width:100%;background:rgba(0,153,204,0.06);border-color:rgba(0,153,204,0.18);">'+
@@ -1463,6 +1456,7 @@ function showResults(data){
         '</div>'+
       '</div>';
     }
+    // Weather card
     html+='<div class="weather-card" id="wc-'+idx+'">'+
       '<div class="weather-top">'+
         '<span class="weather-lbl">&#127780; Current weather</span>'+
@@ -1480,7 +1474,6 @@ function showResults(data){
         '<div class="wf-row" id="wf-'+idx+'"></div>'+
       '</div>'+
     '</div>';
-
     // Activities
     if(stop.activities&&stop.activities.length){
       html+='<div class="acts">';
@@ -1521,7 +1514,7 @@ function showResults(data){
       }
       html+='</div>';
     }
-    // departure time moved above
+
 
     // Overnight stay suggestion
     if(S.days>1 && stop.overnightStop && stop.suggestedStay && stop.type!=='start' && stop.type!=='end'){
@@ -1557,7 +1550,6 @@ function showResults(data){
       '</div>';
     }
 
-    // weather card moved above
     html+='</div>';
   });
 
@@ -1567,16 +1559,13 @@ function showResults(data){
   _bestSeason=data.bestSeason||'Year round';
 
   // Summary
-  // Count total activities
   var totActs=0;
   stops.forEach(function(s){if(s.activities)totActs+=s.activities.length;});
   _totActs=totActs; _doneActs={};
-
   html+='<div class="progress-wrap">'+
     '<div class="progress-lbl" id="prog-lbl">0 of '+totActs+' activities completed</div>'+
     '<div class="progress-bg"><div class="progress-fill" id="prog-fill"></div></div>'+
   '</div>';
-
   html+='<div class="summary" id="trip-summary">'+
     '<div class="sum-title">Trip Summary</div>'+
     '<div class="sum-grid" id="sum-grid">'+
@@ -1589,18 +1578,11 @@ function showResults(data){
   '</div>';
 
   el.innerHTML=html;
-  // Fetch weather for each stop with staggered delay
   _stopsData.forEach(function(stop,i){
     if(!_skipped[i]){
-      setTimeout(function(s,ix){return function(){loadWeather(s.name,ix);};}(stop,i), i*500);
+      setTimeout(function(s,ix){return function(){loadWeather(s.name,ix);};}(stop,i),i*500);
     }
   });
-  } catch(err) {
-    console.error('showResults crash:', err.message, err.stack);
-    document.getElementById('loading').style.display='none';
-    document.getElementById('results').style.display='block';
-    document.getElementById('results').innerHTML='<div style="padding:40px;text-align:center;"><div style="font-size:48px;">😕</div><div style="font-size:16px;font-weight:700;margin:16px 0 8px;">Render error</div><div style="font-size:12px;color:red;word-break:break-all;padding:0 20px;">'+err.message+'</div><button onclick="reset()" style="margin-top:20px;padding:12px 24px;background:#ff7c2a;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Try another route</button></div>';
-  }
 }
 
 function showErr(msg){
@@ -1616,13 +1598,27 @@ function showErr(msg){
   '</div>';
 }
 
-// ── WEATHER ──
-var WX_DESC={0:'Clear',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',48:'Icy fog',
-  51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',
-  71:'Light snow',73:'Snow',75:'Heavy snow',80:'Showers',81:'Heavy showers',95:'Thunderstorm',99:'Thunderstorm'};
-var WX_ICON={0:'&#9728;',1:'&#9925;',2:'&#9925;',3:'&#9729;',45:'&#127787;',48:'&#127787;',
-  51:'&#127746;',53:'&#127746;',55:'&#127746;',61:'&#127747;',63:'&#127747;',65:'&#127747;',
-  71:'&#10052;',73:'&#10052;',75:'&#10052;',80:'&#127746;',81:'&#127747;',95:'&#9928;',99:'&#9928;'};
+var _totActs=0, _doneActs={};
+function tickAct(actId){
+  var act=document.getElementById(actId);
+  var chk=document.getElementById('k'+actId);
+  if(!act||!chk) return;
+  _doneActs[actId]=!_doneActs[actId];
+  if(_doneActs[actId]){chk.classList.add('done');chk.textContent='v';act.classList.add('completed');}
+  else{chk.classList.remove('done');chk.textContent='';act.classList.remove('completed');}
+  var done=Object.values(_doneActs).filter(Boolean).length;
+  var pct=_totActs?Math.round(done/_totActs*100):0;
+  var fill=document.getElementById('prog-fill');
+  var lbl=document.getElementById('prog-lbl');
+  if(fill) fill.style.width=pct+'%';
+  if(lbl) lbl.textContent=done+' of '+_totActs+' activities completed';
+}
+var WX_DESC={0:'Clear',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',
+  51:'Light drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',
+  71:'Light snow',73:'Snow',80:'Showers',95:'Thunderstorm'};
+var WX_ICON={0:'&#9728;',1:'&#9925;',2:'&#9925;',3:'&#9729;',45:'&#127787;',
+  51:'&#127746;',61:'&#127747;',63:'&#127747;',65:'&#127747;',
+  71:'&#10052;',73:'&#10052;',80:'&#127746;',95:'&#9928;'};
 function wxIcon(c){return WX_ICON[c]||'&#9925;';}
 function wxDesc(c){return WX_DESC[c]||'Partly cloudy';}
 function toggleWX(idx){
@@ -1637,7 +1633,7 @@ function loadWeather(name,idx){
   fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(name)+'&count=1&language=en&format=json')
     .then(function(r){return r.json();})
     .then(function(geo){
-      if(!geo.results||!geo.results[0]) return;
+      if(!geo.results||!geo.results[0]) return null;
       var lat=geo.results[0].latitude, lon=geo.results[0].longitude;
       return fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+
         '&current=temperature_2m,weathercode,windspeed_10m,precipitation&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=7');
@@ -1658,10 +1654,8 @@ function loadWeather(name,idx){
       if(ico) ico.innerHTML=wxIcon(w.current.weathercode);
       if(tmp) tmp.textContent=t+'°'+unit;
       if(dsc) dsc.textContent=wxDesc(w.current.weathercode);
-      if(det) det.innerHTML=
-        '<span class="weather-det">&#128168; '+Math.round(w.current.windspeed_10m)+(isM?' km/h':' mph')+'</span>'+
+      if(det) det.innerHTML='<span class="weather-det">&#128168; '+Math.round(w.current.windspeed_10m)+(isM?' km/h':' mph')+'</span>'+
         '<span class="weather-det">&#127783; '+Math.round((w.current.precipitation||0)*10)/10+'mm</span>';
-      // 7-day forecast
       if(w.daily){
         var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
         var fc='';
@@ -1669,41 +1663,13 @@ function loadWeather(name,idx){
           var dt=new Date(w.daily.time[d]);
           var hi=isM?Math.round(w.daily.temperature_2m_max[d]):Math.round(w.daily.temperature_2m_max[d]*9/5+32);
           var lo=isM?Math.round(w.daily.temperature_2m_min[d]):Math.round(w.daily.temperature_2m_min[d]*9/5+32);
-          fc+='<div class="wf-day">'+
-            '<span class="wf-day-name">'+days[dt.getDay()]+'</span>'+
-            '<span class="wf-day-icon">'+wxIcon(w.daily.weathercode[d])+'</span>'+
-            '<span class="wf-day-temp">'+hi+'/'+lo+'</span>'+
-          '</div>';
+          fc+='<div class="wf-day"><span class="wf-day-name">'+days[dt.getDay()]+'</span><span class="wf-day-icon">'+wxIcon(w.daily.weathercode[d])+'</span><span class="wf-day-temp">'+hi+'/'+lo+'</span></div>';
         }
         var wfEl=document.getElementById('wf-'+idx);
         if(wfEl) wfEl.innerHTML=fc;
       }
-    })
-    .catch(function(e){console.log('Weather error:',e);});
+    }).catch(function(){});
 }
-
-// ── TRIP TRACKER ──
-var _totActs=0, _doneActs={};
-function tickAct(actId){
-  var act=document.getElementById(actId);
-  var chk=document.getElementById('k'+actId);
-  if(!act||!chk) return;
-  _doneActs[actId]=!_doneActs[actId];
-  if(_doneActs[actId]){
-    chk.classList.add('done'); chk.textContent='✓';
-    act.classList.add('completed');
-  } else {
-    chk.classList.remove('done'); chk.textContent='';
-    act.classList.remove('completed');
-  }
-  var done=Object.values(_doneActs).filter(Boolean).length;
-  var pct=_totActs?Math.round(done/_totActs*100):0;
-  var fill=document.getElementById('prog-fill');
-  var lbl=document.getElementById('prog-lbl');
-  if(fill) fill.style.width=pct+'%';
-  if(lbl) lbl.textContent=done+' of '+_totActs+' activities completed'+(pct===100?' 🎉':'');
-}
-
 function reset(){
   document.getElementById('results').style.display='none';
   document.getElementById('loading').style.display='none';
