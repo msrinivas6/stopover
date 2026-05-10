@@ -1654,6 +1654,7 @@ function exportPDF(){
   var btn=document.getElementById('export-btn');
   if(btn){btn.disabled=true;btn.innerHTML='⏳ Generating PDF…';}
 
+  // Hide interactive elements that look bad in PDF
   var hideSelectors=['.skip-btn','.swap-btn','.hdr-tag','#export-btn','.share-btn','.back-btn','.weather-pill','.weather-extra'];
   var hidden=[];
   hideSelectors.forEach(function(sel){
@@ -1666,50 +1667,81 @@ function exportPDF(){
   var origBg=target.style.background;
   target.style.background='#fff8f0';
 
+  // Capture full height of results div at 2x
   html2canvas(target,{
-    scale:2,useCORS:true,backgroundColor:'#fff8f0',logging:false,
-    windowWidth:target.scrollWidth,height:target.scrollHeight,scrollY:0
+    scale:2,
+    useCORS:true,
+    backgroundColor:'#fff8f0',
+    logging:false,
+    width:target.scrollWidth,
+    height:target.scrollHeight,
+    windowWidth:target.scrollWidth,
+    windowHeight:target.scrollHeight,
+    scrollX:0,
+    scrollY:-window.scrollY   // FIX: compensate for page scroll so full content is captured
   }).then(function(canvas){
     hidden.forEach(function(h){h.el.style.display=h.prev;});
     target.style.background=origBg;
 
     var pdf=new jspdf.jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    var pageW=pdf.internal.pageSize.getWidth();
-    var pageH=pdf.internal.pageSize.getHeight();
+    var pageW=pdf.internal.pageSize.getWidth();   // 210mm
+    var pageH=pdf.internal.pageSize.getHeight();  // 297mm
     var margin=10;
-    var contentW=pageW-(margin*2);
-    var ratio=contentW/(canvas.width/2);
-    var totalH=canvas.height/2*ratio;
-    var printableH=pageH-margin*2-8;
-    var totalPages=Math.ceil(totalH/printableH);
-    var srcHPerPage=(printableH/ratio)*(canvas.width/contentW);
+    var headerH=9;   // orange header band height in mm
+    var footerH=6;   // footer reserve in mm
+    var contentW=pageW-(margin*2);                // 190mm printable width
+
+    // FIX: correct ratio — canvas is at scale:2 so canvas.width = element.scrollWidth * 2
+    var canvasPxPerMm=canvas.width / contentW;    // px per mm on canvas
+    var printableH=pageH - headerH - margin - footerH;  // mm per page for content
+
+    var totalContentMm=(canvas.height / canvasPxPerMm); // total content height in mm
+    var totalPages=Math.ceil(totalContentMm / printableH);
 
     for(var p=0;p<totalPages;p++){
       if(p>0) pdf.addPage();
-      // Header bar
+
+      // Orange header bar
       pdf.setFillColor(255,124,42);
-      pdf.rect(0,0,pageW,8,'F');
+      pdf.rect(0,0,pageW,headerH,'F');
       pdf.setTextColor(255,255,255);
       pdf.setFontSize(8);
       pdf.setFont('helvetica','bold');
-      pdf.text('STOPOVER  '+S.from.toUpperCase()+' → '+S.to.toUpperCase(),margin,5.5);
-      pdf.text('Page '+(p+1)+' of '+totalPages,pageW-margin,5.5,{align:'right'});
+      // FIX: replace → arrow with ASCII to avoid jsPDF glyph corruption
+      var routeLabel='STOPOVER  '+S.from.toUpperCase()+' to '+S.to.toUpperCase();
+      pdf.text(routeLabel,margin,6.2);
+      pdf.text('Page '+(p+1)+' of '+totalPages,pageW-margin,6.2,{align:'right'});
       pdf.setTextColor(0,0,0);
-      // Slice
-      var srcY=p*srcHPerPage;
-      var sliceH=Math.min(srcHPerPage,canvas.height-srcY);
-      if(sliceH<=0) break;
-      var sliceCanvas=document.createElement('canvas');
-      sliceCanvas.width=canvas.width;sliceCanvas.height=sliceH;
-      sliceCanvas.getContext('2d').drawImage(canvas,0,-srcY);
-      var sliceImg=sliceCanvas.toDataURL('image/jpeg',0.92);
-      pdf.addImage(sliceImg,'JPEG',margin,8+margin,contentW,sliceH/2*ratio);
-    }
-    pdf.setFontSize(8);pdf.setTextColor(150,100,60);
-    pdf.text('stopoverapp.vercel.app',pageW/2,pageH-4,{align:'center'});
 
-    var filename='Stopover_'+S.from.replace(/\s/g,'_')+'_to_'+S.to.replace(/\s/g,'_')+'.pdf';
-    pdf.save(filename);
+      // FIX: correct slice math — work entirely in canvas px
+      var sliceStartPx = p * printableH * canvasPxPerMm;
+      var sliceHeightPx = Math.min(printableH * canvasPxPerMm, canvas.height - sliceStartPx);
+      if(sliceHeightPx <= 0) break;
+
+      // Draw this slice onto a temp canvas
+      var sliceCanvas=document.createElement('canvas');
+      sliceCanvas.width=canvas.width;
+      sliceCanvas.height=Math.ceil(sliceHeightPx);
+      var ctx=sliceCanvas.getContext('2d');
+      ctx.fillStyle='#fff8f0';
+      ctx.fillRect(0,0,sliceCanvas.width,sliceCanvas.height);
+      ctx.drawImage(canvas, 0, -sliceStartPx);  // FIX: use negative offset correctly
+
+      var sliceImg=sliceCanvas.toDataURL('image/jpeg',0.93);
+      // Height in mm this slice represents
+      var sliceHeightMm=sliceHeightPx / canvasPxPerMm;
+      pdf.addImage(sliceImg,'JPEG', margin, headerH+margin, contentW, sliceHeightMm);
+    }
+
+    // Footer on last page
+    pdf.setFontSize(7.5);
+    pdf.setTextColor(160,110,70);
+    pdf.text('stopoverapp.vercel.app',pageW/2,pageH-2,{align:'center'});
+
+    var from=S.from.replace(/[^a-zA-Z0-9]/g,'_');
+    var to=S.to.replace(/[^a-zA-Z0-9]/g,'_');
+    pdf.save('Stopover_'+from+'_to_'+to+'.pdf');
+
     if(btn){btn.disabled=false;btn.innerHTML='✅ PDF Downloaded!';}
     setTimeout(function(){if(btn)btn.innerHTML='📄 Export as PDF';},3000);
   }).catch(function(err){
