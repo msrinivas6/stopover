@@ -1654,7 +1654,8 @@ function exportPDF(){
   var btn=document.getElementById('export-btn');
   if(btn){btn.disabled=true;btn.innerHTML='⏳ Generating PDF…';}
 
-  var hideSelectors=['.skip-btn','.swap-btn','.hdr-tag','#export-btn','.share-btn','.back-btn','.weather-pill','.weather-extra'];
+  // Elements to hide during capture
+  var hideSelectors=['.skip-btn','.swap-btn','.hdr-tag','#export-btn','.share-btn','.back-btn','.weather-extra'];
   var hidden=[];
   hideSelectors.forEach(function(sel){
     document.querySelectorAll(sel).forEach(function(el){
@@ -1662,139 +1663,168 @@ function exportPDF(){
     });
   });
 
-  var target=document.getElementById('results');
-  var targetRect=target.getBoundingClientRect();
-  var origBg=target.style.background;
-  target.style.background='#fff8f0';
+  var results=document.getElementById('results');
+  var origBg=results.style.background;
+  results.style.background='#fff8f0';
 
-  // Build safe break points — the TOP of each stop-card and drive-connector.
-  // Breaking BEFORE these elements (i.e. at the bottom of whatever came just before)
-  // ensures the drive strip + city header always land together at the top of a new page.
-  // We also add tops of .act and .stay-card as fine-grained intra-stop break options.
-  var safeBreaksPx=[];
-
-  // Fine-grained: bottom of each .act and .stay-card (break between activities)
-  ['.act','.stay-card'].forEach(function(sel){
-    target.querySelectorAll(sel).forEach(function(el){
-      var r=el.getBoundingClientRect();
-      safeBreaksPx.push({y: r.bottom - targetRect.top + window.scrollY, priority:1});
-    });
+  // ── COLLECT BLOCKS ────────────────────────────────────────────────────────
+  // Each "block" is a DOM element we capture independently.
+  // Order: route-banner, then per stop: drive-connector + stop-card together
+  var blocks=[];
+  // Route banner (top summary strip)
+  var banner=results.querySelector('.route-banner');
+  if(banner) blocks.push(banner);
+  // For each stop card, include its preceding drive-connector as part of the same block
+  var stopCards=results.querySelectorAll('.stop-card');
+  stopCards.forEach(function(card){
+    var prev=card.previousElementSibling;
+    // If the previous sibling is the drive connector, group them as one block
+    if(prev&&prev.classList.contains('drive-connector')){
+      blocks.push(prev); // connector
+    }
+    blocks.push(card);   // stop card
   });
+  // Trip summary at the bottom
+  var summary=results.querySelector('.summary');
+  if(summary) blocks.push(summary);
 
-  // Coarse / preferred: TOP of each .stop-card and .drive-connector
-  // A break here means the page ends just before the drive strip starts — clean gap
-  ['.stop-card','.drive-connector','.route-banner','.summary'].forEach(function(sel){
-    target.querySelectorAll(sel).forEach(function(el){
-      var r=el.getBoundingClientRect();
-      // Use the top of this element as the break point (end of previous content)
-      safeBreaksPx.push({y: r.top - targetRect.top + window.scrollY, priority:2});
+  // ── CAPTURE EACH BLOCK ───────────────────────────────────────────────────
+  var captureNext=function(index,images){
+    if(index>=blocks.length){
+      buildPDF(images);
+      return;
+    }
+    var el=blocks[index];
+    // Temporarily ensure full visibility
+    var origDisplay=el.style.display;
+    if(origDisplay==='none') el.style.display='block';
+    html2canvas(el,{
+      scale:2,
+      useCORS:true,
+      backgroundColor:'#fff8f0',
+      logging:false,
+      width:el.scrollWidth,
+      height:el.scrollHeight
+    }).then(function(canvas){
+      el.style.display=origDisplay;
+      images.push({
+        dataUrl:canvas.toDataURL('image/jpeg',0.92),
+        widthPx:canvas.width,
+        heightPx:canvas.height
+      });
+      captureNext(index+1,images);
+    }).catch(function(){
+      el.style.display=origDisplay;
+      images.push(null); // skip failed block
+      captureNext(index+1,images);
     });
-  });
+  };
 
-  // Sort ascending by y position
-  safeBreaksPx.sort(function(a,b){return a.y-b.y;});
-
-  html2canvas(target,{
-    scale:2,
-    useCORS:true,
-    backgroundColor:'#fff8f0',
-    logging:false,
-    width:target.scrollWidth,
-    height:target.scrollHeight,
-    windowWidth:target.scrollWidth,
-    windowHeight:target.scrollHeight,
-    scrollX:0,
-    scrollY:-window.scrollY
-  }).then(function(canvas){
+  // ── BUILD PDF FROM IMAGES ─────────────────────────────────────────────────
+  var buildPDF=function(images){
     hidden.forEach(function(h){h.el.style.display=h.prev;});
-    target.style.background=origBg;
+    results.style.background=origBg;
 
     var pdf=new jspdf.jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    var pageW=pdf.internal.pageSize.getWidth();
-    var pageH=pdf.internal.pageSize.getHeight();
+    var pageW=pdf.internal.pageSize.getWidth();   // 210
+    var pageH=pdf.internal.pageSize.getHeight();  // 297
     var margin=10;
     var headerH=9;
-    var footerH=6;
-    var contentW=pageW-(margin*2);
+    var footerReserve=8;
+    var contentW=pageW-(margin*2);                // 190mm
+    var maxContentH=pageH-headerH-margin-footerReserve; // max per page
 
-    // Scale factor: canvas is rendered at scale:2
-    var scale=2;
-    // mm per canvas-px
-    var mmPerPx=contentW / (target.scrollWidth * scale);
-    var printableHmm=pageH - headerH - margin - footerH;
-    var printableHpx=printableHmm / mmPerPx;  // printable height in canvas px
+    var pageNum=1;
+    var curY=headerH+margin; // current Y cursor on the page (mm from top)
+    var totalPages=0; // we'll do two passes: first count, then draw
 
-    // Build page slices using safe break points
-    // Each slice: {startPx, endPx}
-    var slices=[];
-    var curStartPx=0;
-    var totalHeightPx=canvas.height;
-
-    while(curStartPx < totalHeightPx){
-      var idealEndPx=curStartPx + printableHpx;
-      if(idealEndPx >= totalHeightPx){
-        // Last slice — take whatever is left
-        slices.push({start:curStartPx, end:totalHeightPx});
-        break;
-      }
-      // Find best break point at or before idealEndPx.
-      // Prefer priority-2 (top of stop-card/drive-connector) over priority-1 (bottom of act).
-      // Safe breaks stored in DOM px — multiply by scale for canvas px.
-      var minGapPx=printableHpx * 0.20; // must fill at least 20% of page
-      var bestBreakPx=idealEndPx; // fallback
-      var bestPriority=0;
-      for(var bi=0;bi<safeBreaksPx.length;bi++){
-        var bp=safeBreaksPx[bi];
-        var bpx=bp.y * scale;
-        if(bpx > curStartPx + minGapPx && bpx <= idealEndPx){
-          if(bp.priority > bestPriority || (bp.priority===bestPriority && bpx > bestBreakPx)){
-            bestBreakPx=bpx;
-            bestPriority=bp.priority;
-          }
-        }
-      }
-      slices.push({start:curStartPx, end:bestBreakPx});
-      curStartPx=bestBreakPx;
-    }
-
-    var totalPages=slices.length;
-
-    function addHeader(pageNum){
+    function drawHeader(pg,total){
       pdf.setFillColor(255,124,42);
       pdf.rect(0,0,pageW,headerH,'F');
       pdf.setTextColor(255,255,255);
       pdf.setFontSize(8);
       pdf.setFont('helvetica','bold');
       pdf.text('STOPOVER  '+S.from.toUpperCase()+' to '+S.to.toUpperCase(),margin,6.2);
-      pdf.text('Page '+pageNum+' of '+totalPages,pageW-margin,6.2,{align:'right'});
+      pdf.text('Page '+pg+(total?' of '+total:''),pageW-margin,6.2,{align:'right'});
       pdf.setTextColor(0,0,0);
     }
 
-    for(var p=0;p<slices.length;p++){
-      if(p>0) pdf.addPage();
-      addHeader(p+1);
-
-      var sl=slices[p];
-      var sliceHeightPx=Math.ceil(sl.end - sl.start);
-      if(sliceHeightPx<=0) continue;
-
-      var sliceCanvas=document.createElement('canvas');
-      sliceCanvas.width=canvas.width;
-      sliceCanvas.height=sliceHeightPx;
-      var ctx=sliceCanvas.getContext('2d');
-      ctx.fillStyle='#fff8f0';
-      ctx.fillRect(0,0,sliceCanvas.width,sliceCanvas.height);
-      ctx.drawImage(canvas, 0, -sl.start);
-
-      var sliceImg=sliceCanvas.toDataURL('image/jpeg',0.93);
-      var sliceHeightMm=sliceHeightPx * mmPerPx;
-      pdf.addImage(sliceImg,'JPEG', margin, headerH+margin, contentW, sliceHeightMm);
+    function newPage(){
+      pdf.addPage();
+      pageNum++;
+      curY=headerH+margin;
+      drawHeader(pageNum,0); // placeholder, we patch totals after
     }
 
-    // Footer on last page only
+    // First draw pass — place images, track pages
+    drawHeader(1,0);
+    images.forEach(function(img){
+      if(!img) return;
+      // Scale image to content width, compute height in mm
+      var scale=img.widthPx; // canvas.width = element px * 2 (scale:2)
+      var mmPerCanvasPx=contentW/img.widthPx;
+      var imgH=img.heightPx*mmPerCanvasPx;
+
+      // If this image alone is taller than a full page, split it into rows
+      // (rare — only for extremely long stop cards)
+      if(imgH>maxContentH){
+        // How many canvas px fit in one page height
+        var pxPerPage=maxContentH/mmPerCanvasPx;
+        var srcY=0;
+        while(srcY<img.heightPx){
+          var sliceH=Math.min(pxPerPage,img.heightPx-srcY);
+          var sliceMm=sliceH*mmPerCanvasPx;
+          if(curY+sliceMm>pageH-footerReserve) newPage();
+          // Crop slice
+          var tmp=document.createElement('canvas');
+          var src=new Image();
+          src.src=img.dataUrl;
+          tmp.width=img.widthPx;
+          tmp.height=Math.ceil(sliceH);
+          var ctx=tmp.getContext('2d');
+          ctx.drawImage(src,0,-srcY);
+          pdf.addImage(tmp.toDataURL('image/jpeg',0.92),'JPEG',margin,curY,contentW,sliceMm);
+          curY+=sliceMm+2;
+          srcY+=sliceH;
+        }
+        return;
+      }
+
+      // Does this block fit on the current page?
+      if(curY+imgH>pageH-footerReserve){
+        newPage();
+      }
+      pdf.addImage(img.dataUrl,'JPEG',margin,curY,contentW,imgH);
+      curY+=imgH+2; // 2mm gap between blocks
+    });
+
+    // Footer on last page
     pdf.setFontSize(7.5);
     pdf.setTextColor(160,110,70);
-    pdf.text('stopoverapp.vercel.app',pageW/2,pageH-2,{align:'center'});
+    pdf.text('stopoverapp.vercel.app',pageW/2,pageH-3,{align:'center'});
+
+    // Patch page numbers — jsPDF doesn't support retroactive editing,
+    // so we re-save with totalPages now known
+    totalPages=pageNum;
+    // Re-draw all headers with correct total using internal page state trick
+    var totalPagesStr=String(totalPages);
+    // jsPDF: iterate pages and overwrite header text
+    for(var p=1;p<=totalPages;p++){
+      pdf.setPage(p);
+      pdf.setFillColor(255,124,42);
+      pdf.rect(0,0,pageW,headerH,'F');
+      pdf.setTextColor(255,255,255);
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica','bold');
+      pdf.text('STOPOVER  '+S.from.toUpperCase()+' to '+S.to.toUpperCase(),margin,6.2);
+      pdf.text('Page '+p+' of '+totalPagesStr,pageW-margin,6.2,{align:'right'});
+      // Re-add footer on last page
+      if(p===totalPages){
+        pdf.setFontSize(7.5);
+        pdf.setTextColor(160,110,70);
+        pdf.text('stopoverapp.vercel.app',pageW/2,pageH-3,{align:'center'});
+      }
+    }
 
     var from=S.from.replace(/[^a-zA-Z0-9]/g,'_');
     var to=S.to.replace(/[^a-zA-Z0-9]/g,'_');
@@ -1802,13 +1832,10 @@ function exportPDF(){
 
     if(btn){btn.disabled=false;btn.innerHTML='✅ PDF Downloaded!';}
     setTimeout(function(){if(btn)btn.innerHTML='📄 Export as PDF';},3000);
-  }).catch(function(err){
-    console.error('PDF error:',err);
-    hidden.forEach(function(h){h.el.style.display=h.prev;});
-    target.style.background=origBg;
-    if(btn){btn.disabled=false;btn.innerHTML='❌ Try again';}
-    setTimeout(function(){if(btn)btn.innerHTML='📄 Export as PDF';},2000);
-  });
+  };
+
+  // Kick off sequential capture
+  captureNext(0,[]);
 }
 </script>
 
