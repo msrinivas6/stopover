@@ -1654,7 +1654,6 @@ function exportPDF(){
   var btn=document.getElementById('export-btn');
   if(btn){btn.disabled=true;btn.innerHTML='⏳ Generating PDF…';}
 
-  // Hide interactive elements that look bad in PDF
   var hideSelectors=['.skip-btn','.swap-btn','.hdr-tag','#export-btn','.share-btn','.back-btn','.weather-pill','.weather-extra'];
   var hidden=[];
   hideSelectors.forEach(function(sel){
@@ -1664,10 +1663,26 @@ function exportPDF(){
   });
 
   var target=document.getElementById('results');
+  var targetRect=target.getBoundingClientRect();
   var origBg=target.style.background;
   target.style.background='#fff8f0';
 
-  // Capture full height of results div at 2x
+  // Collect safe break points — bottoms of major block elements
+  // We gather these BEFORE html2canvas so positions are accurate
+  var breakableSelectors=[
+    '.stop-card','.route-banner','.summary','.act',
+    '.stay-card','.drive-connector','.weather-extra'
+  ];
+  var safeBreaksPx=[];  // y positions (relative to target top) that are safe to break after
+  breakableSelectors.forEach(function(sel){
+    target.querySelectorAll(sel).forEach(function(el){
+      var r=el.getBoundingClientRect();
+      var relBottom=r.bottom - targetRect.top + window.scrollY;
+      safeBreaksPx.push(relBottom);
+    });
+  });
+  safeBreaksPx.sort(function(a,b){return a-b;});
+
   html2canvas(target,{
     scale:2,
     useCORS:true,
@@ -1678,62 +1693,89 @@ function exportPDF(){
     windowWidth:target.scrollWidth,
     windowHeight:target.scrollHeight,
     scrollX:0,
-    scrollY:-window.scrollY   // FIX: compensate for page scroll so full content is captured
+    scrollY:-window.scrollY
   }).then(function(canvas){
     hidden.forEach(function(h){h.el.style.display=h.prev;});
     target.style.background=origBg;
 
     var pdf=new jspdf.jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    var pageW=pdf.internal.pageSize.getWidth();   // 210mm
-    var pageH=pdf.internal.pageSize.getHeight();  // 297mm
+    var pageW=pdf.internal.pageSize.getWidth();
+    var pageH=pdf.internal.pageSize.getHeight();
     var margin=10;
-    var headerH=9;   // orange header band height in mm
-    var footerH=6;   // footer reserve in mm
-    var contentW=pageW-(margin*2);                // 190mm printable width
+    var headerH=9;
+    var footerH=6;
+    var contentW=pageW-(margin*2);
 
-    // FIX: correct ratio — canvas is at scale:2 so canvas.width = element.scrollWidth * 2
-    var canvasPxPerMm=canvas.width / contentW;    // px per mm on canvas
-    var printableH=pageH - headerH - margin - footerH;  // mm per page for content
+    // Scale factor: canvas is rendered at scale:2
+    var scale=2;
+    // mm per canvas-px
+    var mmPerPx=contentW / (target.scrollWidth * scale);
+    var printableHmm=pageH - headerH - margin - footerH;
+    var printableHpx=printableHmm / mmPerPx;  // printable height in canvas px
 
-    var totalContentMm=(canvas.height / canvasPxPerMm); // total content height in mm
-    var totalPages=Math.ceil(totalContentMm / printableH);
+    // Build page slices using safe break points
+    // Each slice: {startPx, endPx}
+    var slices=[];
+    var curStartPx=0;
+    var totalHeightPx=canvas.height;
 
-    for(var p=0;p<totalPages;p++){
-      if(p>0) pdf.addPage();
+    while(curStartPx < totalHeightPx){
+      var idealEndPx=curStartPx + printableHpx;
+      if(idealEndPx >= totalHeightPx){
+        // Last slice — take whatever is left
+        slices.push({start:curStartPx, end:totalHeightPx});
+        break;
+      }
+      // Find the nearest safe break point at or before idealEndPx
+      // Safe breaks are in DOM px — convert to canvas px (* scale)
+      var bestBreakPx=idealEndPx; // fallback: cut at ideal spot
+      var minGapPx=printableHpx * 0.25; // don't break in the top 25% of a page
+      for(var bi=safeBreaksPx.length-1;bi>=0;bi--){
+        var bpx=safeBreaksPx[bi] * scale;
+        if(bpx <= idealEndPx && bpx > curStartPx + minGapPx){
+          bestBreakPx=bpx;
+          break;
+        }
+      }
+      slices.push({start:curStartPx, end:bestBreakPx});
+      curStartPx=bestBreakPx;
+    }
 
-      // Orange header bar
+    var totalPages=slices.length;
+
+    function addHeader(pageNum){
       pdf.setFillColor(255,124,42);
       pdf.rect(0,0,pageW,headerH,'F');
       pdf.setTextColor(255,255,255);
       pdf.setFontSize(8);
       pdf.setFont('helvetica','bold');
-      // FIX: replace → arrow with ASCII to avoid jsPDF glyph corruption
-      var routeLabel='STOPOVER  '+S.from.toUpperCase()+' to '+S.to.toUpperCase();
-      pdf.text(routeLabel,margin,6.2);
-      pdf.text('Page '+(p+1)+' of '+totalPages,pageW-margin,6.2,{align:'right'});
+      pdf.text('STOPOVER  '+S.from.toUpperCase()+' to '+S.to.toUpperCase(),margin,6.2);
+      pdf.text('Page '+pageNum+' of '+totalPages,pageW-margin,6.2,{align:'right'});
       pdf.setTextColor(0,0,0);
+    }
 
-      // FIX: correct slice math — work entirely in canvas px
-      var sliceStartPx = p * printableH * canvasPxPerMm;
-      var sliceHeightPx = Math.min(printableH * canvasPxPerMm, canvas.height - sliceStartPx);
-      if(sliceHeightPx <= 0) break;
+    for(var p=0;p<slices.length;p++){
+      if(p>0) pdf.addPage();
+      addHeader(p+1);
 
-      // Draw this slice onto a temp canvas
+      var sl=slices[p];
+      var sliceHeightPx=Math.ceil(sl.end - sl.start);
+      if(sliceHeightPx<=0) continue;
+
       var sliceCanvas=document.createElement('canvas');
       sliceCanvas.width=canvas.width;
-      sliceCanvas.height=Math.ceil(sliceHeightPx);
+      sliceCanvas.height=sliceHeightPx;
       var ctx=sliceCanvas.getContext('2d');
       ctx.fillStyle='#fff8f0';
       ctx.fillRect(0,0,sliceCanvas.width,sliceCanvas.height);
-      ctx.drawImage(canvas, 0, -sliceStartPx);  // FIX: use negative offset correctly
+      ctx.drawImage(canvas, 0, -sl.start);
 
       var sliceImg=sliceCanvas.toDataURL('image/jpeg',0.93);
-      // Height in mm this slice represents
-      var sliceHeightMm=sliceHeightPx / canvasPxPerMm;
+      var sliceHeightMm=sliceHeightPx * mmPerPx;
       pdf.addImage(sliceImg,'JPEG', margin, headerH+margin, contentW, sliceHeightMm);
     }
 
-    // Footer on last page
+    // Footer on last page only
     pdf.setFontSize(7.5);
     pdf.setTextColor(160,110,70);
     pdf.text('stopoverapp.vercel.app',pageW/2,pageH-2,{align:'center'});
