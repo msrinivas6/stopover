@@ -1667,21 +1667,32 @@ function exportPDF(){
   var origBg=target.style.background;
   target.style.background='#fff8f0';
 
-  // Collect safe break points — bottoms of major block elements
-  // We gather these BEFORE html2canvas so positions are accurate
-  var breakableSelectors=[
-    '.stop-card','.route-banner','.summary','.act',
-    '.stay-card','.drive-connector','.weather-extra'
-  ];
-  var safeBreaksPx=[];  // y positions (relative to target top) that are safe to break after
-  breakableSelectors.forEach(function(sel){
+  // Build safe break points — the TOP of each stop-card and drive-connector.
+  // Breaking BEFORE these elements (i.e. at the bottom of whatever came just before)
+  // ensures the drive strip + city header always land together at the top of a new page.
+  // We also add tops of .act and .stay-card as fine-grained intra-stop break options.
+  var safeBreaksPx=[];
+
+  // Fine-grained: bottom of each .act and .stay-card (break between activities)
+  ['.act','.stay-card'].forEach(function(sel){
     target.querySelectorAll(sel).forEach(function(el){
       var r=el.getBoundingClientRect();
-      var relBottom=r.bottom - targetRect.top + window.scrollY;
-      safeBreaksPx.push(relBottom);
+      safeBreaksPx.push({y: r.bottom - targetRect.top + window.scrollY, priority:1});
     });
   });
-  safeBreaksPx.sort(function(a,b){return a-b;});
+
+  // Coarse / preferred: TOP of each .stop-card and .drive-connector
+  // A break here means the page ends just before the drive strip starts — clean gap
+  ['.stop-card','.drive-connector','.route-banner','.summary'].forEach(function(sel){
+    target.querySelectorAll(sel).forEach(function(el){
+      var r=el.getBoundingClientRect();
+      // Use the top of this element as the break point (end of previous content)
+      safeBreaksPx.push({y: r.top - targetRect.top + window.scrollY, priority:2});
+    });
+  });
+
+  // Sort ascending by y position
+  safeBreaksPx.sort(function(a,b){return a.y-b.y;});
 
   html2canvas(target,{
     scale:2,
@@ -1726,15 +1737,20 @@ function exportPDF(){
         slices.push({start:curStartPx, end:totalHeightPx});
         break;
       }
-      // Find the nearest safe break point at or before idealEndPx
-      // Safe breaks are in DOM px — convert to canvas px (* scale)
-      var bestBreakPx=idealEndPx; // fallback: cut at ideal spot
-      var minGapPx=printableHpx * 0.25; // don't break in the top 25% of a page
-      for(var bi=safeBreaksPx.length-1;bi>=0;bi--){
-        var bpx=safeBreaksPx[bi] * scale;
-        if(bpx <= idealEndPx && bpx > curStartPx + minGapPx){
-          bestBreakPx=bpx;
-          break;
+      // Find best break point at or before idealEndPx.
+      // Prefer priority-2 (top of stop-card/drive-connector) over priority-1 (bottom of act).
+      // Safe breaks stored in DOM px — multiply by scale for canvas px.
+      var minGapPx=printableHpx * 0.20; // must fill at least 20% of page
+      var bestBreakPx=idealEndPx; // fallback
+      var bestPriority=0;
+      for(var bi=0;bi<safeBreaksPx.length;bi++){
+        var bp=safeBreaksPx[bi];
+        var bpx=bp.y * scale;
+        if(bpx > curStartPx + minGapPx && bpx <= idealEndPx){
+          if(bp.priority > bestPriority || (bp.priority===bestPriority && bpx > bestBreakPx)){
+            bestBreakPx=bpx;
+            bestPriority=bp.priority;
+          }
         }
       }
       slices.push({start:curStartPx, end:bestBreakPx});
